@@ -22,4 +22,5 @@ pnpm-debug.log*
 .vscode/settings.json
 
 # OS
-Thumbs.db
+Thumbs.dbtasks/
+tasks/

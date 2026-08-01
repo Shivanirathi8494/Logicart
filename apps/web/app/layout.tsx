@@ -1,34 +1,34 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import type { Metadata } from "next";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import TopBar from "@/components/layout/TopBar";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
-  title: "Logicarts | Total Logistics Solutions",
-  description:
-    "Logicarts provides reliable air cargo, express logistics, e-commerce logistics, shipment critical movement, and domestic trade solutions across India.",
+  title: "Logicarts",
+  description: "Delivering Trust. Driving Logistics.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en">
+      <body className="bg-white text-slate-900">
+
+        <TopBar />
+
+        <Header />
+
+        {children}
+
+        <Footer />
+
+      </body>
     </html>
   );
 }
