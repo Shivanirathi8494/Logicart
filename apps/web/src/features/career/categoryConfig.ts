@@ -65,7 +65,7 @@ export const CAREER_CATEGORIES: CareerConfig[] = [
 
   {
     title: "Transport Vendor",
-    description: "Support nationwide transportation.",
+    description: "",
     requiresResume: false,
     fields: [
       { name: "truckCount", label: "Number of Trucks", type: "number" },

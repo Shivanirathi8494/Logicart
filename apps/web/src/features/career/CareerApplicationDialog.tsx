@@ -76,68 +76,124 @@ export default function CareerApplicationDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent
+        className="
+          max-w-4xl
+          max-h-[90vh]
+          overflow-y-auto
+          rounded-2xl
+          p-8
+        "
+      >
           <DialogHeader>
-            <DialogTitle>
-              Apply for {category}
-            </DialogTitle>
-
             <DialogDescription>
               {config.description}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="space-y-8">
+            <section className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold text-slate-900">
+                  Applicant Information
+                </h3>
+
+                <p className="text-sm text-slate-500">
+                  Please provide your contact information.
+                </p>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
             <div>
-              <Label>Full Name *</Label>
+              <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                Full Name *
+              </Label>
               <Input
+                className="h-11"
                 onChange={(e) => handleChange("fullName", e.target.value)}
               />
             </div>
 
             <div>
-              <Label>Email *</Label>
+              <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                Email *
+              </Label>
               <Input
+                className="h-11"
                 type="email"
                 onChange={(e) => handleChange("email", e.target.value)}
               />
             </div>
 
             <div>
-              <Label>Phone *</Label>
+              <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                Phone *
+              </Label>
               <Input
+                className="h-11"
                 onChange={(e) => handleChange("phone", e.target.value)}
               />
             </div>
 
             <div>
-              <Label>City *</Label>
+              <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                City *
+              </Label>
               <Input
+                className="h-11"
                 onChange={(e) => handleChange("city", e.target.value)}
               />
             </div>
 
             <div>
-              <Label>State</Label>
+              <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                State
+              </Label>
               <Input
+                className="h-11"
                 onChange={(e) => handleChange("state", e.target.value)}
               />
             </div>
 
             <div>
-              <Label>Company</Label>
+              <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                Company
+              </Label>
               <Input
+                className="h-11"
                 onChange={(e) => handleChange("company", e.target.value)}
               />
             </div>
-          </div>
+              </div>
+            </section>
 
-          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            <hr className="border-slate-200" />
+
+            <section className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold text-slate-900">
+                  {category === "Fleet Owner" && "Fleet Information"}
+                  {category === "Delivery Partner" && "Driver Information"}
+                  {category === "Warehouse Partner" && "Warehouse Details"}
+                  {category === "Transport Vendor" && "Transport Details"}
+                  {category === "Franchise Partner" && "Franchise Details"}
+                  {category === "Sales Associate" && "Professional Details"}
+                </h3>
+
+                <p className="text-sm text-slate-500">
+                  Provide category specific information.
+                </p>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
             {config.fields.map((field) => (
               <div key={field.name}>
-                <Label>{field.label}</Label>
+                <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                  {field.label}
+                </Label>
 
                 <Input
+                  className="h-11"
                   type={field.type}
                   onChange={(e) =>
                     handleChange(field.name, e.target.value)
@@ -145,37 +201,60 @@ export default function CareerApplicationDialog({
                 />
               </div>
             ))}
-          </div>
+              </div>
+            </section>
 
-          <div className="mt-6">
-            <Label>Message</Label>
+            <section className="space-y-4">
+              <h3 className="text-xl font-semibold">
+                Additional Information
+              </h3>
 
-            <Textarea
-              rows={5}
-              onChange={(e) =>
-                handleChange("message", e.target.value)
-              }
-            />
-          </div>
+              <div className="space-y-2">
+                <Label className="block text-sm font-semibold text-slate-700">
+                  Message
+                </Label>
 
-          {config.requiresResume && (
-            <div className="mt-6">
-              <Label>Resume</Label>
-              <Input type="file" />
-            </div>
-          )}
+                <Textarea
+                  className="resize-none"
+                  rows={5}
+                  onChange={(e) =>
+                    handleChange("message", e.target.value)
+                  }
+                />
+              </div>
+            </section>
 
-          <div className="mt-8 flex justify-end gap-3">
+            {config.requiresResume && (
+              <section className="space-y-4">
+                <h3 className="text-xl font-semibold">
+                  Resume
+                </h3>
+
+                <div className="space-y-2">
+                  <Label className="block">
+                    Upload Resume
+                  </Label>
+                  <Input className="h-11" type="file" />
+                </div>
+              </section>
+            )}
+
+            <div className="mt-8 flex justify-end gap-3 border-t pt-6">
             <Button
               variant="outline"
+              className="px-8"
               onClick={() => onOpenChange(false)}
             >
               Cancel
             </Button>
 
-            <Button onClick={handleSubmit}>
+            <Button
+              className="bg-[#1877F2] px-8"
+              onClick={handleSubmit}
+            >
               Submit Application
             </Button>
+          </div>
           </div>
         </DialogContent>
       </Dialog>

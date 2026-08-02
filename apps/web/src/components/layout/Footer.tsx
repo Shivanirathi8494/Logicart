@@ -7,12 +7,12 @@ export default function Footer() {
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-4">
 
         <div>
-          <h2 className="text-2xl font-bold">Logicarts</h2>
+          <h2 className="text-6xl font-extrabold leading-tight text-white">
+            LOGICARTS
+          </h2>
 
           <p className="mt-4 text-slate-300">
-            Delivering Trust.
-            <br />
-            Driving Logistics.
+            ALWAYS ON TIME
           </p>
         </div>
 

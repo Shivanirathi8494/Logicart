@@ -12,15 +12,9 @@ export default function Hero() {
         <div className="grid items-center gap-12 lg:grid-cols-2">
 
           <div className="text-white">
-
-            <span className="rounded-full bg-white/20 px-4 py-2 text-sm font-medium">
-              LOGICARTS • ALWAYS ON TIME
-            </span>
-
             <h1 className="mt-8 text-6xl font-extrabold leading-tight">
-              Delivering Trust.
-              <br />
-              Driving Logistics.
+              LOGICARTS
+              ALWAYS ON TIME
             </h1>
 
             <p className="mt-8 max-w-xl text-lg leading-8 text-blue-100">

@@ -1,9 +1,10 @@
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 
 export default function FooterCTA() {
   return (
     <section className="bg-slate-900 py-24 text-white">
-
       <div className="mx-auto max-w-5xl text-center">
 
         <h2 className="text-5xl font-bold">
@@ -14,14 +15,15 @@ export default function FooterCTA() {
           Let's build your logistics network together.
         </p>
 
-        <Button
-          className="mt-10 bg-[#1877F2] px-10 py-6 text-lg"
-        >
-          Contact Us
-        </Button>
+        <Link href="/contact">
+          <Button
+            className="mt-10 bg-[#1877F2] px-10 py-6 text-lg"
+          >
+            Contact Us
+          </Button>
+        </Link>
 
       </div>
-
     </section>
   );
 }

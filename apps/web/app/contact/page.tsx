@@ -1,8 +1,63 @@
+"use client";
+
+import { useState } from "react";
 import PageHero from "@/components/page/PageHero";
 import PageContainer from "@/components/page/PageContainer";
 import { Button } from "@/components/ui/button";
 
 export default function ContactPage() {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (
+    key: keyof typeof form,
+    value: string
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("Message sent successfully.");
+
+        setForm({
+          name: "",
+          email: "",
+          phone: "",
+          message: "",
+        });
+      } else {
+        alert(result.error);
+      }
+    } catch {
+      alert("Unable to send message.");
+    }
+
+    setLoading(false);
+  };
+
   return (
     <>
       <PageHero
@@ -23,28 +78,48 @@ export default function ContactPage() {
             <div className="space-y-5">
 
               <input
+                value={form.name}
+                onChange={(e) =>
+                  handleChange("name", e.target.value)
+                }
                 className="w-full rounded-lg border p-4"
                 placeholder="Full Name"
               />
 
               <input
+                value={form.email}
+                onChange={(e) =>
+                  handleChange("email", e.target.value)
+                }
                 className="w-full rounded-lg border p-4"
                 placeholder="Email Address"
               />
 
               <input
+                value={form.phone}
+                onChange={(e) =>
+                  handleChange("phone", e.target.value)
+                }
                 className="w-full rounded-lg border p-4"
                 placeholder="Phone Number"
               />
 
               <textarea
+                value={form.message}
+                onChange={(e) =>
+                  handleChange("message", e.target.value)
+                }
                 rows={6}
                 className="w-full rounded-lg border p-4"
                 placeholder="Your Message"
               />
 
-              <Button className="w-full">
-                Send Message
+              <Button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? "Sending..." : "Send Message"}
               </Button>
 
             </div>
