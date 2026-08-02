@@ -97,3 +97,40 @@ Release Date: 02 August 2026
 - Customer Portal
 - Admin Portal
 
+
+## [0.4.0] - 2026-08-03
+
+### Added
+
+#### Air Cargo Operator Portal
+- Added secure operator login UI.
+- Added operator dashboard with sidebar navigation.
+- Added Create Docket workflow.
+
+#### Create Docket
+- Auto-generated Tracking Number.
+- Manual Tracking Number support.
+- Airport (Station) master using IATA codes.
+- Searchable Origin and Destination selector.
+- Sender Information.
+- Receiver Information.
+- Dynamic Shipment Details.
+- Multiple Package support.
+- Automatic Volumetric Weight calculation.
+- Automatic Chargeable Weight calculation.
+- Payment Information module.
+- UPI QR Payment placeholder.
+- Air Waybill foundation.
+
+### Changed
+- Renamed Docket Number to Tracking Number.
+- Improved Create Docket workflow.
+- Simplified sender and receiver details.
+- Improved shipment calculation workflow.
+
+### Documentation
+- Updated README.
+- Updated SRS.
+- Updated Sprint Documentation.
+- Updated Architecture Documentation.
+

@@ -37,9 +37,11 @@ export default function Header() {
           ))}
         </nav>
 
-        <Button>
-          Sign In
-        </Button>
+        <Link href="/portal/login">
+          <Button>
+            Sign In
+          </Button>
+        </Link>
 
       </div>
     </header>
