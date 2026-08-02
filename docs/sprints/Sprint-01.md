@@ -1,131 +1,57 @@
 # Sprint 01
 
-## Project
+Duration
 
-Logicarts Logistics Management System (LMS)
-
----
-
-## Sprint Goal
-
-Establish the project foundation and deliver the first version of the public website.
+July 2026 – August 2026
 
 ---
 
-## Sprint Duration
+## Goal
 
-Start Date: July 2026
-
-End Date: August 2026
-
-Status: Completed
+Develop the public-facing Logicarts website.
 
 ---
 
-# Objectives
+## Completed
 
-- Setup project repository
-- Configure Next.js project
-- Establish project architecture
-- Create reusable UI components
-- Build public website
-- Prepare project documentation
-
----
-
-# Completed Features
-
-## Project Setup
-
-- Git Repository
-- Next.js Application
-- TypeScript Configuration
-- Tailwind CSS
-- shadcn/ui Integration
-
----
-
-## Public Website
+### Website
 
 - Homepage
-- Services Page
-- Shipment Tracking Page
-- About Us Page
-- Career Page
-- Contact Us Page
-- Custom 404 Page
+- Services
+- Tracking
+- About
+- Contact
+- Career
 
----
-
-## Shared Components
+### UI Components
 
 - Header
-- Top Bar
 - Footer
-- Page Hero
-- Page Container
+- Top Bar
+- Hero
+- Tracking Widget
+
+### Career Module
+
+- Dynamic categories
+- Application dialog
+- Dynamic forms
+- Email workflow
+- HTML email
+- SMTP integration
+- Reference IDs
+- Success dialog
 
 ---
 
-## Homepage Sections
+## Pending
 
-- Hero Banner
-- Shipment Tracking Widget
-- Company Statistics
-- Services Overview
-- Why Choose Us
-- Air Presence
-- Call-to-Action
+- Resume attachment
+- Applicant acknowledgement email
+- Validation improvements
 
 ---
 
-## Documentation
+Sprint Status
 
-- README
-- Software Requirements Specification (SRS)
-- Architecture Document
-- Sprint Documentation
-- Changelog
-
----
-
-# Deliverables
-
-- Functional public website
-- Modular project structure
-- Responsive layout foundation
-- Reusable UI components
-- Project documentation
-
----
-
-# Pending Items
-
-- Mobile Navigation
-- Homepage UI Refinement
-- Login Page
-- SEO Metadata
-- Performance Optimization
-
----
-
-# Sprint Outcome
-
-Sprint 01 successfully established the foundation for the Logicarts Logistics Management System by delivering the initial public website and defining the project architecture for future development.
-
----
-
-# Sprint 02 Preview
-
-Focus Areas
-
-- User Authentication
-- Operations Dashboard
-- Create Docket
-- Shipment Management
-- Barcode & QR Code Support
-- Inscan / Outscan
-- Manifest Management
-- Reports
-- User Management
-
+Completed

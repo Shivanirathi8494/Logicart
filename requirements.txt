@@ -1,0 +1,154 @@
+# =============================================================================
+# Logicarts Logistics Management System (LMS)
+# Project Requirements
+# Version: v1.1.0
+# Date: 02 August 2026
+# =============================================================================
+
+PROJECT
+--------
+Name            : Logicarts Logistics Management System (LMS)
+Version         : v1.1.0
+Current Status  : Public Website & Career Module Completed
+
+===============================================================================
+FUNCTIONAL REQUIREMENTS
+===============================================================================
+
+1. PUBLIC WEBSITE
+
+- Responsive Home Page
+- Services Page
+- Shipment Tracking Page
+- Career Page
+- About Us Page
+- Contact Us Page
+- Custom 404 Page
+
+2. CAREER APPLICATION MODULE
+
+- Dynamic application categories
+- Category-specific application forms
+- Dynamic popup dialog
+- Email notifications to HR
+- Professional HTML email template
+- Automatic Reference ID generation
+- Gmail SMTP integration
+- Success confirmation dialog
+
+Supported Categories
+
+- Delivery Partner
+- Fleet Owner
+- Franchise Partner
+- Warehouse Partner
+- Transport Vendor
+- Sales Associate
+
+3. SHIPMENT TRACKING
+
+Current
+
+- Tracking UI
+
+Future
+
+- Live shipment tracking
+- Tracking history
+- Status updates
+
+4. OPERATIONS PORTAL (Planned)
+
+- User Authentication
+- Dashboard
+- Shipment Management
+- Docket Creation
+- Manifest Management
+- Barcode & QR Support
+- Inscan
+- Outscan
+- Reports
+- User Management
+
+===============================================================================
+NON-FUNCTIONAL REQUIREMENTS
+===============================================================================
+
+Performance
+
+- Responsive UI
+- Fast page load
+- Optimized components
+
+Security
+
+- Secure API endpoints
+- Role-based access control
+- Environment-based configuration
+
+Scalability
+
+- Modular architecture
+- Reusable components
+- API-driven design
+
+Maintainability
+
+- TypeScript
+- Component-based development
+- Feature-based folder structure
+
+===============================================================================
+TECHNOLOGY STACK
+===============================================================================
+
+Frontend
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+
+Backend (Current)
+
+- Next.js API Routes
+
+Backend (Future)
+
+- Node.js
+- Express.js / NestJS
+
+Database (Future)
+
+- PostgreSQL
+- Redis
+
+Email
+
+- Nodemailer
+- Gmail SMTP
+
+===============================================================================
+ROADMAP
+===============================================================================
+
+Completed
+
+✓ Public Website
+✓ Career Application Module
+✓ Dynamic Email Notifications
+
+In Progress
+
+- Project Documentation
+
+Planned
+
+- Authentication
+- Operations Portal
+- Customer Portal
+- Admin Portal
+- Mobile Application
+
+===============================================================================
