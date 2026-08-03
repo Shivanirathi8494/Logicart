@@ -1,5 +1,3 @@
-import QRCode from "react-qr-code";
-
 type Props = {
   trackingNumber: string;
 };
@@ -26,10 +24,11 @@ export default function AirWaybill({
 
           </div>
 
-          <QRCode
-            value={trackingNumber}
-            size={120}
-          />
+          <div className="rounded border border-dashed px-4 py-3 text-sm text-slate-500">
+            Tracking ID
+            <br />
+            {trackingNumber}
+          </div>
 
         </div>
 

@@ -1,5 +1,11 @@
 import PartyInformation from "./PartyInformation";
 
-export default function SenderInformation() {
-  return <PartyInformation title="Sender Information" />;
+export default function SenderInformation(props: any) {
+  return (
+    <PartyInformation
+      {...props}
+      title="Sender Information"
+      type="sender"
+    />
+  );
 }

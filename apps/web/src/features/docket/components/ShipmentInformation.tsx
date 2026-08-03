@@ -1,115 +1,91 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+
 import StationSelect from "@/components/master/StationSelect";
-import { generateTrackingNumber } from "@/lib/docket/generateTrackingNumber";
+import { CreateShipmentRequest } from "@/types/shipment";
 
-export default function ShipmentInformation() {
-  const [mode, setMode] = useState<"auto" | "manual">("auto");
-  const [docketNumber, setDocketNumber] = useState("");
-  const [origin, setOrigin] = useState("");
-  const [destination, setDestination] = useState("");
+type Props = {
+  shipment: CreateShipmentRequest;
+  setShipment: React.Dispatch<
+    React.SetStateAction<CreateShipmentRequest>
+  >;
+};
 
-  useEffect(() => {
-    if (
-      mode === "auto" &&
-      origin &&
-      destination
-    ) {
-      setDocketNumber(
-        generateTrackingNumber(
-          origin,
-          destination,
-          1
-        )
-      );
-    } else if (mode === "auto") {
-      setDocketNumber("");
-    }
-  }, [
-    mode,
-    origin,
-    destination,
-  ]);
+export default function ShipmentInformation({
+  shipment,
+  setShipment,
+}: Props) {
 
+  
   return (
+
     <section className="rounded-xl border bg-white p-6 shadow-sm">
 
       <h2 className="mb-6 text-xl font-semibold">
+
         Shipment Information
+
       </h2>
 
-      <div className="mb-8 flex gap-8">
-
-        <label className="flex items-center gap-2">
-          <input
-            type="radio"
-            checked={mode === "auto"}
-            onChange={() => setMode("auto")}
-          />
-          Auto Generate
-        </label>
-
-        <label className="flex items-center gap-2">
-          <input
-            type="radio"
-            checked={mode === "manual"}
-            onChange={() => setMode("manual")}
-          />
-          Manual
-        </label>
-
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3">
 
         <input
-          className="rounded-lg border p-3"
-          placeholder="Booking Date"
           type="date"
+          className="rounded-lg border p-3"
+          value={shipment.bookingDate}
+          onChange={(e)=>
+            setShipment((prev)=>({
+              ...prev,
+              bookingDate:e.target.value,
+            }))
+          }
         />
 
         <input
-          className="rounded-lg border p-3"
-          placeholder="Docket Number"
-          value={docketNumber}
-          readOnly={mode === "auto"}
-          onChange={(e) => setDocketNumber(e.target.value)}
+          readOnly
+          className="rounded-lg border bg-slate-100 p-3"
+          value={shipment.trackingNumber}
+          placeholder="Tracking Number"
         />
 
         <input
-          className="rounded-lg border p-3"
           placeholder="Customer Reference Number"
+          className="rounded-lg border p-3"
         />
 
         <StationSelect
           label="Origin"
-          value={origin}
-          onChange={setOrigin}
+          value={shipment.origin}
+          onChange={(value)=>
+            setShipment((prev)=>({
+              ...prev,
+              origin:value,
+            }))
+          }
         />
 
         <StationSelect
           label="Destination"
-          value={destination}
-          onChange={setDestination}
+          value={shipment.destination}
+          onChange={(value)=>
+            setShipment((prev)=>({
+              ...prev,
+              destination:value,
+            }))
+          }
         />
 
-        <select className="rounded-lg border p-3">
-          <option>Service Type</option>
+        <select
+          className="rounded-lg border p-3"
+        >
           <option>Air</option>
-          <option>Surface</option>
-          <option>Express</option>
-        </select>
-
-        <select className="rounded-lg border p-3">
-          <option>Priority</option>
-          <option>Normal</option>
-          <option>High</option>
-          <option>Critical</option>
         </select>
 
       </div>
 
     </section>
+
   );
+
 }

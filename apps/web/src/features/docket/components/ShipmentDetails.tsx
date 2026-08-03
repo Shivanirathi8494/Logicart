@@ -1,75 +1,91 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { CreateShipmentRequest } from "@/types/shipment";
 
-type Package = {
-  length: number;
-  width: number;
-  height: number;
+type Props = {
+  shipment: CreateShipmentRequest;
+  setShipment: React.Dispatch<
+    React.SetStateAction<CreateShipmentRequest>
+  >;
 };
 
-export default function ShipmentDetails() {
-  const [packageCount, setPackageCount] = useState(1);
-
-  const [packages, setPackages] = useState<Package>([
-    {
-      length: 0,
-      width: 0,
-      height: 0,
-    },
-  ] as any);
-
-  const [actualWeight, setActualWeight] = useState("");
-
-  const [volumetricWeight, setVolumetricWeight] = useState(0);
-
-  const [chargeableWeight, setChargeableWeight] = useState(0);
-
-  const [contents, setContents] = useState("");
+export default function ShipmentDetails({
+  shipment,
+  setShipment,
+}: Props) {
 
   useEffect(() => {
-    setPackages((prev) => {
-      const next = [...prev];
 
-      while (next.length < packageCount) {
-        next.push({
-          length: 0,
-          width: 0,
-          height: 0,
-        });
-      }
-
-      return next.slice(0, packageCount);
-    });
-  }, [packageCount]);
-
-  useEffect(() => {
-    const volume = packages.reduce((sum, p) => {
-      return sum + (p.length * p.width * p.height) / 5000;
+    const volumetric = shipment.packages.reduce((sum, pkg) => {
+      return sum + (pkg.length * pkg.width * pkg.height) / 5000;
     }, 0);
 
-    setVolumetricWeight(Number(volume.toFixed(2)));
-
-    const actual = Number(actualWeight) || 0;
-
-    setChargeableWeight(
-      Math.max(actual, volume)
+    const chargeable = Math.max(
+      shipment.actualWeight,
+      volumetric
     );
-  }, [packages, actualWeight]);
+
+    const freight = chargeable * 200;
+
+    const gst = Number((freight * 0.18).toFixed(2));
+
+    const total = freight + gst;
+
+    setShipment((prev) => ({
+      ...prev,
+      volumetricWeight: Number(volumetric.toFixed(2)),
+      chargeableWeight: Number(chargeable.toFixed(2)),
+      freight,
+      gst,
+      total,
+    }));
+
+  }, [
+    shipment.actualWeight,
+    shipment.packages,
+    setShipment,
+  ]);
 
   function updatePackage(
     index: number,
-    field: keyof Package,
+    field: "length" | "width" | "height",
     value: number
   ) {
-    const copy = [...packages];
+
+    const copy = [...shipment.packages];
 
     copy[index][field] = value;
 
-    setPackages(copy);
+    setShipment((prev) => ({
+      ...prev,
+      packages: copy,
+    }));
+
+  }
+
+  function updatePackageCount(count: number) {
+
+    const packages = [...shipment.packages];
+
+    while (packages.length < count) {
+      packages.push({
+        length: 0,
+        width: 0,
+        height: 0,
+      });
+    }
+
+    setShipment((prev) => ({
+      ...prev,
+      packageCount: count,
+      packages: packages.slice(0, count),
+    }));
+
   }
 
   return (
+
     <section className="rounded-xl border bg-white p-6 shadow-sm">
 
       <h2 className="mb-6 text-xl font-semibold">
@@ -86,9 +102,9 @@ export default function ShipmentDetails() {
           type="number"
           min="1"
           className="w-40 rounded-lg border p-3"
-          value={packageCount}
-          onChange={(e) =>
-            setPackageCount(Number(e.target.value))
+          value={shipment.packageCount}
+          onChange={(e)=>
+            updatePackageCount(Number(e.target.value))
           }
         />
 
@@ -96,7 +112,7 @@ export default function ShipmentDetails() {
 
       <div className="space-y-6">
 
-        {packages.map((pkg, index) => (
+        {shipment.packages.map((pkg,index)=>(
 
           <div
             key={index}
@@ -104,17 +120,17 @@ export default function ShipmentDetails() {
           >
 
             <h3 className="mb-4 font-semibold">
-              Package {index + 1}
+              Package {index+1}
             </h3>
 
             <div className="grid gap-4 md:grid-cols-3">
 
               <input
                 type="number"
-                placeholder="Length (cm)"
+                placeholder="Length"
                 className="rounded-lg border p-3"
                 value={pkg.length || ""}
-                onChange={(e) =>
+                onChange={(e)=>
                   updatePackage(
                     index,
                     "length",
@@ -125,10 +141,10 @@ export default function ShipmentDetails() {
 
               <input
                 type="number"
-                placeholder="Width (cm)"
+                placeholder="Width"
                 className="rounded-lg border p-3"
                 value={pkg.width || ""}
-                onChange={(e) =>
+                onChange={(e)=>
                   updatePackage(
                     index,
                     "width",
@@ -139,10 +155,10 @@ export default function ShipmentDetails() {
 
               <input
                 type="number"
-                placeholder="Height (cm)"
+                placeholder="Height"
                 className="rounded-lg border p-3"
                 value={pkg.height || ""}
-                onChange={(e) =>
+                onChange={(e)=>
                   updatePackage(
                     index,
                     "height",
@@ -163,26 +179,27 @@ export default function ShipmentDetails() {
 
         <input
           type="number"
-          placeholder="Actual Weight (Kg)"
           className="rounded-lg border p-3"
-          value={actualWeight}
-          onChange={(e) =>
-            setActualWeight(e.target.value)
+          placeholder="Actual Weight"
+          value={shipment.actualWeight || ""}
+          onChange={(e)=>
+            setShipment(prev=>({
+              ...prev,
+              actualWeight:Number(e.target.value),
+            }))
           }
         />
 
         <input
           readOnly
           className="rounded-lg border bg-slate-100 p-3"
-          value={volumetricWeight}
-          placeholder="Volumetric Weight"
+          value={shipment.volumetricWeight}
         />
 
         <input
           readOnly
           className="rounded-lg border bg-slate-100 p-3"
-          value={chargeableWeight}
-          placeholder="Chargeable Weight"
+          value={shipment.chargeableWeight}
         />
 
       </div>
@@ -190,13 +207,18 @@ export default function ShipmentDetails() {
       <textarea
         rows={4}
         className="mt-6 w-full rounded-lg border p-3"
-        placeholder="Contents Description"
-        value={contents}
-        onChange={(e) =>
-          setContents(e.target.value)
+        placeholder="Contents"
+        value={shipment.contents}
+        onChange={(e)=>
+          setShipment(prev=>({
+            ...prev,
+            contents:e.target.value,
+          }))
         }
       />
 
     </section>
+
   );
+
 }

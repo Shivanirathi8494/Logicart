@@ -10,6 +10,7 @@ const menu = [
   { label: "Inscan", href: "/portal/warehouse/inscan" },
   { label: "Outscan", href: "/portal/warehouse/outscan" },
   { label: "Manifest", href: "/portal/warehouse/manifest" },
+  { label: "Search Manifest", href: "/portal/warehouse/manifest-search" },
   { label: "Delivery Challan", href: "/portal/delivery/challan" },
   { label: "Reports", href: "/portal/reports" },
   { label: "Day End Closing", href: "/portal/day-end" },

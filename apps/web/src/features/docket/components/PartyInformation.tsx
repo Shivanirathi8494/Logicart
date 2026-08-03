@@ -1,10 +1,28 @@
+"use client";
+
+import { CreateShipmentRequest } from "@/types/shipment";
+
 type Props = {
   title: string;
+  type: "sender" | "receiver";
+  shipment: CreateShipmentRequest;
+  setShipment: React.Dispatch<
+    React.SetStateAction<CreateShipmentRequest>
+  >;
 };
 
-export default function PartyInformation({ title }: Props) {
+export default function PartyInformation({
+  title,
+  type,
+  shipment,
+  setShipment,
+}: Props) {
+
+  const isSender = type === "sender";
+
   return (
     <section className="rounded-xl border bg-white p-6 shadow-sm">
+
       <h2 className="mb-6 text-xl font-semibold">
         {title}
       </h2>
@@ -14,54 +32,47 @@ export default function PartyInformation({ title }: Props) {
         <input
           className="rounded-lg border p-3"
           placeholder="Name"
-        />
-
-        <input
-          className="rounded-lg border p-3"
-          placeholder="Contact Person"
+          value={isSender ? shipment.senderName : shipment.receiverName}
+          onChange={(e) =>
+            setShipment((prev) => ({
+              ...prev,
+              ...(isSender
+                ? { senderName: e.target.value }
+                : { receiverName: e.target.value }),
+            }))
+          }
         />
 
         <input
           className="rounded-lg border p-3"
           placeholder="Mobile Number"
+          value={isSender ? shipment.senderPhone : shipment.receiverPhone}
+          onChange={(e) =>
+            setShipment((prev) => ({
+              ...prev,
+              ...(isSender
+                ? { senderPhone: e.target.value }
+                : { receiverPhone: e.target.value }),
+            }))
+          }
         />
 
         <input
           className="rounded-lg border p-3"
-          placeholder="Email Address"
-        />
-
-        <input
-          className="rounded-lg border p-3"
-          placeholder="GST Number (Optional)"
-        />
-
-        <input
-          className="rounded-lg border p-3"
-          placeholder="Address Line 1"
-        />
-
-        <input
-          className="rounded-lg border p-3"
-          placeholder="Address Line 2"
-        />
-
-        <input
-          className="rounded-lg border p-3"
-          placeholder="City"
-        />
-
-        <input
-          className="rounded-lg border p-3"
-          placeholder="State"
-        />
-
-        <input
-          className="rounded-lg border p-3"
-          placeholder="Pincode"
+          placeholder="Address"
+          value={isSender ? shipment.senderAddress : shipment.receiverAddress}
+          onChange={(e) =>
+            setShipment((prev) => ({
+              ...prev,
+              ...(isSender
+                ? { senderAddress: e.target.value }
+                : { receiverAddress: e.target.value }),
+            }))
+          }
         />
 
       </div>
+
     </section>
   );
 }

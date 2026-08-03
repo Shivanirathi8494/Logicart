@@ -1,54 +1,72 @@
 "use client";
 
-export default function PaymentInformation() {
+import { CreateShipmentRequest } from "@/types/shipment";
+
+type Props = {
+  shipment: CreateShipmentRequest;
+  setShipment: React.Dispatch<
+    React.SetStateAction<CreateShipmentRequest>
+  >;
+};
+
+export default function PaymentInformation({
+  shipment,
+  setShipment,
+}: Props) {
+
   return (
+
     <section className="rounded-xl border bg-white p-6 shadow-sm">
 
       <h2 className="mb-6 text-xl font-semibold">
         Payment Information
       </h2>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="mx-auto max-w-xl rounded-xl border bg-slate-50 p-6">
 
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Freight Charges
-          </label>
+        <h3 className="mb-6 text-lg font-semibold">
+          Payment Summary
+        </h3>
 
-          <input
-            readOnly
-            value="2450"
-            className="w-full rounded-lg border bg-slate-100 p-3"
-          />
-        </div>
+        <div className="space-y-4">
 
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            GST (18%)
-          </label>
+          <div className="flex justify-between">
 
-          <input
-            readOnly
-            value="441"
-            className="w-full rounded-lg border bg-slate-100 p-3"
-          />
-        </div>
+            <span>Freight Charges</span>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Total Amount
-          </label>
+            <span className="font-semibold">
+              ₹ {shipment.freight.toFixed(2)}
+            </span>
 
-          <input
-            readOnly
-            value="2891"
-            className="w-full rounded-lg border bg-slate-100 p-3 font-semibold"
-          />
+          </div>
+
+          <div className="flex justify-between">
+
+            <span>GST (18%)</span>
+
+            <span className="font-semibold">
+              ₹ {shipment.gst.toFixed(2)}
+            </span>
+
+          </div>
+
+          <hr />
+
+          <div className="flex justify-between text-xl font-bold">
+
+            <span>Total Amount</span>
+
+            <span>
+              ₹ {shipment.total.toFixed(2)}
+            </span>
+
+          </div>
+
         </div>
 
       </div>
 
-      <div className="mt-10 rounded-xl border bg-slate-50 p-6">
+      <div className="mt-8 rounded-xl border bg-slate-50 p-6">
 
         <h3 className="mb-6 text-lg font-semibold">
           Scan & Pay (UPI)
@@ -73,8 +91,15 @@ export default function PaymentInformation() {
             </label>
 
             <input
-              placeholder="Enter UPI Transaction ID"
               className="w-full rounded-lg border p-3"
+              placeholder="Enter UPI Transaction ID"
+              value={shipment.paymentReference}
+              onChange={(e)=>
+                setShipment(prev=>({
+                  ...prev,
+                  paymentReference:e.target.value,
+                }))
+              }
             />
 
           </div>
@@ -83,8 +108,10 @@ export default function PaymentInformation() {
 
             <div className="text-center">
 
-              <div className="mx-auto flex h-56 w-56 items-center justify-center rounded-lg border-2 border-dashed bg-slate-100 text-lg font-semibold text-slate-500">
+              <div className="mx-auto flex h-56 w-56 items-center justify-center rounded-lg border-2 border-dashed bg-slate-100">
+
                 QR CODE
+
               </div>
 
               <p className="mt-4 text-sm text-slate-500">
@@ -108,11 +135,19 @@ export default function PaymentInformation() {
         <textarea
           rows={4}
           className="w-full rounded-lg border p-3"
-          placeholder="Enter remarks..."
+          value={shipment.remarks}
+          onChange={(e)=>
+            setShipment(prev=>({
+              ...prev,
+              remarks:e.target.value,
+            }))
+          }
         />
 
       </div>
 
     </section>
+
   );
+
 }

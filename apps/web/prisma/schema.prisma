@@ -1,0 +1,220 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ShipmentStatus {
+  BOOKED
+  INSCAN
+  MANIFESTED
+  OUTSCAN
+  DELIVERED
+  CANCELLED
+}
+
+enum ManifestStatus {
+  OPEN
+  CLOSED
+}
+
+model Shipment {
+  id String @id @default(cuid())
+
+  trackingNumber String @unique
+
+  bookingDate DateTime
+
+  origin String
+
+  destination String
+
+  status ShipmentStatus @default(BOOKED)
+
+  senderName    String
+  senderPhone   String
+  senderAddress String
+
+  receiverName    String
+  receiverPhone   String
+  receiverAddress String
+
+  packageCount Int
+
+  actualWeight Float
+
+  volumetricWeight Float
+
+  chargeableWeight Float
+
+  contents String?
+
+  freight Float
+
+  gst Float
+
+  total Float
+
+  paymentReference String?
+
+  remarks String?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  packages ShipmentPackage[]
+
+  deliveryChallans DeliveryChallanShipment[]
+
+  manifestEntries ManifestShipment[]
+}
+
+model ShipmentPackage {
+  id String @id @default(cuid())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id])
+
+  shipmentId String
+
+  length Float
+
+  width Float
+
+  height Float
+}
+
+model Manifest {
+  id String @id @default(cuid())
+
+  manifestNumber String @unique
+
+  manifestDate DateTime
+
+  origin String
+
+  destination String
+
+  flightNumber String?
+
+  vehicleNumber String?
+
+  remarks String?
+
+  status ManifestStatus @default(OPEN)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  shipments        ManifestShipment[]
+  deliveryChallans DeliveryChallan[]
+}
+
+model ManifestShipment {
+  id String @id @default(cuid())
+
+  manifest Manifest @relation(fields: [manifestId], references: [id])
+
+  manifestId String
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id])
+
+  shipmentId String
+
+  createdAt DateTime @default(now())
+
+  @@unique([manifestId, shipmentId])
+}
+
+enum DeliveryChallanStatus {
+  OPEN
+  DELIVERED
+  CANCELLED
+}
+
+model DeliveryChallan {
+  id String @id @default(cuid())
+
+  challanNumber String @unique
+
+  challanDate DateTime
+
+  manifestId String?
+
+  manifest Manifest? @relation(fields: [manifestId], references: [id])
+
+  customerName String
+
+  customerAddress String
+
+  customerPhone String
+
+  flightNumber String?
+
+  vehicleNumber String?
+
+  remarks String?
+
+  status DeliveryChallanStatus @default(OPEN)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  shipments DeliveryChallanShipment[]
+}
+
+model DeliveryChallanShipment {
+  id String @id @default(cuid())
+
+  challan DeliveryChallan @relation(fields: [challanId], references: [id])
+
+  challanId String
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id])
+
+  shipmentId String
+
+  @@unique([challanId, shipmentId])
+}
+
+enum DayEndStatus {
+  OPEN
+  CLOSED
+}
+
+model DayEnd {
+  id String @id @default(cuid())
+
+  businessDate DateTime
+
+  branch String
+
+  bookingCount Int
+
+  manifestCount Int
+
+  outscanCount Int
+
+  deliveredCount Int
+
+  pendingDelivery Int
+
+  revenue Float
+
+  cashCollection Float
+
+  onlineCollection Float
+
+  status DayEndStatus @default(OPEN)
+
+  closedBy String?
+
+  closedAt DateTime?
+
+  createdAt DateTime @default(now())
+}

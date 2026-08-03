@@ -1,13 +1,5 @@
-export default function Page() {
-  return (
-    <div className="rounded-xl border bg-white p-8 shadow-sm">
-      <h1 className="text-3xl font-bold capitalize">
-        update status
-      </h1>
+import UpdateStatusPage from "@/features/update-status/UpdateStatusPage";
 
-      <p className="mt-4 text-slate-500">
-        This module is under development.
-      </p>
-    </div>
-  );
+export default function Page() {
+  return <UpdateStatusPage />;
 }
