@@ -1,7 +1,34 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { ArrowRight, Plane, Truck, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Hero() {
+
+  const router = useRouter();
+
+  const [trackingNumber, setTrackingNumber] = useState("");
+
+  function trackShipment() {
+
+    if (!trackingNumber.trim()) {
+
+      alert("Please enter a Tracking Number.");
+
+      return;
+
+    }
+
+    router.push(
+      "/tracking?trackingNumber=" +
+      encodeURIComponent(trackingNumber)
+    );
+
+  }
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-r from-[#1877F2] via-[#1565D8] to-[#0B57D0]">
 
@@ -12,14 +39,16 @@ export default function Hero() {
         <div className="grid items-center gap-12 lg:grid-cols-2">
 
           <div className="text-white">
+
             <h1 className="mt-8 text-6xl font-extrabold leading-tight">
               LOGICARTS
+              <br />
               ALWAYS ON TIME
             </h1>
 
             <p className="mt-8 max-w-xl text-lg leading-8 text-blue-100">
-              Integrated, technology-driven multimodal logistics solutions 
-              across Air, Surface, Warehousing, Express, E-commerce and 
+              Integrated, technology-driven multimodal logistics solutions
+              across Air, Surface, Warehousing, Express, E-commerce and
               End-to-End Supply Chain Distribution across India.
             </p>
 
@@ -57,11 +86,21 @@ export default function Hero() {
               </p>
 
               <input
+                value={trackingNumber}
+                onChange={(e)=>setTrackingNumber(e.target.value.toUpperCase())}
+                onKeyDown={(e)=>{
+                  if(e.key==="Enter"){
+                    trackShipment();
+                  }
+                }}
                 className="mt-8 w-full rounded-xl border p-4"
                 placeholder="Enter Tracking ID"
               />
 
-              <Button className="mt-6 w-full">
+              <Button
+                onClick={trackShipment}
+                className="mt-6 w-full"
+              >
                 Track Now
               </Button>
 

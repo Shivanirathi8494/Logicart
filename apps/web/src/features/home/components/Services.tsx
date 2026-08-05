@@ -30,7 +30,7 @@ const services = [
   {
     title: "Domestic Trade",
     icon: Truck,
-    desc: "Pan India Distribution Network"
+    desc: "Pan India Distribution Network with PTL, FTL, LMD"
   }
 ];
 

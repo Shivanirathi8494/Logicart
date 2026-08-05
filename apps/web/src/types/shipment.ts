@@ -12,12 +12,22 @@ export interface CreateShipmentRequest {
   origin: string;
   destination: string;
 
+  // Sender
   senderName: string;
   senderPhone: string;
+  senderGSTIN: string;
+  senderPincode: string;
+  senderState: string;
+  senderCity: string;
   senderAddress: string;
 
+  // Receiver
   receiverName: string;
   receiverPhone: string;
+  receiverGSTIN: string;
+  receiverPincode: string;
+  receiverState: string;
+  receiverCity: string;
   receiverAddress: string;
 
   packageCount: number;

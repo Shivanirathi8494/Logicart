@@ -1,9 +1,19 @@
 import AirWaybill from "@/features/docket/components/AirWaybill";
 
-export default function Page() {
+export default async function Page({
+  searchParams,
+}:{
+  searchParams:Promise<{
+    tracking?:string;
+  }>;
+}){
+
+  const { tracking="" } = await searchParams;
+
   return (
     <AirWaybill
-      trackingNumber="BLR-DEL-260802-000001"
+      trackingNumber={tracking}
     />
   );
+
 }

@@ -2,42 +2,52 @@ import { CreateShipmentRequest } from "@/types/shipment";
 
 export const initialShipment: CreateShipmentRequest = {
 
-trackingNumber:"",
+  trackingNumber: "",
 
-bookingDate:new Date().toISOString().split("T")[0],
+  bookingDate: new Date().toISOString().split("T")[0],
 
-origin:"",
-destination:"",
+  origin: "",
+  destination: "",
 
-senderName:"",
-senderPhone:"",
-senderAddress:"",
+  // Sender
+  senderName: "",
+  senderPhone: "",
+  senderGSTIN: "",
+  senderPincode: "",
+  senderState: "",
+  senderCity: "",
+  senderAddress: "",
 
-receiverName:"",
-receiverPhone:"",
-receiverAddress:"",
+  // Receiver
+  receiverName: "",
+  receiverPhone: "",
+  receiverGSTIN: "",
+  receiverPincode: "",
+  receiverState: "",
+  receiverCity: "",
+  receiverAddress: "",
 
-packageCount:1,
+  packageCount: 1,
 
-actualWeight:0,
-volumetricWeight:0,
-chargeableWeight:0,
+  actualWeight: 0,
+  volumetricWeight: 0,
+  chargeableWeight: 0,
 
-contents:"",
+  contents: "",
 
-freight:0,
-gst:0,
-total:0,
+  freight: 0,
+  gst: 0,
+  total: 0,
 
-paymentReference:"",
-remarks:"",
+  paymentReference: "",
+  remarks: "",
 
-packages:[
-{
-length:0,
-width:0,
-height:0,
-}
-]
+  packages: [
+    {
+      length: 0,
+      width: 0,
+      height: 0,
+    },
+  ],
 
 };

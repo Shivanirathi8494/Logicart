@@ -1,8 +1,65 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+
 import PageHero from "@/components/page/PageHero";
 import PageContainer from "@/components/page/PageContainer";
-import { Button } from "@/components/ui/button";
 
 export default function TrackingPage() {
+
+  const searchParams = useSearchParams();
+
+  const [trackingNumber, setTrackingNumber] = useState(
+    searchParams.get("trackingNumber") ?? ""
+  );
+
+  const [shipment, setShipment] = useState<any>(null);
+
+  const [loading, setLoading] = useState(false);
+
+  const [error, setError] = useState("");
+
+  async function search() {
+
+    if (!trackingNumber.trim()) return;
+
+    setLoading(true);
+    setError("");
+    setShipment(null);
+
+    const response = await fetch(
+      "/api/dockets/" +
+      encodeURIComponent(trackingNumber) +
+      "/status"
+    );
+
+    const data = await response.json();
+
+    setLoading(false);
+
+    if (!response.ok) {
+
+      setError(data.error ?? "Shipment not found.");
+
+      return;
+
+    }
+
+    setShipment(data);
+
+  }
+
+  useEffect(() => {
+
+    if (trackingNumber) {
+
+      search();
+
+    }
+
+  }, []);
+
   return (
     <>
       <PageHero
@@ -12,90 +69,99 @@ export default function TrackingPage() {
 
       <PageContainer>
 
-        <div className="rounded-2xl border bg-white p-8 shadow-sm">
+        <div className="rounded-2xl border bg-white p-8 shadow">
 
-          <h2 className="text-2xl font-bold">
-            Shipment Tracking
-          </h2>
-
-          <div className="mt-6 flex flex-col gap-4 md:flex-row">
+          <div className="flex flex-col gap-4 md:flex-row">
 
             <input
-              type="text"
-              placeholder="Example: LGT240801001"
+              value={trackingNumber}
+              onChange={(e)=>setTrackingNumber(e.target.value.toUpperCase())}
               className="flex-1 rounded-lg border p-4"
+              placeholder="Tracking Number"
             />
 
-            <Button>
-              Track Shipment
-            </Button>
+            <button
+              onClick={search}
+              className="rounded-lg bg-blue-600 px-8 py-4 text-white"
+            >
+              {loading ? "Searching..." : "Track Shipment"}
+            </button>
 
           </div>
 
-        </div>
+          {error && (
+            <div className="mt-6 rounded-lg bg-red-100 p-4 text-red-700">
+              {error}
+            </div>
+          )}
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-2">
+          {shipment && (
 
-          <div className="rounded-2xl border bg-white p-8 shadow-sm">
+            <div className="mt-8 rounded-xl border p-8">
 
-            <h3 className="mb-6 text-xl font-semibold">
-              Shipment Details
-            </h3>
+              <h2 className="mb-6 text-2xl font-bold">
+                Shipment Details
+              </h2>
 
-            <div className="space-y-4">
+              <div className="grid gap-5 md:grid-cols-2">
 
-              <div className="flex justify-between">
-                <span>Tracking ID</span>
-                <span className="font-medium">LGT240801001</span>
-              </div>
+                <div>
+                  <strong>Tracking Number</strong>
+                  <br />
+                  {shipment.trackingNumber}
+                </div>
 
-              <div className="flex justify-between">
-                <span>Origin</span>
-                <span>Bangalore</span>
-              </div>
+                <div>
+                  <strong>Status</strong>
+                  <br />
+                  {shipment.status}
+                </div>
 
-              <div className="flex justify-between">
-                <span>Destination</span>
-                <span>Mumbai</span>
-              </div>
+                <div>
+                  <strong>Origin</strong>
+                  <br />
+                  {shipment.origin}
+                </div>
 
-              <div className="flex justify-between">
-                <span>Status</span>
-                <span className="font-semibold text-green-600">
-                  In Transit
-                </span>
+                <div>
+                  <strong>Destination</strong>
+                  <br />
+                  {shipment.destination}
+                </div>
+
+                <div>
+                  <strong>Sender</strong>
+                  <br />
+                  {shipment.senderName}
+                </div>
+
+                <div>
+                  <strong>Receiver</strong>
+                  <br />
+                  {shipment.receiverName}
+                </div>
+
+                <div>
+                  <strong>Booking Date</strong>
+                  <br />
+                  {new Date(shipment.bookingDate).toLocaleDateString()}
+                </div>
+
+                <div>
+                  <strong>Total</strong>
+                  <br />
+                  ₹ {shipment.total}
+                </div>
+
               </div>
 
             </div>
 
-          </div>
-
-          <div className="rounded-2xl border bg-white p-8 shadow-sm">
-
-            <h3 className="mb-6 text-xl font-semibold">
-              Shipment Timeline
-            </h3>
-
-            <ul className="space-y-5">
-
-              <li>✅ Shipment Booked</li>
-
-              <li>✅ Picked Up</li>
-
-              <li>✅ Reached Origin Hub</li>
-
-              <li>🟢 In Transit</li>
-
-              <li>⏳ Out For Delivery</li>
-
-              <li>⬜ Delivered</li>
-
-            </ul>
-
-          </div>
+          )}
 
         </div>
 
-      </PageContainer>    </>
+      </PageContainer>
+    </>
   );
 }

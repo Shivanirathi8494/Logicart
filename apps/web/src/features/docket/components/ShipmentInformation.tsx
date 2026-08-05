@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-
 import StationSelect from "@/components/master/StationSelect";
 import { CreateShipmentRequest } from "@/types/shipment";
 
@@ -17,15 +15,41 @@ export default function ShipmentInformation({
   setShipment,
 }: Props) {
 
-  
+  async function handleOriginChange(origin: string) {
+
+    let trackingNumber = shipment.trackingNumber;
+
+    if (!trackingNumber) {
+
+      const response = await fetch(
+        "/api/dockets/next-awb?origin=" +
+        encodeURIComponent(origin)
+      );
+
+      if (response.ok) {
+
+        const data = await response.json();
+
+        trackingNumber = data.trackingNumber;
+
+      }
+
+    }
+
+    setShipment((prev) => ({
+      ...prev,
+      origin,
+      trackingNumber,
+    }));
+
+  }
+
   return (
 
     <section className="rounded-xl border bg-white p-6 shadow-sm">
 
       <h2 className="mb-6 text-xl font-semibold">
-
         Shipment Information
-
       </h2>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -46,7 +70,7 @@ export default function ShipmentInformation({
           readOnly
           className="rounded-lg border bg-slate-100 p-3"
           value={shipment.trackingNumber}
-          placeholder="Tracking Number"
+          placeholder="AWB Number"
         />
 
         <input
@@ -57,30 +81,33 @@ export default function ShipmentInformation({
         <StationSelect
           label="Origin"
           value={shipment.origin}
-          onChange={(value)=>
-            setShipment((prev)=>({
-              ...prev,
-              origin:value,
-            }))
-          }
+          onChange={handleOriginChange}
         />
 
         <StationSelect
           label="Destination"
           value={shipment.destination}
-          onChange={(value)=>
+          onChange={(destination)=>
             setShipment((prev)=>({
               ...prev,
-              destination:value,
+              destination,
             }))
           }
         />
 
-        <select
-          className="rounded-lg border p-3"
-        >
-          <option>Air</option>
-        </select>
+        <div>
+
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            Transport Mode
+          </label>
+
+          <input
+            readOnly
+            value="AIR"
+            className="w-full rounded-lg border bg-slate-100 p-3 font-medium"
+          />
+
+        </div>
 
       </div>
 

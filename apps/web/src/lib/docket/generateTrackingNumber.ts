@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function generateTrackingNumber(
   origin: string,
-  destination: string
+  _destination: string
 ) {
 
   const today = new Date();
@@ -11,7 +11,7 @@ export async function generateTrackingNumber(
   const mm = String(today.getMonth() + 1).padStart(2, "0");
   const dd = String(today.getDate()).padStart(2, "0");
 
-  const prefix = `${origin}-${destination}-${yy}${mm}${dd}`;
+  const prefix = `${origin}-${yy}${mm}${dd}`;
 
   const count = await prisma.shipment.count({
     where: {

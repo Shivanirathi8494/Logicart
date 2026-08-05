@@ -4,24 +4,29 @@ import { generateTrackingNumber } from "@/lib/docket/generateTrackingNumber";
 export class ShipmentService {
 
   static async getAll() {
+
     return prisma.shipment.findMany({
+
       include: {
         packages: true,
       },
+
       orderBy: {
         createdAt: "desc",
       },
+
     });
+
   }
 
   static async create(data: any) {
 
     const trackingNumber = await generateTrackingNumber(
       data.origin,
-      data.destination
+      data.destination,
     );
 
-    console.log("Generated Tracking:", trackingNumber);
+    console.log("Generated AWB:", trackingNumber);
 
     return prisma.shipment.create({
 
@@ -36,12 +41,22 @@ export class ShipmentService {
 
         status: "BOOKED",
 
+        // Sender
         senderName: data.senderName,
         senderPhone: data.senderPhone,
+        senderGSTIN: data.senderGSTIN || null,
+        senderPincode: data.senderPincode || null,
+        senderState: data.senderState || null,
+        senderCity: data.senderCity || null,
         senderAddress: data.senderAddress,
 
+        // Receiver
         receiverName: data.receiverName,
         receiverPhone: data.receiverPhone,
+        receiverGSTIN: data.receiverGSTIN || null,
+        receiverPincode: data.receiverPincode || null,
+        receiverState: data.receiverState || null,
+        receiverCity: data.receiverCity || null,
         receiverAddress: data.receiverAddress,
 
         packageCount: data.packageCount,
@@ -56,8 +71,8 @@ export class ShipmentService {
         gst: data.gst,
         total: data.total,
 
-        paymentReference: data.paymentReference ?? null,
-        remarks: data.remarks ?? null,
+        paymentReference: data.paymentReference || null,
+        remarks: data.remarks || null,
 
         packages: {
           create: data.packages.map((pkg: any) => ({

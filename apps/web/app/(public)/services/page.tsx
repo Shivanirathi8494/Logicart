@@ -16,7 +16,7 @@ const services = [
   },
   {
     title: "Domestic Trade",
-    description: "Reliable logistics through our nationwide network."
+    description: "Reliable PTL, FTL & LMD services across our nationwide network."
   },
   {
     title: "E-Commerce Logistics",

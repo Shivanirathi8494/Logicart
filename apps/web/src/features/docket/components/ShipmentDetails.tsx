@@ -21,8 +21,10 @@ export default function ShipmentDetails({
       return sum + (pkg.length * pkg.width * pkg.height) / 5000;
     }, 0);
 
+    const actual = shipment.actualWeight > 0 ? shipment.actualWeight : Number(volumetric.toFixed(2));
+
     const chargeable = Math.max(
-      shipment.actualWeight,
+      actual,
       volumetric
     );
 
@@ -34,6 +36,7 @@ export default function ShipmentDetails({
 
     setShipment((prev) => ({
       ...prev,
+      actualWeight: actual,
       volumetricWeight: Number(volumetric.toFixed(2)),
       chargeableWeight: Number(chargeable.toFixed(2)),
       freight,
@@ -127,7 +130,7 @@ export default function ShipmentDetails({
 
               <input
                 type="number"
-                placeholder="Length"
+                placeholder="Length (cm)"
                 className="rounded-lg border p-3"
                 value={pkg.length || ""}
                 onChange={(e)=>
@@ -141,7 +144,7 @@ export default function ShipmentDetails({
 
               <input
                 type="number"
-                placeholder="Width"
+                placeholder="Width (cm)"
                 className="rounded-lg border p-3"
                 value={pkg.width || ""}
                 onChange={(e)=>
@@ -155,7 +158,7 @@ export default function ShipmentDetails({
 
               <input
                 type="number"
-                placeholder="Height"
+                placeholder="Height (cm)"
                 className="rounded-lg border p-3"
                 value={pkg.height || ""}
                 onChange={(e)=>
@@ -180,7 +183,7 @@ export default function ShipmentDetails({
         <input
           type="number"
           className="rounded-lg border p-3"
-          placeholder="Actual Weight"
+          placeholder="Actual Weight (kg)"
           value={shipment.actualWeight || ""}
           onChange={(e)=>
             setShipment(prev=>({
@@ -193,12 +196,14 @@ export default function ShipmentDetails({
         <input
           readOnly
           className="rounded-lg border bg-slate-100 p-3"
+          placeholder="Volumetric Weight (kg)"
           value={shipment.volumetricWeight}
         />
 
         <input
           readOnly
           className="rounded-lg border bg-slate-100 p-3"
+          placeholder="Chargeable Weight (kg)"
           value={shipment.chargeableWeight}
         />
 

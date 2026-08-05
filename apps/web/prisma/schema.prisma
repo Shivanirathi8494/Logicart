@@ -7,6 +7,203 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Shipment {
+  id               String                    @id @default(cuid())
+  trackingNumber   String                    @unique
+  bookingDate      DateTime
+  origin           String
+  destination      String
+  status           ShipmentStatus            @default(BOOKED)
+  senderName       String
+  senderPhone      String
+  senderAddress    String
+  receiverName     String
+  receiverPhone    String
+  receiverAddress  String
+  packageCount     Int
+  actualWeight     Float
+  volumetricWeight Float
+  chargeableWeight Float
+  contents         String?
+  freight          Float
+  gst              Float
+  total            Float
+  paymentReference String?
+  remarks          String?
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+  receiverCity     String?
+  receiverGSTIN    String?
+  receiverPincode  String?
+  receiverState    String?
+  senderCity       String?
+  senderGSTIN      String?
+  senderPincode    String?
+  senderState      String?
+  deliveryChallans DeliveryChallanShipment[]
+  manifestEntries  ManifestShipment[]
+  packages         ShipmentPackage[]
+}
+
+model ShipmentPackage {
+  id         String   @id @default(cuid())
+  shipmentId String
+  length     Float
+  width      Float
+  height     Float
+  shipment   Shipment @relation(fields: [shipmentId], references: [id])
+}
+
+model Manifest {
+  id               String             @id @default(cuid())
+  manifestNumber   String             @unique
+  manifestDate     DateTime
+  origin           String
+  destination      String
+  flightNumber     String?
+  vehicleNumber    String?
+  remarks          String?
+  status           ManifestStatus     @default(OPEN)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  deliveryChallans DeliveryChallan[]
+  shipments        ManifestShipment[]
+}
+
+model ManifestShipment {
+  id         String   @id @default(cuid())
+  manifestId String
+  shipmentId String
+  createdAt  DateTime @default(now())
+  manifest   Manifest @relation(fields: [manifestId], references: [id])
+  shipment   Shipment @relation(fields: [shipmentId], references: [id])
+
+  @@unique([manifestId, shipmentId])
+}
+
+model DeliveryChallan {
+  id              String                    @id @default(cuid())
+  challanNumber   String                    @unique
+  challanDate     DateTime
+  manifestId      String?
+  customerName    String
+  customerAddress String
+  customerPhone   String
+  flightNumber    String?
+  vehicleNumber   String?
+  remarks         String?
+  status          DeliveryChallanStatus     @default(OPEN)
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  manifest        Manifest?                 @relation(fields: [manifestId], references: [id])
+  shipments       DeliveryChallanShipment[]
+}
+
+model DeliveryChallanShipment {
+  id         String          @id @default(cuid())
+  challanId  String
+  shipmentId String
+  challan    DeliveryChallan @relation(fields: [challanId], references: [id])
+  shipment   Shipment        @relation(fields: [shipmentId], references: [id])
+
+  @@unique([challanId, shipmentId])
+}
+
+model DayEnd {
+  id               String       @id @default(cuid())
+  businessDate     DateTime
+  branch           String
+  bookingCount     Int
+  manifestCount    Int
+  outscanCount     Int
+  deliveredCount   Int
+  pendingDelivery  Int
+  revenue          Float
+  cashCollection   Float
+  onlineCollection Float
+  status           DayEndStatus @default(OPEN)
+  closedBy         String?
+  closedAt         DateTime?
+  createdAt        DateTime     @default(now())
+}
+
+model Branch {
+  id        String       @id @default(cuid())
+  code      String       @unique
+  name      String
+  address   String?
+  phone     String?
+  email     String?
+  status    MasterStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  users     User[]
+}
+
+model User {
+  id           String       @id @default(cuid())
+  username     String       @unique
+  passwordHash String
+  fullName     String
+  email        String?      @unique
+  phone        String?
+  role         UserRole     @default(BOOKING)
+  status       MasterStatus @default(ACTIVE)
+  branchId     String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  sessions     Session[]
+  branch       Branch?      @relation(fields: [branchId], references: [id])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CompanySettings {
+  id          String   @id @default(cuid())
+  companyName String
+  tagline     String?
+  phone       String?
+  email       String?
+  website     String?
+  address     String?
+  gstNumber   String?
+  panNumber   String?
+  linkedin    String?
+  facebook    String?
+  instagram   String?
+  youtube     String?
+  supportText String   @default("24×7")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Customer {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  name          String
+  contactPerson String?
+  phone         String?
+  email         String?
+  address       String?
+  city          String?
+  state         String?
+  gstNumber     String?
+  panNumber     String?
+  status        MasterStatus @default(ACTIVE)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
 enum ShipmentStatus {
   BOOKED
   INSCAN
@@ -21,165 +218,10 @@ enum ManifestStatus {
   CLOSED
 }
 
-model Shipment {
-  id String @id @default(cuid())
-
-  trackingNumber String @unique
-
-  bookingDate DateTime
-
-  origin String
-
-  destination String
-
-  status ShipmentStatus @default(BOOKED)
-
-  senderName    String
-  senderPhone   String
-  senderAddress String
-
-  receiverName    String
-  receiverPhone   String
-  receiverAddress String
-
-  packageCount Int
-
-  actualWeight Float
-
-  volumetricWeight Float
-
-  chargeableWeight Float
-
-  contents String?
-
-  freight Float
-
-  gst Float
-
-  total Float
-
-  paymentReference String?
-
-  remarks String?
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  packages ShipmentPackage[]
-
-  deliveryChallans DeliveryChallanShipment[]
-
-  manifestEntries ManifestShipment[]
-}
-
-model ShipmentPackage {
-  id String @id @default(cuid())
-
-  shipment Shipment @relation(fields: [shipmentId], references: [id])
-
-  shipmentId String
-
-  length Float
-
-  width Float
-
-  height Float
-}
-
-model Manifest {
-  id String @id @default(cuid())
-
-  manifestNumber String @unique
-
-  manifestDate DateTime
-
-  origin String
-
-  destination String
-
-  flightNumber String?
-
-  vehicleNumber String?
-
-  remarks String?
-
-  status ManifestStatus @default(OPEN)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  shipments        ManifestShipment[]
-  deliveryChallans DeliveryChallan[]
-}
-
-model ManifestShipment {
-  id String @id @default(cuid())
-
-  manifest Manifest @relation(fields: [manifestId], references: [id])
-
-  manifestId String
-
-  shipment Shipment @relation(fields: [shipmentId], references: [id])
-
-  shipmentId String
-
-  createdAt DateTime @default(now())
-
-  @@unique([manifestId, shipmentId])
-}
-
 enum DeliveryChallanStatus {
   OPEN
   DELIVERED
   CANCELLED
-}
-
-model DeliveryChallan {
-  id String @id @default(cuid())
-
-  challanNumber String @unique
-
-  challanDate DateTime
-
-  manifestId String?
-
-  manifest Manifest? @relation(fields: [manifestId], references: [id])
-
-  customerName String
-
-  customerAddress String
-
-  customerPhone String
-
-  flightNumber String?
-
-  vehicleNumber String?
-
-  remarks String?
-
-  status DeliveryChallanStatus @default(OPEN)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  shipments DeliveryChallanShipment[]
-}
-
-model DeliveryChallanShipment {
-  id String @id @default(cuid())
-
-  challan DeliveryChallan @relation(fields: [challanId], references: [id])
-
-  challanId String
-
-  shipment Shipment @relation(fields: [shipmentId], references: [id])
-
-  shipmentId String
-
-  @@unique([challanId, shipmentId])
 }
 
 enum DayEndStatus {
@@ -187,34 +229,16 @@ enum DayEndStatus {
   CLOSED
 }
 
-model DayEnd {
-  id String @id @default(cuid())
+enum MasterStatus {
+  ACTIVE
+  INACTIVE
+}
 
-  businessDate DateTime
-
-  branch String
-
-  bookingCount Int
-
-  manifestCount Int
-
-  outscanCount Int
-
-  deliveredCount Int
-
-  pendingDelivery Int
-
-  revenue Float
-
-  cashCollection Float
-
-  onlineCollection Float
-
-  status DayEndStatus @default(OPEN)
-
-  closedBy String?
-
-  closedAt DateTime?
-
-  createdAt DateTime @default(now())
+enum UserRole {
+  ADMIN
+  BOOKING
+  WAREHOUSE
+  DELIVERY
+  ACCOUNTS
+  READONLY
 }

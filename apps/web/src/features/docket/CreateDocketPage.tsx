@@ -28,13 +28,81 @@ export default function CreateDocketPage() {
 
       setLoading(true);
 
+      
+      if (!shipment.origin) {
+        alert("Please select Origin.");
+        return;
+      }
+
+      if (!shipment.destination) {
+        alert("Please select Destination.");
+        return;
+      }
+
+      if (shipment.origin === shipment.destination) {
+        alert("Origin and Destination cannot be the same.");
+        return;
+      }
+
+      if (!shipment.senderName.trim()) {
+        alert("Please enter Sender Name.");
+        return;
+      }
+
+      if (!shipment.senderPhone.trim()) {
+        alert("Please enter Sender Mobile Number.");
+        return;
+      }
+
+      if (!shipment.senderPincode?.trim()) {
+        alert("Please enter Sender Pincode.");
+        return;
+      }
+
+      if (!shipment.senderAddress.trim()) {
+        alert("Please enter Sender Address.");
+        return;
+      }
+
+      if (!shipment.receiverName.trim()) {
+        alert("Please enter Receiver Name.");
+        return;
+      }
+
+      if (!shipment.receiverPhone.trim()) {
+        alert("Please enter Receiver Mobile Number.");
+        return;
+      }
+
+      if (!shipment.receiverPincode?.trim()) {
+        alert("Please enter Receiver Pincode.");
+        return;
+      }
+
+      if (!shipment.receiverAddress.trim()) {
+        alert("Please enter Receiver Address.");
+        return;
+      }
+
+      for (const [index, pkg] of shipment.packages.entries()) {
+        if (pkg.length <= 0 || pkg.width <= 0 || pkg.height <= 0) {
+          alert(`Please enter valid dimensions for Package ${index + 1}.`);
+          return;
+        }
+      }
+
       const response = await createShipment(shipment);
+
 
       setCreatedTrackingNumber(response.trackingNumber);
 
       setSuccessOpen(true);
 
-      setShipment(initialShipment);
+      setShipment({
+        ...initialShipment,
+        bookingDate:new Date().toISOString().split("T")[0],
+        packages:[{length:0,width:0,height:0}],
+      });
 
     } catch (error) {
 
@@ -123,13 +191,13 @@ export default function CreateDocketPage() {
 
         onPreview={() => {
 
-          window.open("/portal/docket/preview","_blank");
+          window.open("/portal/docket/preview?tracking="+createdTrackingNumber,"_blank");
 
         }}
 
         onPrint={() => {
 
-          window.open("/portal/docket/preview","_blank");
+          window.open("/portal/docket/preview?tracking="+createdTrackingNumber,"_blank");
 
         }}
 

@@ -1,5 +1,4 @@
 import Hero from "./components/Hero";
-import TrackingWidget from "./components/TrackingWidget";
 import Stats from "./components/Stats";
 import Services from "./components/Services";
 import WhyChooseUs from "./components/WhyChooseUs";
@@ -10,8 +9,6 @@ export default function HomePage() {
   return (
     <main>
       <Hero />
-
-      <TrackingWidget />
 
       <Stats />
 

@@ -6,7 +6,7 @@ const menu = [
   { title: "Home", href: "/" },
   { title: "Services", href: "/services" },
   { title: "Career", href: "/career" },
-  { title: "About", href: "/about" },
+  { title: "About Us", href: "/about" },
   { title: "Contact Us", href: "/contact" },
 ];
 
@@ -37,7 +37,7 @@ export default function Header() {
           ))}
         </nav>
 
-        <Link href="/portal/login">
+        <Link href="/login">
           <Button>
             Sign In
           </Button>
