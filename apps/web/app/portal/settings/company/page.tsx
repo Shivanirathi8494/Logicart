@@ -29,7 +29,7 @@ export default function Page() {
             </label>
 
             <input
-              defaultValue="Logicarts Express"
+              defaultValue="Logicarts"
               className="w-full rounded-lg border p-3"
             />
 

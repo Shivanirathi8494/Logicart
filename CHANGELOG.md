@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.4.0
+
+### Added
+
+- Loading Tally workflow and database models
+- Loading Tally API endpoints
+- Automatic Loading Tally number generation
+- Route-wise Manifest generation from Loading Tally
+- Loading Tally to Manifest shipment linking
+- Manifest preview and printable A4 Manifest components
+
+### Improved
+
+- AWBs are moved to `MANIFESTED` when included in a Manifest
+- Loading Tallies automatically change from `OPEN` to `COMPLETED` after all AWBs are manifested
+- Manifest data is loaded from the generated Manifest record
+- Logicarts branding standardized across the updated documents
+
 All notable changes to the Logicarts Logistics Management System (LMS) are documented in this file.
 
 The project follows Semantic Versioning.

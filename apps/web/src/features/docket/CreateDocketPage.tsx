@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { createShipment } from "@/lib/api/docket";
+import {
+  createShipment,
+  getShipment,
+  updateShipment,
+} from "@/lib/api/docket";
 import { initialShipment } from "@/lib/docket/initialShipment";
 
 import CreateSuccessDialog from "./components/CreateSuccessDialog";
@@ -12,7 +16,13 @@ import ReceiverInformation from "./components/ReceiverInformation";
 import ShipmentDetails from "./components/ShipmentDetails";
 import PaymentInformation from "./components/PaymentInformation";
 
-export default function CreateDocketPage() {
+type Props = {
+  trackingNumber?: string;
+};
+
+export default function CreateDocketPage({
+  trackingNumber,
+}: Props) {
 
   const [shipment, setShipment] = useState(initialShipment);
 
@@ -21,6 +31,69 @@ export default function CreateDocketPage() {
   const [successOpen, setSuccessOpen] = useState(false);
 
   const [createdTrackingNumber, setCreatedTrackingNumber] = useState("");
+
+  const isEdit = !!trackingNumber;
+
+  useEffect(() => {
+    if (!trackingNumber) return;
+    loadShipment();
+  }, [trackingNumber]);
+
+  async function loadShipment() {
+
+  const data = await getShipment(trackingNumber!);
+
+  setShipment({
+
+    trackingNumber: data.trackingNumber,
+
+    bookingDate: new Date(data.bookingDate)
+      .toISOString()
+      .split("T")[0],
+
+    origin: data.origin,
+    destination: data.destination,
+
+    senderName: data.senderName ?? "",
+    senderPhone: data.senderPhone ?? "",
+    senderGSTIN: data.senderGSTIN ?? "",
+    senderPincode: data.senderPincode ?? "",
+    senderState: data.senderState ?? "",
+    senderCity: data.senderCity ?? "",
+    senderAddress: data.senderAddress ?? "",
+
+    receiverName: data.receiverName ?? "",
+    receiverPhone: data.receiverPhone ?? "",
+    receiverGSTIN: data.receiverGSTIN ?? "",
+    receiverPincode: data.receiverPincode ?? "",
+    receiverState: data.receiverState ?? "",
+    receiverCity: data.receiverCity ?? "",
+    receiverAddress: data.receiverAddress ?? "",
+
+    packageCount: data.packageCount,
+
+    actualWeight: data.actualWeight,
+    volumetricWeight: data.volumetricWeight,
+    chargeableWeight: data.chargeableWeight,
+
+    contents: data.contents ?? "",
+
+    freight: data.freight,
+    gst: data.gst,
+    total: data.total,
+
+    paymentReference: data.paymentReference ?? "",
+    remarks: data.remarks ?? "",
+
+    packages: data.packages.map((pkg: any) => ({
+      length: pkg.length,
+      width: pkg.width,
+      height: pkg.height,
+    })),
+
+  });
+
+}
 
   async function handleCreateDocket() {
 
@@ -59,7 +132,7 @@ export default function CreateDocketPage() {
         return;
       }
 
-      if (!shipment.senderAddress.trim()) {
+      if (!(shipment.senderAddress ?? "").trim()) {
         alert("Please enter Sender Address.");
         return;
       }
@@ -79,7 +152,7 @@ export default function CreateDocketPage() {
         return;
       }
 
-      if (!shipment.receiverAddress.trim()) {
+      if (!(shipment.receiverAddress ?? "").trim()) {
         alert("Please enter Receiver Address.");
         return;
       }
@@ -91,7 +164,9 @@ export default function CreateDocketPage() {
         }
       }
 
-      const response = await createShipment(shipment);
+      const response = isEdit
+        ? await updateShipment(trackingNumber!, shipment)
+        : await createShipment(shipment);
 
 
       setCreatedTrackingNumber(response.trackingNumber);
@@ -177,7 +252,7 @@ export default function CreateDocketPage() {
           className="rounded-lg bg-[#1877F2] px-6 py-3 text-white disabled:opacity-50"
         >
 
-          {loading ? "Creating..." : "Create Docket"}
+          {loading ? (isEdit ? "Updating..." : "Creating...") : (isEdit ? "Update Docket" : "Create Docket")}
 
         </button>
 

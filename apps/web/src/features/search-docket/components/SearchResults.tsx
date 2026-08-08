@@ -116,18 +116,34 @@ export default function SearchResults({
                 <div className="flex justify-center gap-2">
 
                   <button
+                    onClick={() =>
+                      window.open(
+                        `/portal/docket/preview?tracking=${row.trackingNumber}`,
+                        "_blank"
+                      )
+                    }
                     className="rounded border px-3 py-2 hover:bg-slate-100"
                   >
                     View
                   </button>
 
                   <button
+                    onClick={() =>
+                      window.open(
+                        `/portal/docket/preview?tracking=${row.trackingNumber}`,
+                        "_blank"
+                      )
+                    }
                     className="rounded border px-3 py-2 hover:bg-slate-100"
                   >
                     Print
                   </button>
 
                   <button
+                    onClick={() =>
+                      window.location.href =
+                        `/portal/operations/create-docket?tracking=${row.trackingNumber}`
+                    }
                     className="rounded border px-3 py-2 hover:bg-slate-100"
                   >
                     Edit

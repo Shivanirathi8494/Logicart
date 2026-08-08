@@ -1,159 +1,237 @@
 "use client";
 
+import Image from "next/image";
+
 export default function PrintableDeliveryChallan({
   challan,
-}:{
-  challan:any;
-}){
+}: {
+  challan: any;
+}) {
 
-  return(
+  const rows = challan.shipments ?? [];
 
-<div className="mx-auto max-w-6xl bg-white p-10">
+  return (
 
-<div className="text-center mb-8">
+    <div className="mx-auto w-[210mm] min-h-[297mm] bg-white p-6 text-black">
 
-<h1 className="text-4xl font-bold">
+      <table className="w-full border-collapse border border-black">
 
-LOGICARTS EXPRESS
+        <tbody>
 
-</h1>
+          <tr>
 
-<p className="text-xl">
+            <td
+              colSpan={4}
+              className="border border-black p-3"
+            >
 
-DELIVERY CHALLAN
+              <div className="flex items-center justify-between">
 
-</p>
+                <Image
+                  src="/logo/logicarts-logo.png"
+                  alt="Logicarts"
+                  width={120}
+                  height={40}
+                />
 
-</div>
+                <div className="text-center">
 
-<div className="grid grid-cols-2 gap-6 mb-8">
+                  <h1 className="text-2xl font-bold">
+                    DELIVERY CHALLAN
+                  </h1>
 
-<div>
+                </div>
 
-<strong>Challan No :</strong>
+                <div className="text-right text-sm">
 
-{" "}
+                  <div>
 
-{challan.challanNumber}
+                    <strong>No :</strong>{" "}
+                    {challan.challanNumber}
 
-</div>
+                  </div>
 
-<div>
+                  <div>
 
-<strong>Date :</strong>
+                    <strong>Date :</strong>{" "}
+                    {new Date(
+                      challan.challanDate
+                    ).toLocaleDateString()}
 
-{" "}
+                  </div>
 
-{new Date(challan.challanDate).toLocaleDateString()}
+                </div>
 
-</div>
+              </div>
 
-<div>
+            </td>
 
-<strong>Customer :</strong>
+          </tr>
 
-{" "}
+          <tr>
 
-{challan.customerName}
+            <td
+              colSpan={4}
+              className="border border-black p-3"
+            >
 
-</div>
+              Please deliver to M/s.&nbsp;
 
-<div>
+              <strong>
 
-<strong>Phone :</strong>
+                {challan.customerName}
 
-{" "}
+              </strong>
 
-{challan.customerPhone}
+            </td>
 
-</div>
+          </tr>
 
-<div className="col-span-2">
+          <tr>
 
-<strong>Address :</strong>
+            <td
+              colSpan={2}
+              className="border border-black p-3"
+            >
 
-{" "}
+              <strong>Flight No :</strong>{" "}
 
-{challan.customerAddress}
+              {challan.flightNumber || "-"}
 
-</div>
+            </td>
 
-</div>
+            <td
+              colSpan={2}
+              className="border border-black p-3"
+            >
 
-<table className="w-full border">
+              <strong>Vehicle :</strong>{" "}
 
-<thead>
+              {challan.vehicleNumber || "-"}
 
-<tr className="bg-slate-100">
+            </td>
 
-<th className="border p-3">Tracking</th>
+          </tr>
 
-<th className="border p-3">Pieces</th>
+          <tr className="bg-gray-100">
 
-<th className="border p-3">Weight</th>
+            <th className="border border-black p-2">
+              AWB No.
+            </th>
 
-<th className="border p-3">Destination</th>
+            <th className="border border-black p-2">
+              No. of Pkgs.
+            </th>
 
-</tr>
+            <th className="border border-black p-2">
+              Weight
+            </th>
 
-</thead>
+            <th className="border border-black p-2">
+              Description
+            </th>
 
-<tbody>
+          </tr>
 
-{challan.shipments.map((item:any)=>(
+          {rows.map((item: any) => (
 
-<tr key={item.id}>
+            <tr key={item.id}>
 
-<td className="border p-3">
+              <td className="border border-black p-2">
 
-{item.shipment.trackingNumber}
+                {item.shipment.trackingNumber}
 
-</td>
+              </td>
 
-<td className="border p-3">
+              <td className="border border-black p-2 text-center">
 
-{item.shipment.packageCount}
+                {item.shipment.packageCount}
 
-</td>
+              </td>
 
-<td className="border p-3">
+              <td className="border border-black p-2 text-center">
 
-{item.shipment.chargeableWeight} Kg
+                {item.shipment.chargeableWeight}
 
-</td>
+              </td>
 
-<td className="border p-3">
+              <td className="border border-black p-2">
 
-{item.shipment.destination}
+                {item.shipment.contents || "-"}
 
-</td>
+              </td>
 
-</tr>
+            </tr>
 
-))}
+          ))}
 
-</tbody>
+          {Array.from({
+            length: Math.max(
+              0,
+              18 - rows.length,
+            ),
+          }).map((_, i) => (
 
-</table>
+            <tr key={i}>
 
-<div className="grid grid-cols-2 mt-20">
+              <td className="border border-black h-8"></td>
 
-<div>
+              <td className="border border-black"></td>
 
-Receiver Signature
+              <td className="border border-black"></td>
 
-</div>
+              <td className="border border-black"></td>
 
-<div className="text-right">
+            </tr>
 
-Authorized Signatory
+          ))}
 
-</div>
+          <tr>
 
-</div>
+            <td
+              colSpan={2}
+              className="border border-black p-6 align-top"
+            >
 
-</div>
+              <div className="mt-12 border-t border-black"></div>
 
-);
+              <div className="mt-2">
+
+                Receiver Signature
+
+              </div>
+
+              <div className="text-sm">
+
+                Name / Date / Time
+
+              </div>
+
+            </td>
+
+            <td
+              colSpan={2}
+              className="border border-black p-6 align-top text-right"
+            >
+
+              <div className="mt-12 border-t border-black"></div>
+
+              <div className="mt-2">
+
+                For Logicarts
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  );
 
 }

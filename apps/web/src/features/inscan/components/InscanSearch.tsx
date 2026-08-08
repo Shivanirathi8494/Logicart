@@ -1,51 +1,105 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function InscanSearch({ onFound }: any) {
+export default function InscanSearch({
+  onFound,
+}: any) {
 
-  const [tracking, setTracking] = useState("");
+  const params = useSearchParams();
 
-  async function search() {
+  const [manifestNumber,setManifestNumber]=useState("");
+  const [loading,setLoading]=useState(false);
 
-    const response = await fetch(
-      "/api/dockets?tracking=" + tracking
+  useEffect(()=>{
+
+    const manifest=params.get("manifest");
+
+    if(manifest){
+
+      setManifestNumber(manifest);
+
+      search(manifest);
+
+    }
+
+  },[]);
+
+  async function search(number?:string){
+
+    const value=number??manifestNumber;
+
+    if(!value.trim()){
+
+      alert("Please enter Manifest Number.");
+
+      return;
+
+    }
+
+    setLoading(true);
+
+    const response=await fetch(
+      "/api/manifests/"+value
     );
 
-    const data = await response.json();
+    if(response.ok){
 
-    if (data.length) {
-      onFound(data[0]);
-    } else {
-      alert("Shipment not found");
+      onFound(await response.json());
+
+    }else{
+
+      alert("Manifest not found.");
+
     }
+
+    setLoading(false);
 
   }
 
-  return (
+  return(
 
-    <section className="rounded-xl border bg-white p-6 shadow-sm">
+<section className="rounded-xl border bg-white p-6 shadow-sm">
 
-      <div className="flex gap-4">
+<label className="mb-2 block text-sm font-medium">
 
-        <input
-          className="flex-1 rounded-lg border p-3"
-          placeholder="Tracking Number"
-          value={tracking}
-          onChange={(e) => setTracking(e.target.value)}
-        />
+Manifest Number
 
-        <button
-          onClick={search}
-          className="rounded-lg bg-[#1877F2] px-6 text-white"
-        >
-          Search
-        </button>
+</label>
 
-      </div>
+<div className="flex gap-3">
 
-    </section>
+<input
+className="flex-1 rounded-lg border p-3"
+placeholder="MNF-MAA-260807-000001"
+value={manifestNumber}
+onChange={(e)=>setManifestNumber(e.target.value)}
+onKeyDown={(e)=>{
 
-  );
+if(e.key==="Enter"){
+
+search();
+
+}
+
+}}
+/>
+
+<button
+onClick={()=>search()}
+disabled={loading}
+className="rounded-lg bg-[#1877F2] px-8 py-3 text-white disabled:opacity-50"
+>
+
+{loading?"Searching...":"Search"}
+
+</button>
+
+</div>
+
+</section>
+
+);
 
 }

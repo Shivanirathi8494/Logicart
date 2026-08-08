@@ -64,7 +64,7 @@ export default function OutscanShipmentCard({ shipment }: any) {
       <div className="grid gap-6 md:grid-cols-3">
 
         <div>
-          <div className="text-sm text-slate-500">Tracking Number</div>
+          <div className="text-sm text-slate-500">AWB Number</div>
           <div className="font-semibold">{shipment.trackingNumber}</div>
         </div>
 

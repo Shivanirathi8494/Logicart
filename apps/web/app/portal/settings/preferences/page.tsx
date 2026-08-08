@@ -26,7 +26,7 @@ export default function Page() {
 
             <input type="checkbox" defaultChecked />
 
-            Auto Generate Tracking Number
+            Auto Generate AWB Number
 
           </label>
 

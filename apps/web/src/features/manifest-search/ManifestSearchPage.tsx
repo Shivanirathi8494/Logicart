@@ -1,17 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect,useState } from "react";
+
 import SearchFilters from "./components/SearchFilters";
 import SearchResults from "./components/SearchResults";
 
 export default function ManifestSearchPage(){
 
-const [rows,setRows]=useState([]);
+const [rows,setRows]=useState<any[]>([]);
+
+useEffect(()=>{
+
+loadAll();
+
+},[]);
+
+async function loadAll(){
+
+const response=await fetch(
+"/api/manifests"
+);
+
+const data=await response.json();
+
+setRows(data);
+
+}
 
 async function search(filters:any){
 
 const response=await fetch(
-"/api/manifests?manifestNumber="+filters.manifestNumber
+
+"/api/manifests?manifestNumber="+
+encodeURIComponent(
+filters.manifestNumber
+)
+
 );
 
 const data=await response.json();

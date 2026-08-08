@@ -77,7 +77,7 @@ export default function TrackingPage() {
               value={trackingNumber}
               onChange={(e)=>setTrackingNumber(e.target.value.toUpperCase())}
               className="flex-1 rounded-lg border p-4"
-              placeholder="Tracking Number"
+              placeholder="AWB Number"
             />
 
             <button
@@ -106,7 +106,7 @@ export default function TrackingPage() {
               <div className="grid gap-5 md:grid-cols-2">
 
                 <div>
-                  <strong>Tracking Number</strong>
+                  <strong>AWB Number</strong>
                   <br />
                   {shipment.trackingNumber}
                 </div>

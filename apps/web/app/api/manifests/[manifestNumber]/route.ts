@@ -2,38 +2,59 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
-request:Request,
-{
-params,
-}:{
-params:Promise<{
-manifestNumber:string;
-}>;
-}){
+  request: Request,
+  {
+    params,
+  }: {
+    params: Promise<{
+      manifestNumber: string;
+    }>;
+  }
+) {
 
-const {manifestNumber}=await params;
+  const { manifestNumber } = await params;
 
-const manifest=
-await prisma.manifest.findUnique({
+  const manifest = await prisma.manifest.findUnique({
 
-where:{
-manifestNumber,
-},
+    where: {
+      manifestNumber,
+    },
 
-include:{
+    include: {
 
-shipments:{
+      shipments: {
 
-include:{
-shipment:true,
-},
+        include: {
 
-},
+          shipment: {
+            include: {
+              packages: true,
+            },
+          },
 
-},
+        },
 
-});
+      },
 
-return NextResponse.json(manifest);
+      loadingTally: true,
+
+    },
+
+  });
+
+  if (!manifest) {
+
+    return NextResponse.json(
+      {
+        error: "Manifest not found",
+      },
+      {
+        status: 404,
+      }
+    );
+
+  }
+
+  return NextResponse.json(manifest);
 
 }

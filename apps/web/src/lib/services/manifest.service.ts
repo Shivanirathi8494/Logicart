@@ -1,71 +1,113 @@
 import { prisma } from "@/lib/prisma";
 import { generateManifestNumber } from "@/lib/manifest/generateManifestNumber";
 
-export class ManifestService{
+export class ManifestService {
 
-static async create(data:any){
+  static async create(data: any) {
 
-const manifestNumber=
-await generateManifestNumber(data.origin);
+    const manifestNumber =
+      await generateManifestNumber(data.origin);
 
-return prisma.$transaction(async(tx)=>{
+    return prisma.$transaction(async (tx) => {
 
-const manifest=await tx.manifest.create({
+      const shipments = await tx.shipment.findMany({
 
-data:{
+        where: {
+          trackingNumber: {
+            in: data.shipments,
+          },
+        },
 
-manifestNumber,
+      });
 
-manifestDate:new Date(),
+      if (shipments.length !== data.shipments.length) {
 
-origin:data.origin,
+        throw new Error(
+          "One or more AWBs were not found."
+        );
 
-destination:data.destination,
+      }
 
-flightNumber:data.flightNumber,
+      const manifest = await tx.manifest.create({
 
-vehicleNumber:data.vehicleNumber,
+        data: {
 
-remarks:data.remarks,
+          manifestNumber,
 
-shipments:{
+          manifestDate: new Date(data.manifestDate),
 
-create:data.shipments.map((id:string)=>({
+          origin: data.origin,
 
-shipment:{
-connect:{id},
-},
+          destination: data.destination,
 
-})),
+          flightNumber: data.flightNumber,
 
-},
+          vehicleNumber: data.vehicleNumber,
 
-},
+          remarks: data.remarks,
 
-include:{
-shipments:true,
-},
+          shipments: {
 
-});
+            create: shipments.map((shipment) => ({
 
-await tx.shipment.updateMany({
+              shipment: {
 
-where:{
-id:{
-in:data.shipments,
-},
-},
+                connect: {
 
-data:{
-status:"MANIFESTED",
-},
+                  id: shipment.id,
 
-});
+                },
 
-return manifest;
+              },
 
-});
+            })),
 
-}
+          },
+
+        },
+
+        include: {
+
+          shipments: {
+
+            include: {
+
+              shipment: true,
+
+            },
+
+          },
+
+        },
+
+      });
+
+      await tx.shipment.updateMany({
+
+        where: {
+
+          id: {
+
+            in: shipments.map(
+              s => s.id
+            ),
+
+          },
+
+        },
+
+        data: {
+
+          status: "MANIFESTED",
+
+        },
+
+      });
+
+      return manifest;
+
+    });
+
+  }
 
 }

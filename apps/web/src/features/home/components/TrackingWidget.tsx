@@ -13,7 +13,7 @@ export default function TrackingWidget() {
 
     if (!trackingNumber.trim()) {
 
-      alert("Please enter a Tracking Number.");
+      alert("Please enter a AWB Number.");
 
       return;
 
@@ -48,7 +48,7 @@ export default function TrackingWidget() {
             )
           }
 
-          placeholder="Enter Tracking Number"
+          placeholder="Enter AWB Number"
 
           className="flex-1 rounded-lg border border-slate-300 p-4"
 

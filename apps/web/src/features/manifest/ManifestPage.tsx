@@ -1,57 +1,50 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
-import ManifestHeader from "./components/ManifestHeader";
-import ShipmentSearch from "./components/ShipmentSearch";
-import ShipmentTable from "./components/ShipmentTable";
-import ManifestSummary from "./components/ManifestSummary";
+import LoadingTallySearch from "./components/LoadingTallySearch";
+import LoadingTallyList from "./components/LoadingTallyList";
+import LoadingTallyGroups from "./components/LoadingTallyGroups";
 
 export default function ManifestPage() {
 
-  const router = useRouter();
+  const [loadingTally, setLoadingTally] = useState<any>(null);
 
-  const [shipments,setShipments]=useState<any[]>([]);
-
-  function addShipment(shipment:any){
-
-    if(
-      shipments.find(
-        s=>s.id===shipment.id
-      )
-    ){
-      alert("Shipment already added");
-      return;
-    }
-
-    setShipments([
-      ...shipments,
-      shipment,
-    ]);
-
-  }
-
-  return(
+  return (
 
     <div className="space-y-8">
 
-      <ManifestHeader/>
+      <div>
 
-      <ShipmentSearch
-        onAdd={addShipment}
+        <h1 className="text-3xl font-bold">
+
+          Manifest Generation
+
+        </h1>
+
+        <p className="mt-2 text-slate-500">
+
+          Search a Loading Tally and generate manifests route-wise.
+
+        </p>
+
+      </div>
+
+      <LoadingTallyList
+        onSelect={setLoadingTally}
       />
 
-      <ShipmentTable
-        shipments={shipments}
+      <LoadingTallySearch
+        onFound={setLoadingTally}
       />
 
-      <ManifestSummary
-        shipments={shipments}
-        onCreated={(manifestNumber:string)=>{
-          router.push("/portal/warehouse/manifest/"+manifestNumber);
-        }}
-      />
+      {loadingTally && (
+
+        <LoadingTallyGroups
+          loadingTally={loadingTally}
+        />
+
+      )}
 
     </div>
 

@@ -34,7 +34,7 @@ return(
 
 <input
 className="flex-1 rounded-lg border p-3"
-placeholder="Tracking Number"
+placeholder="AWB Number"
 value={tracking}
 onChange={(e)=>setTracking(e.target.value)}
 />

@@ -2,58 +2,121 @@
 
 import { useState } from "react";
 
-export default function ShipmentSearch({onAdd}:any){
+type Props = {
+  onAdd: (shipment: any) => void;
+};
 
-const [tracking,setTracking]=useState("");
+export default function ShipmentSearch({
+  onAdd,
+}: Props) {
 
-async function search(){
+  const [awb, setAwb] = useState("");
 
-const response=await fetch(
-"/api/dockets?tracking="+tracking
-);
+  async function search() {
 
-const data=await response.json();
+    const value = awb.trim().toUpperCase();
 
-if(data.length){
+    if (!value) return;
 
-onAdd(data[0]);
+    const response = await fetch(
+      "/api/dockets/" + value
+    );
 
-setTracking("");
+    if (!response.ok) {
 
-}else{
+      alert("AWB not found");
 
-alert("Shipment not found");
+      return;
 
-}
+    }
 
-}
+    const shipment = await response.json();
 
-return(
+    if (shipment.status !== "BOOKED") {
 
-<section className="rounded-xl border bg-white p-6">
+      alert(
+        "Only BOOKED shipments can be added to a manifest."
+      );
 
-<div className="flex gap-4">
+      return;
 
-<input
-className="flex-1 rounded-lg border p-3"
-placeholder="Tracking Number"
-value={tracking}
-onChange={(e)=>setTracking(e.target.value)}
-/>
+    }
 
-<button
-onClick={search}
-className="rounded-lg bg-[#1877F2] px-6 text-white"
->
+    onAdd(shipment);
 
-Add Shipment
+    setAwb("");
 
-</button>
+    setTimeout(() => {
 
-</div>
+      (
+        document.getElementById(
+          "awb-input"
+        ) as HTMLInputElement
+      )?.focus();
 
-</section>
+    },0);
 
-);
+  }
+
+  return (
+
+    <section className="rounded-xl border bg-white p-6 shadow-sm">
+
+      <h2 className="mb-5 text-xl font-semibold">
+        Add Shipments
+      </h2>
+
+      <div className="flex gap-4">
+
+        <input
+
+          id="awb-input"
+
+          placeholder="AWB Number"
+
+          value={awb}
+
+          className="flex-1 rounded-lg border p-3 uppercase"
+
+          onChange={(e)=>
+            setAwb(
+              e.target.value.toUpperCase()
+            )
+          }
+
+          onKeyDown={(e)=>{
+
+            if(e.key==="Enter"){
+
+              e.preventDefault();
+
+              search();
+
+            }
+
+          }}
+
+        />
+
+        <button
+          onClick={search}
+          className="rounded-lg bg-[#1877F2] px-8 text-white"
+        >
+
+          Add Shipment
+
+        </button>
+
+      </div>
+
+      <p className="mt-3 text-sm text-slate-500">
+
+        Scan or enter an AWB number and press Enter.
+
+      </p>
+
+    </section>
+
+  );
 
 }

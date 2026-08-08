@@ -42,7 +42,7 @@ export default function CreateSuccessDialog({
           <div>
 
             <p className="text-sm text-slate-500">
-              Tracking Number
+              AWB Number
             </p>
 
             <h2 className="text-3xl font-bold">

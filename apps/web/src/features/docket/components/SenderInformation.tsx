@@ -96,7 +96,7 @@ export default function SenderInformation({
           placeholder="GSTIN"
           className="rounded-lg border p-3 uppercase"
           maxLength={15}
-          value={shipment.senderGSTIN}
+          value={shipment.senderGSTIN ?? ""}
           onChange={(e)=>
             setShipment(prev=>({
               ...prev,
@@ -109,7 +109,7 @@ export default function SenderInformation({
           placeholder="Pincode"
           maxLength={6}
           className="rounded-lg border p-3"
-          value={shipment.senderPincode}
+          value={shipment.senderPincode ?? ""}
           onChange={(e)=>
             lookupPincode(e.target.value.replace(/\D/g,""))
           }
@@ -119,14 +119,14 @@ export default function SenderInformation({
           readOnly
           placeholder="State"
           className="rounded-lg border bg-slate-100 p-3"
-          value={shipment.senderState}
+          value={shipment.senderState ?? ""}
         />
 
         <input
           readOnly
           placeholder="City"
           className="rounded-lg border bg-slate-100 p-3"
-          value={shipment.senderCity}
+          value={shipment.senderCity ?? ""}
         />
 
         <textarea

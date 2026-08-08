@@ -1,135 +1,193 @@
 "use client";
 
 type Props = {
-  shipments:any[];
+  shipments: any[];
+  onRemove: (trackingNumber: string) => void;
 };
 
 export default function ShipmentTable({
   shipments,
-}:Props){
+  onRemove,
+}: Props) {
 
-function removeShipment(id:string){
+  const totalPieces = shipments.reduce(
+    (sum, s) => sum + (s.packageCount ?? 0),
+    0
+  );
 
-// Temporary
-alert("Remove functionality coming next");
+  const totalWeight = shipments.reduce(
+    (sum, s) => sum + (s.chargeableWeight ?? 0),
+    0
+  );
 
-}
+  return (
 
-return(
+    <section className="rounded-xl border bg-white shadow-sm">
 
-<section className="overflow-hidden rounded-xl border bg-white shadow-sm">
+      <div className="border-b p-5">
 
-<table className="w-full">
+        <h2 className="text-xl font-semibold">
+          Shipment List
+        </h2>
 
-<thead className="bg-slate-100">
+      </div>
 
-<tr>
+      <div className="overflow-x-auto">
 
-<th className="p-4 text-left">
-Tracking No
-</th>
+        <table className="min-w-full">
 
-<th className="p-4 text-center">
-Pieces
-</th>
+          <thead className="bg-slate-100">
 
-<th className="p-4 text-left">
-Nature of Goods
-</th>
+            <tr>
 
-<th className="p-4 text-right">
-Weight
-</th>
+              <th className="p-3 text-left">#</th>
 
-<th className="p-4 text-center">
-Origin
-</th>
+              <th className="p-3 text-left">
+                AWB Number
+              </th>
 
-<th className="p-4 text-center">
-Destination
-</th>
+              <th className="p-3 text-left">
+                Sender
+              </th>
 
-<th className="p-4 text-center">
-Action
-</th>
+              <th className="p-3 text-left">
+                Receiver
+              </th>
 
-</tr>
+              <th className="p-3 text-center">
+                Pieces
+              </th>
 
-</thead>
+              <th className="p-3 text-right">
+                Weight (Kg)
+              </th>
 
-<tbody>
+              <th className="p-3 text-center">
+                Status
+              </th>
 
-{shipments.length===0 && (
+              <th className="p-3 text-center">
+                Action
+              </th>
 
-<tr>
+            </tr>
 
-<td
-colSpan={7}
-className="p-10 text-center text-slate-500"
->
+          </thead>
 
-No shipment added.
+          <tbody>
 
-</td>
+            {shipments.length === 0 && (
 
-</tr>
+              <tr>
 
-)}
+                <td
+                  colSpan={8}
+                  className="p-10 text-center text-slate-500"
+                >
+                  No shipments added.
+                </td>
 
-{shipments.map((shipment)=>(
+              </tr>
 
-<tr
-key={shipment.id}
-className="border-t"
->
+            )}
 
-<td className="p-4 font-semibold">
-{shipment.trackingNumber}
-</td>
+            {shipments.map((shipment,index)=>(
 
-<td className="p-4 text-center">
-{shipment.packageCount}
-</td>
+              <tr
+                key={shipment.trackingNumber}
+                className="border-t hover:bg-slate-50"
+              >
 
-<td className="p-4">
-{shipment.contents || "-"}
-</td>
+                <td className="p-3">
+                  {index+1}
+                </td>
 
-<td className="p-4 text-right">
-{shipment.chargeableWeight} Kg
-</td>
+                <td className="p-3 font-semibold">
+                  {shipment.trackingNumber}
+                </td>
 
-<td className="p-4 text-center">
-{shipment.origin}
-</td>
+                <td className="p-3">
+                  {shipment.senderName}
+                </td>
 
-<td className="p-4 text-center">
-{shipment.destination}
-</td>
+                <td className="p-3">
+                  {shipment.receiverName}
+                </td>
 
-<td className="p-4 text-center">
+                <td className="p-3 text-center">
+                  {shipment.packageCount}
+                </td>
 
-<button
-onClick={()=>removeShipment(shipment.id)}
-className="rounded border px-3 py-2 text-red-600"
->
+                <td className="p-3 text-right">
+                  {shipment.chargeableWeight.toFixed(2)}
+                </td>
 
-Remove
+                <td className="p-3 text-center">
 
-</button>
+                  <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">
 
-</td>
+                    {shipment.status}
 
-</tr>
+                  </span>
 
-))}
+                </td>
 
-</tbody>
+                <td className="p-3 text-center">
 
-</table>
+                  <button
+                    onClick={() =>
+                      onRemove(
+                        shipment.trackingNumber
+                      )
+                    }
+                    className="rounded bg-red-500 px-3 py-2 text-white hover:bg-red-600"
+                  >
+                    Remove
+                  </button>
 
-</section>
+                </td>
 
-);
+              </tr>
+
+            ))}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <div className="flex justify-end border-t bg-slate-50 p-5">
+
+        <div className="space-y-2 text-right">
+
+          <div>
+
+            <strong>Total Shipments :</strong>{" "}
+            {shipments.length}
+
+          </div>
+
+          <div>
+
+            <strong>Total Pieces :</strong>{" "}
+            {totalPieces}
+
+          </div>
+
+          <div>
+
+            <strong>Total Weight :</strong>{" "}
+            {totalWeight.toFixed(2)} Kg
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  );
 
 }

@@ -43,6 +43,7 @@ model Shipment {
   deliveryChallans DeliveryChallanShipment[]
   manifestEntries  ManifestShipment[]
   packages         ShipmentPackage[]
+  loadingTallies   LoadingTallyShipment[]
 }
 
 model ShipmentPackage {
@@ -55,19 +56,24 @@ model ShipmentPackage {
 }
 
 model Manifest {
-  id               String             @id @default(cuid())
-  manifestNumber   String             @unique
-  manifestDate     DateTime
-  origin           String
-  destination      String
-  flightNumber     String?
-  vehicleNumber    String?
-  remarks          String?
-  status           ManifestStatus     @default(OPEN)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  deliveryChallans DeliveryChallan[]
-  shipments        ManifestShipment[]
+  id             String         @id @default(cuid())
+  manifestNumber String         @unique
+  manifestDate   DateTime
+  origin         String
+  destination    String
+  flightNumber   String?
+  vehicleNumber  String?
+  remarks        String?
+  status         ManifestStatus @default(OPEN)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  loadingTallyId String?
+  loadingTally   LoadingTally? @relation(fields: [loadingTallyId], references: [id])
+
+  deliveryChallans      DeliveryChallan[]
+  shipments             ManifestShipment[]
+  loadingTallyShipments LoadingTallyShipment[]
 }
 
 model ManifestShipment {
@@ -202,6 +208,38 @@ model Customer {
   status        MasterStatus @default(ACTIVE)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+}
+
+model LoadingTally {
+  id                 String             @id @default(cuid())
+  loadingTallyNumber String             @unique
+  loadingDate        DateTime
+  remarks            String?
+  status             LoadingTallyStatus @default(OPEN)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  shipments LoadingTallyShipment[]
+  manifests Manifest[]
+}
+
+model LoadingTallyShipment {
+  id             String   @id @default(cuid())
+  loadingTallyId String
+  shipmentId     String
+  manifestId     String?
+  createdAt      DateTime @default(now())
+
+  loadingTally LoadingTally @relation(fields: [loadingTallyId], references: [id])
+  shipment     Shipment     @relation(fields: [shipmentId], references: [id])
+  manifest     Manifest?    @relation(fields: [manifestId], references: [id])
+
+  @@unique([loadingTallyId, shipmentId])
+}
+
+enum LoadingTallyStatus {
+  OPEN
+  COMPLETED
 }
 
 enum ShipmentStatus {

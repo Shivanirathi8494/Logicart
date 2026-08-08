@@ -41,7 +41,7 @@ export default function ShipmentDialog({
 
               <p className="text-sm text-slate-500">
 
-                Tracking Number
+                AWB Number
 
               </p>
 

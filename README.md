@@ -364,3 +364,30 @@ Current Tracking Number Format:
 
 BLR-DEL-YYMMDD-000001
 
+## Current Warehouse & Manifest Workflow
+
+### Loading Tally
+
+- Loading Tally records eligible AWBs for warehouse processing.
+- AWBs are grouped by source and destination for Manifest generation.
+- Loading Tally numbers are generated automatically.
+- Loading Tallies remain available while their status is `OPEN`.
+
+### Manifest Generation
+
+- A Manifest can be generated route-wise from a Loading Tally.
+- The generated Manifest is linked to the Loading Tally.
+- AWBs included in the Manifest are moved to `MANIFESTED`.
+- When all AWBs in the Loading Tally have been assigned to Manifests, the Loading Tally changes from `OPEN` to `COMPLETED`.
+- Completed Loading Tallies remain stored for historical records.
+
+### Manifest Document
+
+- Manifest Preview loads the generated Manifest by Manifest Number.
+- The existing A4 printable Manifest format is preserved.
+- The A4 document includes Manifest information, AWB details, pieces, weight, route and signatures.
+- Printing uses the existing printable Manifest document.
+
+### Branding
+
+- Company branding uses `Logicarts`.

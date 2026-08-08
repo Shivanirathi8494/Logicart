@@ -1,37 +1,86 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+
 import InscanSearch from "./components/InscanSearch";
-import InscanShipmentCard from "./components/InscanShipmentCard";
+import InscanManifestSummary from "./components/InscanManifestSummary";
+import InscanManifestTable from "./components/InscanManifestTable";
 
 export default function InscanPage() {
 
-  const [shipment, setShipment] = useState<any>(null);
+  const params = useSearchParams();
 
-  return (
+  const manifestNumber = params.get("manifest");
 
-    <div className="space-y-8">
+  const [manifest,setManifest]=useState<any>(null);
+
+  useEffect(()=>{
+
+    if(!manifestNumber){
+
+      return;
+
+    }
+
+    loadManifest();
+
+  },[manifestNumber]);
+
+  async function loadManifest(){
+
+    const response = await fetch(
+
+      "/api/manifests/"+manifestNumber
+
+    );
+
+    if(response.ok){
+
+      setManifest(await response.json());
+
+    }
+
+  }
+
+  return(
+
+    <div className="space-y-6">
 
       <div>
 
         <h1 className="text-3xl font-bold">
+
           Inscan
+
         </h1>
 
         <p className="mt-2 text-slate-500">
-          Scan or search a shipment received at this warehouse.
+
+          Enter a Manifest Number to receive all shipments in the manifest.
+
         </p>
 
       </div>
 
       <InscanSearch
-        onFound={setShipment}
+        onFound={setManifest}
       />
 
-      {shipment && (
-        <InscanShipmentCard
-          shipment={shipment}
-        />
+      {manifest && (
+
+        <>
+
+          <InscanManifestSummary
+            manifest={manifest}
+          />
+
+          <InscanManifestTable
+            manifest={manifest}
+          />
+
+        </>
+
       )}
 
     </div>

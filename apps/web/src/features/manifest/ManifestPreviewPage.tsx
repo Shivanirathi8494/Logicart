@@ -1,87 +1,121 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useReactToPrint } from "react-to-print";
+import { useEffect, useState } from "react";
+import PrintableManifest from "./PrintableManifest";
 
-import PrintableManifest from "./components/PrintableManifest";
+export default function ManifestPreviewPage() {
 
-export default function ManifestPreviewPage({
-  manifestNumber,
-}:{
-  manifestNumber:string;
-}){
+  const [manifest, setManifest] = useState<any>(null);
+  const [error, setError] = useState("");
 
-  const [manifest,setManifest]=useState<any>();
+  useEffect(() => {
 
-  const printRef=useRef<HTMLDivElement>(null);
-
-  useEffect(()=>{
-    load();
-  },[]);
-
-  async function load(){
-
-    const response=await fetch(
-      "/api/manifests/"+manifestNumber
+    const params = new URLSearchParams(
+      window.location.search
     );
 
-    const data=await response.json();
+    const manifestNumber =
+      params.get("manifest");
 
-    setManifest(data);
+    if (!manifestNumber) {
 
-  }
+      setError(
+        "Manifest number is missing."
+      );
 
-  const handlePrint=useReactToPrint({
-    contentRef:printRef,
-    documentTitle:manifest?.manifestNumber,
-  });
+      return;
 
-  if(!manifest){
+    }
 
-    return(
-      <div className="p-10">
-        Loading...
+    async function loadManifest() {
+
+      try {
+
+        const response = await fetch(
+          "/api/manifests/" +
+          encodeURIComponent(manifestNumber),
+          {
+            cache: "no-store",
+          }
+        );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+
+          setError(
+            data?.error ??
+            "Unable to load manifest."
+          );
+
+          return;
+
+        }
+
+        setManifest(data);
+
+      } catch (error) {
+
+        console.error(
+          "Manifest load error:",
+          error
+        );
+
+        setError(
+          "Unable to load manifest."
+        );
+
+      }
+
+    }
+
+    loadManifest();
+
+  }, []);
+
+  if (error) {
+
+    return (
+      <div className="p-8 text-red-600">
+        {error}
       </div>
     );
 
   }
 
-  return(
+  if (!manifest) {
 
-<div className="space-y-6">
+    return (
+      <div className="p-8">
+        Loading manifest...
+      </div>
+    );
 
-<div className="flex justify-end gap-4 print:hidden">
+  }
 
-<button
-onClick={handlePrint}
-className="rounded-lg bg-blue-600 px-6 py-3 text-white"
->
+  return (
 
-Print
+    <>
 
-</button>
+      <div className="print:hidden flex justify-end gap-3 p-4">
 
-<button
-onClick={()=>window.history.back()}
-className="rounded-lg border px-6 py-3"
->
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="rounded-lg bg-blue-600 px-5 py-2 text-white"
+        >
+          Print Manifest
+        </button>
 
-Back
+      </div>
 
-</button>
+      <PrintableManifest
+        manifest={manifest}
+      />
 
-</div>
+    </>
 
-<div ref={printRef}>
-
-<PrintableManifest
-manifest={manifest}
-/>
-
-</div>
-
-</div>
-
-);
+  );
 
 }

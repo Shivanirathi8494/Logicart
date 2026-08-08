@@ -2,41 +2,50 @@
 
 import { useState } from "react";
 
-import OutscanSearch from "./components/OutscanSearch";
-import OutscanShipmentCard from "./components/OutscanShipmentCard";
+import LoadingTallySearch from "./components/LoadingTallySearch";
+import LoadingTallyTable from "./components/LoadingTallyTable";
+import LoadingTallySummary from "./components/LoadingTallySummary";
 
-export default function OutscanPage() {
+export default function OutscanPage(){
 
-  const [shipment,setShipment]=useState<any>(null);
+  const [shipments,setShipments]=useState<any[]>([]);
 
-  return (
+  return(
 
-    <div className="space-y-8">
+<div className="space-y-8">
 
-      <div>
+<div>
 
-        <h1 className="text-3xl font-bold">
-          Outscan
-        </h1>
+<h1 className="text-3xl font-bold">
 
-        <p className="mt-2 text-slate-500">
-          Dispatch shipment from warehouse.
-        </p>
+Loading Tally
 
-      </div>
+</h1>
 
-      <OutscanSearch
-        onFound={setShipment}
-      />
+<p className="mt-2 text-slate-500">
 
-      {shipment && (
-        <OutscanShipmentCard
-          shipment={shipment}
-        />
-      )}
+Scan or enter AWB Numbers for today's loading.
 
-    </div>
+</p>
 
-  );
+</div>
+
+<LoadingTallySearch
+shipments={shipments}
+setShipments={setShipments}
+/>
+
+<LoadingTallyTable
+shipments={shipments}
+setShipments={setShipments}
+/>
+
+<LoadingTallySummary
+shipments={shipments}
+/>
+
+</div>
+
+);
 
 }

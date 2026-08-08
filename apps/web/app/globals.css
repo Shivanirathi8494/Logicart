@@ -141,3 +141,26 @@ body {
     @apply font-sans;
   }
 }
+/* ==============================
+   PRINT STYLES
+============================== */
+
+@media print {
+
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    margin: 0;
+    padding: 0;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
+}

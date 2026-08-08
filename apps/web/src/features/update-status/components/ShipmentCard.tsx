@@ -13,7 +13,7 @@ Shipment Details
 <div className="grid gap-6 md:grid-cols-3">
 
 <div>
-<label className="text-sm text-slate-500">Tracking Number</label>
+<label className="text-sm text-slate-500">AWB Number</label>
 <div className="font-semibold">{shipment.trackingNumber}</div>
 </div>
 

@@ -1,64 +1,44 @@
 "use client";
 
 import { useState } from "react";
-import StationSelect from "@/components/master/StationSelect";
 
 type Props = {
   onSearch: (filters: {
     tracking: string;
-    mobile: string;
-    origin: string;
-    destination: string;
     status: string;
   }) => void;
 };
 
-export default function SearchFilters({ onSearch }: Props) {
+export default function SearchFilters({
+  onSearch,
+}: Props) {
 
   const [tracking, setTracking] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [origin, setOrigin] = useState("");
-  const [destination, setDestination] = useState("");
   const [status, setStatus] = useState("");
 
   function clear() {
+
     setTracking("");
-    setMobile("");
-    setOrigin("");
-    setDestination("");
     setStatus("");
+
+    onSearch({
+      tracking: "",
+      status: "",
+    });
+
   }
 
   return (
 
     <section className="rounded-xl border bg-white p-6 shadow-sm">
 
-      <div className="grid gap-5 lg:grid-cols-5">
+      <div className="grid gap-5 lg:grid-cols-2">
 
         <input
-          placeholder="Tracking Number"
+          placeholder="AWB Number"
           className="rounded-lg border p-3"
           value={tracking}
           onChange={(e)=>setTracking(e.target.value)}
-        />
-
-        <input
-          placeholder="Mobile Number"
-          className="rounded-lg border p-3"
-          value={mobile}
-          onChange={(e)=>setMobile(e.target.value)}
-        />
-
-        <StationSelect
-          label="Origin"
-          value={origin}
-          onChange={setOrigin}
-        />
-
-        <StationSelect
-          label="Destination"
-          value={destination}
-          onChange={setDestination}
         />
 
         <select
@@ -90,9 +70,6 @@ export default function SearchFilters({ onSearch }: Props) {
           onClick={() =>
             onSearch({
               tracking,
-              mobile,
-              origin,
-              destination,
               status,
             })
           }

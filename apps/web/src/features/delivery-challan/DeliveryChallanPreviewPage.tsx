@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect,useRef,useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 
 import PrintableDeliveryChallan from "./components/PrintableDeliveryChallan";
@@ -16,7 +16,9 @@ export default function DeliveryChallanPreviewPage({
   const printRef=useRef<HTMLDivElement>(null);
 
   useEffect(()=>{
+
     load();
+
   },[]);
 
   async function load(){
@@ -25,6 +27,14 @@ export default function DeliveryChallanPreviewPage({
       "/api/delivery-challans/"+challanNumber
     );
 
+    if(!response.ok){
+
+      alert("Delivery Challan not found.");
+
+      return;
+
+    }
+
     const data=await response.json();
 
     setChallan(data);
@@ -32,29 +42,36 @@ export default function DeliveryChallanPreviewPage({
   }
 
   const handlePrint=useReactToPrint({
+
     contentRef:printRef,
+
     documentTitle:challan?.challanNumber,
+
   });
 
   if(!challan){
 
     return(
-      <div className="p-10">
-        Loading...
+
+      <div className="flex h-screen items-center justify-center">
+
+        Loading Delivery Challan...
+
       </div>
+
     );
 
   }
 
   return(
 
-<div className="space-y-6">
+<div className="min-h-screen bg-slate-200 py-10">
 
-<div className="flex justify-end gap-4 print:hidden">
+<div className="mx-auto mb-6 flex w-[210mm] justify-end gap-3 print:hidden">
 
 <button
 onClick={handlePrint}
-className="rounded-lg bg-blue-600 px-6 py-3 text-white"
+className="rounded bg-blue-600 px-6 py-3 text-white"
 >
 
 Print
@@ -62,8 +79,8 @@ Print
 </button>
 
 <button
-onClick={()=>window.history.back()}
-className="rounded-lg border px-6 py-3"
+onClick={()=>history.back()}
+className="rounded border bg-white px-6 py-3"
 >
 
 Back
@@ -72,7 +89,10 @@ Back
 
 </div>
 
-<div ref={printRef}>
+<div
+ref={printRef}
+className="mx-auto w-[210mm] bg-white shadow-xl print:shadow-none"
+>
 
 <PrintableDeliveryChallan
 challan={challan}

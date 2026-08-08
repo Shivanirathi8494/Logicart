@@ -1,0 +1,46 @@
+@media print {
+
+  @page {
+
+    size: A4 portrait;
+
+    margin: 8mm;
+
+  }
+
+  html,
+  body {
+
+    background: white;
+
+    margin: 0;
+
+    padding: 0;
+
+  }
+
+  thead {
+
+    display: table-header-group;
+
+  }
+
+  tfoot {
+
+    display: table-footer-group;
+
+  }
+
+  tr {
+
+    page-break-inside: avoid;
+
+  }
+
+  table {
+
+    page-break-inside: auto;
+
+  }
+
+}

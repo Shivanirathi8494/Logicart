@@ -16,7 +16,7 @@ export default function Hero() {
 
     if (!trackingNumber.trim()) {
 
-      alert("Please enter a Tracking Number.");
+      alert("Please enter a AWB Number.");
 
       return;
 
