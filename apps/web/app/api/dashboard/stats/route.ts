@@ -53,7 +53,7 @@ export async function GET() {
 
       shipmentsDelivered: delivered,
 
-      citiesConnected: company?.citiesConnected ?? 31,
+      citiesConnected: 31,
 
     });
 
