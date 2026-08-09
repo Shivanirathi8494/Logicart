@@ -47,7 +47,7 @@ export default function ManifestInformation({
             value={manifest.manifestDate}
             className="w-full rounded-lg border p-3"
             onChange={(e)=>
-              setManifest(prev=>({
+              setManifest((prev: any)=>({
                 ...prev,
                 manifestDate:e.target.value,
               }))
@@ -60,7 +60,7 @@ export default function ManifestInformation({
           label="Origin"
           value={manifest.origin}
           onChange={(value)=>
-            setManifest(prev=>({
+            setManifest((prev: any)=>({
               ...prev,
               origin:value,
             }))
@@ -71,7 +71,7 @@ export default function ManifestInformation({
           label="Destination"
           value={manifest.destination}
           onChange={(value)=>
-            setManifest(prev=>({
+            setManifest((prev: any)=>({
               ...prev,
               destination:value,
             }))
@@ -88,7 +88,7 @@ export default function ManifestInformation({
             value={manifest.flightNumber}
             className="w-full rounded-lg border p-3"
             onChange={(e)=>
-              setManifest(prev=>({
+              setManifest((prev: any)=>({
                 ...prev,
                 flightNumber:e.target.value.toUpperCase(),
               }))
@@ -107,7 +107,7 @@ export default function ManifestInformation({
             value={manifest.vehicleNumber}
             className="w-full rounded-lg border p-3 uppercase"
             onChange={(e)=>
-              setManifest(prev=>({
+              setManifest((prev: any)=>({
                 ...prev,
                 vehicleNumber:e.target.value.toUpperCase(),
               }))
@@ -129,7 +129,7 @@ export default function ManifestInformation({
           className="w-full rounded-lg border p-3"
           value={manifest.remarks}
           onChange={(e)=>
-            setManifest(prev=>({
+            setManifest((prev: any)=>({
               ...prev,
               remarks:e.target.value,
             }))
