@@ -1,3 +1,3 @@
-import ManifestRegisterPage from "@/src/features/manifest/ManifestRegisterPage";
+import ManifestRegisterPage from "@/features/manifest/ManifestRegisterPage";
 
 export default ManifestRegisterPage;
