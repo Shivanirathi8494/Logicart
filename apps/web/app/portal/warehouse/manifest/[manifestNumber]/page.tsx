@@ -1,4 +1,4 @@
-import ManifestPreviewPage from "@/features/manifest/ManifestPreviewPage";
+import { redirect } from "next/navigation";
 
 export default async function Page({
   params,
@@ -9,9 +9,8 @@ export default async function Page({
 }) {
   const { manifestNumber } = await params;
 
-  return (
-    <ManifestPreviewPage
-      manifestNumber={manifestNumber}
-    />
+  redirect(
+    "/portal/manifest/preview?manifest=" +
+      encodeURIComponent(manifestNumber)
   );
 }
