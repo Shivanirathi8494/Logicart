@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import InscanSearch from "./components/InscanSearch";
 import InscanManifestSummary from "./components/InscanManifestSummary";
 import InscanManifestTable from "./components/InscanManifestTable";
 
-export default function InscanPage() {
+function InscanContent() {
 
   const params = useSearchParams();
 
@@ -87,4 +87,13 @@ export default function InscanPage() {
 
   );
 
+}
+
+
+export default function InscanPage() {
+  return (
+    <Suspense fallback={<div className="p-8">Loading...</div>}>
+      <InscanContent />
+    </Suspense>
+  );
 }

@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import PageHero from "@/components/page/PageHero";
 import PageContainer from "@/components/page/PageContainer";
 
-export default function TrackingPage() {
+function TrackingContent() {
 
   const searchParams = useSearchParams();
 
@@ -163,5 +163,14 @@ export default function TrackingPage() {
 
       </PageContainer>
     </>
+  );
+}
+
+
+export default function TrackingPage() {
+  return (
+    <Suspense fallback={<div className="p-8">Loading...</div>}>
+      <TrackingContent />
+    </Suspense>
   );
 }
