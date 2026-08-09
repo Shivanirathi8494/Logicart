@@ -29,11 +29,13 @@ export default function ManifestPreviewPage() {
 
     async function loadManifest() {
 
+      const number = manifestNumber;
+
       try {
 
         const response = await fetch(
           "/api/manifests/" +
-          encodeURIComponent(manifestNumber),
+          encodeURIComponent(number),
           {
             cache: "no-store",
           }
