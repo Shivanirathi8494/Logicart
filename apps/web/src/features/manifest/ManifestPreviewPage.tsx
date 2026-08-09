@@ -29,7 +29,7 @@ export default function ManifestPreviewPage() {
 
     async function loadManifest() {
 
-      const number = manifestNumber;
+      const number: string = manifestNumber!;
 
       try {
 
