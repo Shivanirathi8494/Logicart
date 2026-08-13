@@ -1,237 +1,198 @@
 "use client";
 
-import Image from "next/image";
-
 export default function PrintableDeliveryChallan({
   challan,
 }: {
   challan: any;
 }) {
+  const actualRows = Array.isArray(challan?.shipments)
+    ? challan.shipments
+    : [];
 
-  const rows = challan.shipments ?? [];
+  // Only two blank rows after the actual AWBs.
+  const rows = [
+    ...actualRows,
+    null,
+    null,
+  ];
+
+  const firstShipment = actualRows[0]?.shipment;
 
   return (
-
-    <div className="mx-auto w-[210mm] min-h-[297mm] bg-white p-6 text-black">
-
-      <table className="w-full border-collapse border border-black">
-
+    <div
+      className="mx-auto min-h-[297mm] w-[210mm] bg-white p-[10mm] text-black"
+      style={{
+        fontFamily: "Arial, Helvetica, sans-serif",
+      }}
+    >
+      <table
+        className="w-full border-collapse border border-black text-[12px]"
+        style={{ backgroundColor: "#ffffff" }}
+      >
         <tbody>
 
+          {/* HEADER */}
           <tr>
-
             <td
               colSpan={4}
-              className="border border-black p-3"
+              className="border border-black px-4 py-4"
             >
-
-              <div className="flex items-center justify-between">
-
-                <Image
-                  src="/logo/logicarts-logo.png"
-                  alt="Logicarts"
-                  width={120}
-                  height={40}
-                />
+              <div className="relative flex items-center justify-center">
 
                 <div className="text-center">
-
-                  <h1 className="text-2xl font-bold">
+                  <div className="text-[28px] font-bold">
                     DELIVERY CHALLAN
-                  </h1>
-
+                  </div>
                 </div>
 
-                <div className="text-right text-sm">
-
+                <div className="absolute right-0 top-0 text-right text-[13px]">
                   <div>
-
                     <strong>No :</strong>{" "}
                     {challan.challanNumber}
-
                   </div>
 
-                  <div>
-
+                  <div className="mt-1">
                     <strong>Date :</strong>{" "}
                     {new Date(
                       challan.challanDate
-                    ).toLocaleDateString()}
-
+                    ).toLocaleDateString("en-GB")}
                   </div>
-
                 </div>
 
               </div>
-
             </td>
-
           </tr>
 
+          {/* CUSTOMER */}
           <tr>
-
             <td
               colSpan={4}
-              className="border border-black p-3"
+              className="border border-black px-4 py-4 text-[15px]"
             >
-
-              Please deliver to M/s.&nbsp;
-
+              Please deliver to M/s.{" "}
               <strong>
-
                 {challan.customerName}
+              </strong>
+            </td>
+          </tr>
 
+          {/* ARRIVAL INFORMATION */}
+          <tr>
+            <td
+              colSpan={2}
+              className="border border-black px-4 py-4 text-[15px]"
+            >
+              Order the following package which arrived{" "}
+              <strong>
+                {firstShipment?.origin || "-"}
+              </strong>
+              /
+              <strong>
+                {firstShipment?.destination || "-"}
+              </strong>
+            </td>
+
+            <td
+              colSpan={2}
+              className="border border-black px-4 py-4 text-[15px]"
+            >
+              Flight No:{" "}
+              <strong>
+                {challan.flightNumber || "-"}
               </strong>
 
-            </td>
+              <br />
 
+              Dated{" "}
+              <strong>
+                {new Date(
+                  challan.challanDate
+                ).toLocaleDateString("en-GB")}
+              </strong>
+            </td>
           </tr>
 
+          {/* TABLE HEADER */}
           <tr>
-
-            <td
-              colSpan={2}
-              className="border border-black p-3"
-            >
-
-              <strong>Flight No :</strong>{" "}
-
-              {challan.flightNumber || "-"}
-
-            </td>
-
-            <td
-              colSpan={2}
-              className="border border-black p-3"
-            >
-
-              <strong>Vehicle :</strong>{" "}
-
-              {challan.vehicleNumber || "-"}
-
-            </td>
-
-          </tr>
-
-          <tr className="bg-gray-100">
-
-            <th className="border border-black p-2">
-              AWB No.
+            <th className="border border-black bg-white px-3 py-3 text-left font-bold">
+              Consignment Note No.
             </th>
 
-            <th className="border border-black p-2">
+            <th className="border border-black bg-white px-3 py-3 text-center font-bold">
               No. of Pkgs.
             </th>
 
-            <th className="border border-black p-2">
+            <th className="border border-black bg-white px-3 py-3 text-center font-bold">
               Weight
             </th>
 
-            <th className="border border-black p-2">
+            <th className="border border-black bg-white px-3 py-3 text-left font-bold">
               Description
             </th>
-
           </tr>
 
-          {rows.map((item: any) => (
+          {/* AWB ROWS + 2 BLANK ROWS */}
+          {rows.map((item: any, index: number) => {
+            const shipment = item?.shipment;
 
-            <tr key={item.id}>
+            return (
+              <tr
+                key={index}
+                className="h-[38px]"
+                style={{
+                  backgroundColor: "#ffffff",
+                }}
+              >
+                <td className="border border-black bg-white px-3">
+                  {shipment?.trackingNumber ?? ""}
+                </td>
 
-              <td className="border border-black p-2">
+                <td className="border border-black bg-white px-3 text-center">
+                  {shipment?.packageCount ?? ""}
+                </td>
 
-                {item.shipment.trackingNumber}
+                <td className="border border-black bg-white px-3 text-center">
+                  {shipment
+                    ? Number(
+                        shipment.chargeableWeight ?? 0
+                      ).toFixed(2)
+                    : ""}
+                </td>
 
-              </td>
+                <td className="border border-black bg-white px-3">
+                  {shipment?.contents ?? ""}
+                </td>
+              </tr>
+            );
+          })}
 
-              <td className="border border-black p-2 text-center">
-
-                {item.shipment.packageCount}
-
-              </td>
-
-              <td className="border border-black p-2 text-center">
-
-                {item.shipment.chargeableWeight}
-
-              </td>
-
-              <td className="border border-black p-2">
-
-                {item.shipment.contents || "-"}
-
-              </td>
-
-            </tr>
-
-          ))}
-
-          {Array.from({
-            length: Math.max(
-              0,
-              18 - rows.length,
-            ),
-          }).map((_, i) => (
-
-            <tr key={i}>
-
-              <td className="border border-black h-8"></td>
-
-              <td className="border border-black"></td>
-
-              <td className="border border-black"></td>
-
-              <td className="border border-black"></td>
-
-            </tr>
-
-          ))}
-
+          {/* SIGNATURE */}
           <tr>
-
             <td
               colSpan={2}
-              className="border border-black p-6 align-top"
+              className="border border-black px-4 py-8 align-bottom"
             >
-
-              <div className="mt-12 border-t border-black"></div>
-
-              <div className="mt-2">
-
-                Receiver Signature
-
+              <div className="mt-12">
+                Receiver's Signature
               </div>
 
-              <div className="text-sm">
-
+              <div className="mt-4">
                 Name / Date / Time
-
               </div>
-
             </td>
 
             <td
               colSpan={2}
-              className="border border-black p-6 align-top text-right"
+              className="border border-black px-4 py-8 text-right align-bottom"
             >
-
-              <div className="mt-12 border-t border-black"></div>
-
-              <div className="mt-2">
-
-                For Logicarts
-
+              <div className="mt-12">
+                For ALLIANCE AIR
               </div>
-
             </td>
-
           </tr>
 
         </tbody>
-
       </table>
-
     </div>
-
   );
-
 }

@@ -1,220 +1,132 @@
 "use client";
 
-import Image from "next/image";
-
 export default function ManifestHeader({
   manifest,
 }: any) {
+  if (!manifest) return null;
 
-  const totalWeight = manifest.shipments.reduce(
-    (sum:number,s:any)=>sum+s.shipment.chargeableWeight,
+  const totalWeight = (manifest.shipments ?? []).reduce(
+    (sum: number, item: any) =>
+      sum + Number(item?.shipment?.chargeableWeight ?? 0),
     0
   );
 
+  const manifestDate = manifest.manifestDate
+    ? new Date(manifest.manifestDate)
+    : new Date();
+
+  const dateText = manifestDate
+    .toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "2-digit",
+    })
+    .toUpperCase();
+
+  const timeText = manifestDate.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
   return (
-
-<div>
-
-{/* ================= TOP ROW ================= */}
-
-<table className="w-full border-collapse border border-black text-[11px]">
-
-<tbody>
-
-<tr>
-
-<td className="border border-black p-1 w-20">
-
-{new Date().toLocaleTimeString([],{
-hour:"2-digit",
-minute:"2-digit",
-})}
-
-</td>
-
-<td className="border border-black p-1 w-24">
-
-{new Date(
-manifest.manifestDate
-).toLocaleDateString("en-GB")}
-
-</td>
-
-<td className="border border-black text-center">
-
-<div className="flex items-center justify-center gap-4">
-
-<Image
-src="/logo/logicarts-logo.png"
-alt="Logicarts"
-width={45}
-height={45}
-/>
-
-<div>
-
-<div className="text-xl font-bold">
-
-LOGICARTS
-
-</div>
-
-<div className="font-semibold">
-
-AIR CARGO MANIFEST
-
-</div>
-
-</div>
-
-</div>
-
-</td>
-
-<td className="border border-black p-1 w-24 text-center">
-
-PAGE : 1-1
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-{/* ================= OWNER ================= */}
-
-<table className="w-full border-collapse border-x border-b border-black text-[11px]">
-
-<tbody>
-
-<tr>
-
-<td className="border border-black p-2">
-
-OWNER / OPERATOR – LOGICARTS
-
-</td>
-
-<td className="border border-black p-2">
-
-ISSUED BY
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-{/* ================= FLIGHT ================= */}
-
-<table className="w-full border-collapse border-x border-b border-black text-[11px]">
-
-<tbody>
-
-<tr>
-
-<td className="border border-black p-2">
-
-A/C REGISTRATION NO -
-
-</td>
-
-<td className="border border-black p-2">
-
-FLIGHT NO : {manifest.flightNumber}
-
-</td>
-
-<td className="border border-black p-2">
-
-DATE :
-{" "}
-{new Date(
-manifest.manifestDate
-).toLocaleDateString("en-GB")}
-
-</td>
-
-<td className="border border-black p-2">
-
-WEIGHT IN KG :
-{" "}
-{totalWeight.toFixed(2)}
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-{/* ================= DEPARTURE ================= */}
-
-<table className="w-full border-collapse border-x border-b border-black text-[11px]">
-
-<tbody>
-
-<tr>
-
-<td className="border border-black p-2 font-semibold">
-
-DEPARTURE
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-{/* ================= LADING ================= */}
-
-<table className="mb-4 w-full border-collapse border-x border-b border-black text-[11px]">
-
-<tbody>
-
-<tr>
-
-<td className="border border-black p-2">
-
-POINT OF LADING –
-
-<strong>
-
-{" "}
-{manifest.origin}
-
-</strong>
-
-</td>
-
-<td className="border border-black p-2">
-
-POINT OF UNLADING –
-
-<strong>
-
-{" "}
-{manifest.destination}
-
-</strong>
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-
-);
-
+    <div className="w-full font-sans text-[11px] leading-tight text-black">
+
+      {/* TOP ROW */}
+      <table className="w-full border-collapse border border-black">
+        <tbody>
+          <tr className="h-[28px]">
+            <td className="w-[15%] border border-black px-2">
+              {timeText}
+            </td>
+
+            <td className="w-[15%] border border-black px-2">
+              {dateText}
+            </td>
+
+            <td className="w-[40%] border border-black text-center">
+              <span className="text-[15px] font-bold">
+                AIR CARGO MANIFEST
+              </span>
+            </td>
+
+            <td className="w-[30%] border border-black px-2">
+              PAGE:1-1
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* OWNER / ISSUED BY */}
+      <table className="w-full border-collapse border-x border-b border-black">
+        <tbody>
+          <tr className="h-[29px]">
+            <td className="w-[50%] border-r border-black px-2">
+              OWNER OR OPERATOR –{" "}
+              <strong>ALLIANCE AIR</strong>
+            </td>
+
+            <td className="px-2">
+              ISSUED BY-
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* AIRCRAFT / FLIGHT / DATE / WEIGHT */}
+      <table className="w-full border-collapse border-x border-b border-black">
+        <tbody>
+          <tr className="h-[38px]">
+            <td className="w-[40%] border-r border-black px-2">
+              A/C REGISTRATION NO – VT-
+            </td>
+
+            <td className="w-[20%] border-r border-black px-2">
+              FLIGHT NO. -{" "}
+              {manifest.flightNumber ?? ""}
+            </td>
+
+            <td className="w-[20%] border-r border-black px-2">
+              <div>DATE: -</div>
+              <div>{dateText}</div>
+            </td>
+
+            <td className="w-[20%] px-2">
+              <div>WEIGHT IN KG</div>
+              <div>{totalWeight.toFixed(2)}</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* DEPARTURE */}
+      <table className="w-full border-collapse border-x border-b border-black">
+        <tbody>
+          <tr className="h-[28px]">
+            <td className="px-2 font-bold">
+              DEPARTURE
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* LOADING / UNLOADING */}
+      <table className="w-full border-collapse border-x border-b border-black">
+        <tbody>
+          <tr className="h-[38px]">
+            <td className="w-1/2 border-r border-black px-2">
+              POINT OF LADING –{" "}
+              <strong>{manifest.origin}</strong>
+            </td>
+
+            <td className="w-1/2 px-2">
+              POINT OF UNLADING -{" "}
+              <strong>{manifest.destination}</strong>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+  );
 }

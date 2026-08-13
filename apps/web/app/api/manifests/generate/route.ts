@@ -32,17 +32,33 @@ export async function POST(request: NextRequest) {
 
     }
 
-    const manifestCount = await prisma.manifest.count();
+    const firstShipment = shipments[0];
 
     const manifestNumber =
       "MNF-" +
-      body.origin +
+      firstShipment.origin +
       "-" +
-      body.destination +
-      "-" +
-      new Date().toISOString().slice(2,10).replace(/-/g,"") +
-      "-" +
-      String(manifestCount + 1).padStart(6,"0");
+      firstShipment.trackingNumber;
+
+    const existingManifest =
+      await prisma.manifest.findUnique({
+        where: {
+          manifestNumber,
+        },
+      });
+
+    if (existingManifest) {
+      return NextResponse.json(
+        {
+          error: "Manifest already exists.",
+          manifestNumber,
+          id: existingManifest.id,
+        },
+        {
+          status: 409,
+        }
+      );
+    }
 
     const manifest = await prisma.manifest.create({
 

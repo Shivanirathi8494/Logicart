@@ -1,105 +1,177 @@
-import ReportLayout from "@/features/reports/components/ReportLayout";
+"use client";
+
+import { useEffect, useState } from "react";
+
+import ReportLayout, {
+  ReportFilters,
+} from "@/features/reports/components/ReportLayout";
 import ReportSummary from "@/features/reports/components/ReportSummary";
 import ReportTable from "@/features/reports/components/ReportTable";
 
 export default function Page() {
+  const [shipments, setShipments] = useState<any[]>([]);
+  const [filtered, setFiltered] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  return (
+  async function loadShipments() {
+    try {
+      setLoading(true);
 
-    <ReportLayout title="Booking Report">
+      const response = await fetch("/api/dockets", {
+        cache: "no-store",
+      });
 
-      <ReportSummary
+      if (!response.ok) {
+        throw new Error("Unable to load bookings.");
+      }
 
-        cards={[
+      const data = await response.json();
 
-          {
-            title:"Total Bookings",
-            value:128,
-          },
+      setShipments(data);
+      setFiltered(data);
+    } catch (error) {
+      console.error(error);
+      setShipments([]);
+      setFiltered([]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-          {
-            title:"Revenue",
-            value:"₹8,45,000",
-          },
+  useEffect(() => {
+    loadShipments();
+  }, []);
 
-          {
-            title:"Total Weight",
-            value:"4,280 Kg",
-          },
+  function applyFilters(filters: ReportFilters) {
+    let rows = [...shipments];
 
-          {
-            title:"Delivered",
-            value:118,
-          },
+    if (filters.fromDate) {
+      const from = new Date(`${filters.fromDate}T00:00:00`);
 
-        ]}
+      rows = rows.filter((shipment) => {
+        const date = new Date(shipment.createdAt);
+        return date >= from;
+      });
+    }
 
-      />
+    if (filters.toDate) {
+      const to = new Date(`${filters.toDate}T23:59:59.999`);
 
-      <ReportTable
+      rows = rows.filter((shipment) => {
+        const date = new Date(shipment.createdAt);
+        return date <= to;
+      });
+    }
 
-        headers={[
+    if (filters.origin) {
+      rows = rows.filter(
+        (shipment) =>
+          shipment.origin?.toUpperCase() ===
+          filters.origin.toUpperCase()
+      );
+    }
 
-          "Tracking No",
+    if (filters.status) {
+      rows = rows.filter(
+        (shipment) => shipment.status === filters.status
+      );
+    }
 
-          "Origin",
+    setFiltered(rows);
+  }
 
-          "Destination",
+  function resetFilters() {
+    setFiltered(shipments);
+  }
 
-          "Customer",
+  const totalBookings = filtered.length;
 
-          "Weight",
-
-          "Amount",
-
-          "Status",
-
-        ]}
-
-        rows={[
-
-          [
-
-            "DEL000001",
-
-            "DEL",
-
-            "BLR",
-
-            "ABC Traders",
-
-            "50 Kg",
-
-            "₹5,000",
-
-            "Delivered",
-
-          ],
-
-          [
-
-            "DEL000002",
-
-            "DEL",
-
-            "BOM",
-
-            "XYZ Electronics",
-
-            "80 Kg",
-
-            "₹8,200",
-
-            "In Transit",
-
-          ],
-
-        ]}
-
-      />
-
-    </ReportLayout>
-
+  const totalRevenue = filtered.reduce(
+    (sum, shipment) =>
+      sum + Number(shipment.total ?? 0),
+    0
   );
 
+  const totalWeight = filtered.reduce(
+    (sum, shipment) =>
+      sum + Number(shipment.chargeableWeight ?? 0),
+    0
+  );
+
+  const delivered = filtered.filter(
+    (shipment) => shipment.status === "DELIVERED"
+  ).length;
+
+  const rows = filtered.map((shipment) => [
+    shipment.trackingNumber ?? "",
+    shipment.origin ?? "",
+    shipment.destination ?? "",
+    shipment.receiverName ?? "",
+    `${Number(
+      shipment.chargeableWeight ?? 0
+    ).toFixed(2)} Kg`,
+    `₹${Number(
+      shipment.total ?? 0
+    ).toLocaleString("en-IN")}`,
+    shipment.status ?? "",
+  ]);
+
+  return (
+    <ReportLayout
+      title="Booking Report"
+      onSearch={applyFilters}
+      onReset={resetFilters}
+      statusOptions={[
+        "BOOKED",
+        "MANIFESTED",
+        "INSCAN",
+        "OUTSCAN",
+        "DELIVERED",
+      ]}
+    >
+      <ReportSummary
+        cards={[
+          {
+            title: "Total Bookings",
+            value: loading ? "..." : totalBookings,
+          },
+          {
+            title: "Revenue",
+            value: loading
+              ? "..."
+              : `₹${totalRevenue.toLocaleString("en-IN")}`,
+          },
+          {
+            title: "Total Weight",
+            value: loading
+              ? "..."
+              : `${totalWeight.toFixed(2)} Kg`,
+          },
+          {
+            title: "Delivered",
+            value: loading ? "..." : delivered,
+          },
+        ]}
+      />
+
+      {loading ? (
+        <div className="rounded-xl border bg-white p-8 text-slate-500">
+          Loading booking records...
+        </div>
+      ) : (
+        <ReportTable
+          headers={[
+            "Tracking No",
+            "Origin",
+            "Destination",
+            "Customer",
+            "Weight",
+            "Amount",
+            "Status",
+          ]}
+          rows={rows}
+        />
+      )}
+    </ReportLayout>
+  );
 }

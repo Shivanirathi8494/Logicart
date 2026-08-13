@@ -21,11 +21,11 @@ export default function ShipmentSearch({
     const rows=await response.json();
 
     const shipment=rows.find(
-      (s:any)=>s.status==="OUTSCAN"
+      (s:any)=>s.status==="INSCAN"
     );
 
     if(!shipment){
-      alert("Shipment not found or not in OUTSCAN status.");
+      alert("Shipment not found or not in INSCAN status.");
       return;
     }
 

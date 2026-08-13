@@ -47,9 +47,17 @@ export default function LoadingTallyPage({
   );
 
   async function generateManifest(group: any) {
-    const response = await fetch(
-      "/api/loading-tallies/generate-manifest",
-      {
+    try {
+      const trackingNumbers = group.shipments
+        .map((shipment: any) => shipment.trackingNumber)
+        .filter(Boolean);
+
+      if (!trackingNumbers.length) {
+        alert("No shipments available for manifest.");
+        return;
+      }
+
+      const response = await fetch("/api/manifests/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,20 +65,27 @@ export default function LoadingTallyPage({
         body: JSON.stringify({
           origin: group.origin,
           destination: group.destination,
-          shipments: group.shipments,
+          trackingNumbers,
+          loadingTallyId: tally.id,
+          loadingTallyNumber: tally.loadingTallyNumber,
         }),
-      }
-    );
+      });
 
-    if (response.ok) {
-      const manifest = await response.json();
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Manifest generation failed:", data);
+        alert(data.error || "Unable to generate manifest.");
+        return;
+      }
 
       window.open(
         "/portal/manifest/preview?manifest=" +
-          manifest.manifestNumber,
-        "_blank"
+          encodeURIComponent(data.manifestNumber),
+        "_blank",
       );
-    } else {
+    } catch (error) {
+      console.error("Manifest generation failed:", error);
       alert("Unable to generate manifest.");
     }
   }

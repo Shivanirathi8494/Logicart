@@ -11,6 +11,8 @@ export interface CreateShipmentRequest {
 
   origin: string;
   destination: string;
+  airlineId: string;
+  flightNumber: string;
 
   // Sender
   senderName: string;
@@ -41,6 +43,8 @@ export interface CreateShipmentRequest {
   freight: number;
   gst: number;
   total: number;
+
+  tariffError?: string;
 
   paymentReference: string;
   remarks: string;

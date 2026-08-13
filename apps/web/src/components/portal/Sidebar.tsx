@@ -8,11 +8,9 @@ import { LogOut } from "lucide-react";
 const menu = [
   { label: "Dashboard", href: "/portal/dashboard" },
   { label: "Create Docket", href: "/portal/operations/create-docket" },
-  { label: "Search Docket", href: "/portal/operations/search-docket" },
-  { label: "Update Status", href: "/portal/operations/update-status" },
-  { label: "Loading Tally", href: "/portal/warehouse/outscan" },
+  { label: "Docket Management", href: "/portal/operations/search-docket" },
+  { label: "Loading & Manifest", href: "/portal/warehouse/manifest" },
   { label: "Unloading Tally", href: "/portal/warehouse/inscan" },
-  { label: "Manifest", href: "/portal/warehouse/manifest" },
   { label: "Search Manifest", href: "/portal/warehouse/manifest-search" },
   { label: "Delivery Challan", href: "/portal/delivery/challan" },
   { label: "Reports", href: "/portal/reports" },
@@ -67,7 +65,7 @@ export default function Sidebar() {
 
   return (
 
-    <aside className="flex min-h-screen w-72 flex-col bg-slate-900 p-6 text-white">
+    <aside className="flex min-h-screen w-72 shrink-0 flex-col bg-slate-900 p-6 text-white">
 
       <Link
         href="/portal/dashboard"

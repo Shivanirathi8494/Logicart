@@ -1,5 +1,5 @@
-import UpdateStatusPage from "@/features/update-status/UpdateStatusPage";
+import { redirect } from "next/navigation";
 
-export default function Page() {
-  return <UpdateStatusPage />;
+export default function UpdateStatusPage() {
+  redirect("/portal/operations/search-docket");
 }

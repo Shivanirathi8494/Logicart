@@ -1,29 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateTrackingNumber } from "@/lib/docket/generateTrackingNumber";
+import { previewAwbNumber } from "@/lib/airwaybill/previewAwbNumber";
 
 export async function GET(request: NextRequest) {
+  const airlineId =
+    request.nextUrl.searchParams.get("airlineId");
 
-  const origin =
-    request.nextUrl.searchParams.get("origin");
+  if (!airlineId) {
+    return NextResponse.json(
+      { error: "Airline is required." },
+      { status: 400 },
+    );
+  }
 
-  if (!origin) {
+  try {
+    const trackingNumber =
+      await previewAwbNumber(airlineId);
+
+    return NextResponse.json({
+      trackingNumber,
+    });
+  } catch (error) {
+    console.error(error);
 
     return NextResponse.json(
       {
-        error: "Origin is required.",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to preview AWB.",
       },
-      {
-        status: 400,
-      },
+      { status: 400 },
     );
-
   }
-
-  const trackingNumber =
-    await generateTrackingNumber(origin, "");
-
-  return NextResponse.json({
-    trackingNumber,
-  });
-
 }

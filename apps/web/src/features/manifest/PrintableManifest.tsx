@@ -2,7 +2,6 @@
 
 import ManifestHeader from "./print/ManifestHeader";
 import ManifestTable from "./print/ManifestTable";
-import ManifestFooter from "./print/ManifestFooter";
 
 type Props = {
   manifest: any;
@@ -11,27 +10,32 @@ type Props = {
 export default function PrintableManifest({
   manifest,
 }: Props) {
-
   if (!manifest) return null;
 
   return (
-
-    <div className="mx-auto w-[210mm] min-h-[297mm] bg-white p-6 text-black print:p-3">
-
-      <ManifestHeader
-        manifest={manifest}
-      />
+    <div
+      className="
+        mx-auto
+        box-border
+        min-h-[297mm]
+        w-[210mm]
+        bg-white
+        px-[12mm]
+        py-[10mm]
+        font-sans
+        text-black
+        print:m-0
+        print:min-h-0
+        print:w-[210mm]
+        print:px-[12mm]
+        print:py-[10mm]
+      "
+    >
+      <ManifestHeader manifest={manifest} />
 
       <ManifestTable
         shipments={manifest.shipments}
       />
-
-      <ManifestFooter
-        shipments={manifest.shipments}
-      />
-
     </div>
-
   );
-
 }

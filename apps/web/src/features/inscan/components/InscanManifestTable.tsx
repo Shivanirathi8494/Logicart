@@ -312,7 +312,7 @@ onClick={()=>updateStatus("NOT_DELIVERED")}
 className="rounded bg-red-600 px-6 py-3 text-white"
 >
 
-Mark Not Delivered
+Not delivered
 
 </button>
 

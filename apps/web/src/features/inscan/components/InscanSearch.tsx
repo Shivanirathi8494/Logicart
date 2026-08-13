@@ -72,7 +72,7 @@ Manifest Number
 
 <input
 className="flex-1 rounded-lg border p-3"
-placeholder="MNF-MAA-260807-000001"
+placeholder="MNF-CCU-296-00000051"
 value={manifestNumber}
 onChange={(e)=>setManifestNumber(e.target.value)}
 onKeyDown={(e)=>{

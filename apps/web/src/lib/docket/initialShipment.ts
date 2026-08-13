@@ -9,6 +9,9 @@ export const initialShipment: CreateShipmentRequest = {
   origin: "",
   destination: "",
 
+  airlineId: "",
+  flightNumber: "",
+
   // Sender
   senderName: "",
   senderPhone: "",

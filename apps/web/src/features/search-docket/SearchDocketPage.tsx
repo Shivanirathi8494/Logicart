@@ -5,83 +5,100 @@ import { useEffect, useState } from "react";
 import SearchFilters from "./components/SearchFilters";
 import SearchResults from "./components/SearchResults";
 
+import ShipmentCard from "@/features/update-status/components/ShipmentCard";
+import StatusUpdateForm from "@/features/update-status/components/StatusUpdateForm";
+import StatusHistory from "@/features/update-status/components/StatusHistory";
+
 export default function SearchDocketPage() {
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [shipment, setShipment] = useState<any>(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  const [results,setResults]=useState([]);
+  async function search(filters: { tracking: string }) {
+    const tracking = filters.tracking.trim();
 
-  const [loading,setLoading]=useState(false);
-
-  async function search(filters:any){
+    if (tracking) {
+      setHasSearched(true);
+    }
 
     setLoading(true);
 
-    const params=new URLSearchParams();
+    try {
+      const params = new URLSearchParams();
 
-    if(filters.tracking)
-      params.append("tracking",filters.tracking);
+      if (tracking) {
+        params.append("tracking", tracking);
+      }
 
-    if(filters.mobile)
-      params.append("mobile",filters.mobile);
+      const response = await fetch(
+        "/api/dockets?" + params.toString()
+      );
 
-    if(filters.origin)
-      params.append("origin",filters.origin);
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
 
-    if(filters.destination)
-      params.append("destination",filters.destination);
+      const data = await response.json();
 
-    if(filters.status)
-      params.append("status",filters.status);
+      setResults(data);
 
-    const url="/api/dockets?"+params.toString();
-
-console.log("Calling URL:",url);
-
-console.log("URL:",url);
-const response=await fetch(url);
-console.log("STATUS:",response.status);
-if(!response.ok){const txt=await response.text();console.log("BODY:",txt);throw new Error(txt);}
-
-console.log("Response:",response.status);
-
-    const data=await response.json();
-
-    setResults(data);
-
-    setLoading(false);
-
+      if (tracking && data.length > 0) {
+        setShipment(data[0]);
+      } else if (tracking) {
+        setShipment(null);
+      } else {
+        setShipment(null);
+      }
+    } catch (error) {
+      console.error("Docket search failed:", error);
+      setResults([]);
+      setShipment(null);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
-    search({});
+    search({ tracking: "" });
   }, []);
 
-  return(
-
+  return (
     <div className="space-y-8">
-
       <div>
-
         <h1 className="text-3xl font-bold">
-          Search Docket
+          Docket Management
         </h1>
 
-        <p className="text-slate-500 mt-2">
-          Search shipments stored in database.
+        <p className="mt-2 text-slate-500">
+          Search by AWB number, view available dockets, and update shipment status.
         </p>
-
       </div>
 
-      <SearchFilters
-        onSearch={search}
-      />
+      <SearchFilters onSearch={search} />
 
-      <SearchResults
-        loading={loading}
-        rows={results}
-      />
+      <div>
+        <h2 className="mb-4 text-xl font-semibold">
+          Available Dockets
+        </h2>
 
+        <SearchResults
+          loading={loading}
+          rows={results}
+          onSelect={setShipment}
+          hasSearched={hasSearched}
+        />
+      </div>
+
+      {shipment && (
+        <div className="space-y-8">
+          <ShipmentCard shipment={shipment} />
+
+          <StatusUpdateForm shipment={shipment} />
+
+          <StatusHistory shipment={shipment} />
+        </div>
+      )}
     </div>
-
   );
-
 }

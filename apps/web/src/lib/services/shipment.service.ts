@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { generateTrackingNumber } from "@/lib/docket/generateTrackingNumber";
+import { generateAwbNumber } from "@/lib/airwaybill/generateAwbNumber";
 
 export class ShipmentService {
 
@@ -21,9 +21,16 @@ export class ShipmentService {
 
   static async create(data: any) {
 
-    const trackingNumber = await generateTrackingNumber(
-      data.origin,
-      data.destination,
+    if (!data.airlineId) {
+      throw new Error("Airline is required.");
+    }
+
+    if (!data.flightNumber?.trim()) {
+      throw new Error("Flight number is required.");
+    }
+
+    const trackingNumber = await generateAwbNumber(
+      data.airlineId,
     );
 
     console.log("Generated AWB:", trackingNumber);

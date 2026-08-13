@@ -34,9 +34,17 @@ export default function PaymentInformation({
 
             <span>Freight Charges</span>
 
-            <span className="font-semibold">
-              ₹ {shipment.freight.toFixed(2)}
-            </span>
+            <div className="text-right">
+              <span className="font-semibold">
+                ₹ {shipment.freight.toFixed(2)}
+              </span>
+
+              {shipment.tariffError && (
+                <p className="mt-1 max-w-xs text-sm font-medium text-red-600">
+                  {shipment.tariffError}
+                </p>
+              )}
+            </div>
 
           </div>
 

@@ -7,9 +7,59 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Airline {
+  id             String   @id @default(cuid())
+  name           String   @unique
+  iataDesignator String   @unique
+  icaoCode       String   @unique
+  iataPrefix     String?  @unique
+  country        String   @default("India")
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  shipments    Shipment[]
+  awbSequence  AwbSequence?
+  cargoTariffs AirCargoTariff[]
+}
+
+model AirCargoTariff {
+  id            String   @id @default(cuid())
+  airlineId     String
+  origin        String
+  destination   String
+  cargoType     String   @default("GCR")
+  minimumCharge Float
+  normalRate    Float
+  rate45Plus    Float
+  rate100Plus   Float
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  airline Airline @relation(fields: [airlineId], references: [id], onDelete: Cascade)
+
+  @@unique([airlineId, origin, destination, cargoType])
+  @@index([airlineId, origin, destination])
+}
+
+model AwbSequence {
+  id         String @id @default(cuid())
+  airlineId  String @unique
+  nextSerial Int    @default(1)
+
+  airline Airline @relation(fields: [airlineId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Shipment {
   id               String                    @id @default(cuid())
   trackingNumber   String                    @unique
+  airlineId        String?
+  airline          Airline?                  @relation(fields: [airlineId], references: [id])
+  flightNumber     String?
   bookingDate      DateTime
   origin           String
   destination      String

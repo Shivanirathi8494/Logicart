@@ -54,6 +54,9 @@ export default function CreateDocketPage({
     origin: data.origin,
     destination: data.destination,
 
+    airlineId: data.airlineId ?? "",
+    flightNumber: data.flightNumber ?? "",
+
     senderName: data.senderName ?? "",
     senderPhone: data.senderPhone ?? "",
     senderGSTIN: data.senderGSTIN ?? "",

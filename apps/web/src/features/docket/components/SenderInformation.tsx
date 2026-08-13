@@ -63,13 +63,13 @@ export default function SenderInformation({
     <section className="rounded-xl border bg-white p-6 shadow-sm">
 
       <h2 className="mb-6 text-xl font-semibold">
-        Sender Information
+        Shipper's Information
       </h2>
 
       <div className="grid gap-6 lg:grid-cols-3">
 
         <input
-          placeholder="Name"
+          placeholder="Shipper's Name"
           className="rounded-lg border p-3"
           value={shipment.senderName}
           onChange={(e)=>

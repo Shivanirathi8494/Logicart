@@ -3,114 +3,111 @@
 export default function ManifestTable({
   shipments,
 }: any) {
+  const actualRows = Array.isArray(shipments)
+    ? shipments
+    : [];
 
-  const rows = Array.isArray(shipments)
-  ? [...shipments]
-  : [];
-
-  // Airline manifests have a fixed table height.
-  // Fill remaining rows with blank rows.
-  while (rows.length < 18) {
-    rows.push(null);
-  }
+  // Always allow only TWO additional blank rows.
+  const rows = [
+    ...actualRows,
+    null,
+    null,
+  ];
 
   return (
+    <div className="mt-4 w-full font-sans text-[11px] leading-tight text-black">
 
-<table className="w-full border-collapse border border-black text-[11px]">
+      {/* COLUMN HEADERS */}
+      <table
+        className="w-full border-collapse border border-black"
+        style={{ backgroundColor: "#fff" }}
+      >
+        <thead>
+          <tr className="h-[44px]">
+            <th className="w-[24%] border border-black bg-white px-2 text-left align-top font-bold">
+              Airwaybill
+            </th>
 
-<thead>
+            <th className="w-[17%] border border-black bg-white px-2 text-left align-top font-bold">
+              Number of Pcs
+            </th>
 
-<tr className="bg-gray-100">
+            <th className="w-[17%] border border-black bg-white px-2 text-left align-top font-bold">
+              Nature of
+              <br />
+              Goods
+            </th>
 
-<th className="w-[24%] border border-black p-2 text-center font-semibold">
+            <th className="w-[17%] border border-black bg-white px-2 text-left align-top font-bold">
+              Weight
+            </th>
 
-Airwaybill Number
+            <th className="w-[25%] border border-black bg-white px-2 text-left align-top font-bold">
+              Origin/Destination
+            </th>
+          </tr>
+        </thead>
+      </table>
 
-</th>
+      {/* GAP BETWEEN HEADER AND DATA GRID */}
+      <div className="h-[10mm]" />
 
-<th className="w-[10%] border border-black p-2 text-center font-semibold">
+      {/* DATA + TWO EXTRA BLANK ROWS */}
+      <table
+        className="w-full border-collapse border border-black"
+        style={{ backgroundColor: "#fff" }}
+      >
+        <tbody>
+          {rows.map((row: any, index: number) => {
+            const shipment = row?.shipment;
 
-No. of Pcs
+            return (
+              <tr
+                key={index}
+                className="h-[37px]"
+                style={{ backgroundColor: "#fff" }}
+              >
+                <td
+                  className="w-[24%] border border-black bg-white px-2 align-middle"
+                >
+                  {shipment?.trackingNumber ?? ""}
+                </td>
 
-</th>
+                <td
+                  className="w-[17%] border border-black bg-white px-2 align-middle"
+                >
+                  {shipment?.packageCount ?? ""}
+                </td>
 
-<th className="w-[28%] border border-black p-2 text-center font-semibold">
+                <td
+                  className="w-[17%] border border-black bg-white px-2 align-middle"
+                >
+                  {shipment?.contents ?? ""}
+                </td>
 
-Nature of Goods
+                <td
+                  className="w-[17%] border border-black bg-white px-2 align-middle"
+                >
+                  {shipment
+                    ? Number(
+                        shipment.chargeableWeight ?? 0
+                      ).toFixed(2)
+                    : ""}
+                </td>
 
-</th>
+                <td
+                  className="w-[25%] border border-black bg-white px-2 align-middle"
+                >
+                  {shipment
+                    ? `${shipment.origin}/${shipment.destination}`
+                    : ""}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
 
-<th className="w-[15%] border border-black p-2 text-center font-semibold">
-
-Weight
-
-</th>
-
-<th className="w-[23%] border border-black p-2 text-center font-semibold">
-
-Origin / Destination
-
-</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-{rows.map((row:any,index:number)=>(
-
-<tr
-key={index}
-className="h-8"
->
-
-<td className="border border-black px-2">
-
-{row?.shipment?.trackingNumber ?? ""}
-
-</td>
-
-<td className="border border-black text-center">
-
-{row?.shipment?.packageCount ?? ""}
-
-</td>
-
-<td className="border border-black px-2">
-
-{row?.shipment?.contents || ""}
-
-</td>
-
-<td className="border border-black text-center">
-
-{row
-  ? Number(
-      row?.shipment?.chargeableWeight ?? 0
-    ).toFixed(2)
-  : ""
-}
-
-</td>
-
-<td className="border border-black text-center">
-
-{row
-? `${row.shipment.origin} / ${row.shipment.destination}`
-: ""
-}
-
-</td>
-
-</tr>
-
-))}
-
-</tbody>
-
-</table>
-
-);
-
+    </div>
+  );
 }

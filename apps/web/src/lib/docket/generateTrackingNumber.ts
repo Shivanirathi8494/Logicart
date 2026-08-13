@@ -1,28 +1,46 @@
 import { prisma } from "@/lib/prisma";
 
 export async function generateTrackingNumber(
-  origin: string,
-  _destination: string
+  airlineId: string,
 ) {
-
-  const today = new Date();
-
-  const yy = String(today.getFullYear()).slice(-2);
-  const mm = String(today.getMonth() + 1).padStart(2, "0");
-  const dd = String(today.getDate()).padStart(2, "0");
-
-  const prefix = `${origin}-${yy}${mm}${dd}`;
-
-  const count = await prisma.shipment.count({
+  const airline = await prisma.airline.findUnique({
     where: {
-      trackingNumber: {
-        startsWith: prefix,
+      id: airlineId,
+    },
+  });
+
+  if (!airline) {
+    throw new Error("Airline not found.");
+  }
+
+  if (!airline.iataPrefix) {
+    throw new Error(
+      `${airline.name} does not have an IATA AWB prefix configured.`,
+    );
+  }
+
+  const sequence = await prisma.awbSequence.upsert({
+    where: {
+      airlineId,
+    },
+
+    create: {
+      airlineId,
+      nextSerial: 2,
+    },
+
+    update: {
+      nextSerial: {
+        increment: 1,
       },
     },
   });
 
-  const sequence = String(count + 1).padStart(6, "0");
+  const serialNumber = sequence.nextSerial - 1;
 
-  return `${prefix}-${sequence}`;
+  const serial = String(serialNumber).padStart(7, "0");
 
+  const checkDigit = serialNumber % 7;
+
+  return `${airline.iataPrefix}-${serial}-${checkDigit}`;
 }
