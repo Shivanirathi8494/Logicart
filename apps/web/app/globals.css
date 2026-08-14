@@ -164,3 +164,21 @@ body {
   }
 
 }
+
+@keyframes city-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.city-marquee {
+  animation: city-marquee 35s linear infinite;
+}
+
+.city-marquee:hover {
+  animation-play-state: paused;
+}
