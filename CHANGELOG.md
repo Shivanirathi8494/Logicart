@@ -1,5 +1,100 @@
 # Changelog
 
+# v1.2.0 — RBAC & Onboarding
+
+Release Date: 18 August 2026
+
+## Added
+
+### Role-Based Access Control
+
+- Added ADMIN, CLIENT, AGENT and EMPLOYEE portal roles.
+- Added role-based sidebar visibility.
+- Added server-side route protection.
+- Added role-specific dashboard behavior.
+
+### Client Access
+
+- Dashboard access.
+- Docket generation.
+- Docket management and tracking.
+- Shipment visibility restricted to the client's own shipments.
+- Revenue access blocked.
+
+### Agent Access
+
+- Dashboard access.
+- Docket generation.
+- Docket management and tracking.
+- Shipment visibility restricted to the agent's own shipments.
+- Revenue access blocked.
+- Added Agent Type support:
+  - Courier Company
+  - Logistics Company
+  - Aggregator
+
+### Employee Access
+
+- Dashboard access.
+- Docket generation.
+- Docket management.
+- Docket updates.
+- Inscan.
+- Outscan.
+- Delivery operations.
+- Revenue access blocked.
+
+### Admin Access
+
+- Full portal access.
+- Admin-only Revenue visibility.
+- Onboarding & Access management.
+
+### Onboarding
+
+- Added Client onboarding.
+- Added Agent onboarding.
+- Added Customer creation.
+- Added Employee creation.
+- Added onboarding status tracking.
+- Added Finance and MD dual-approval workflow.
+- Added approval email workflow.
+- Added automatic Client and Agent account activation after both approvals.
+- Added credential email delivery after activation.
+
+### Identifier Standards
+
+- Client IDs: `LGCL001`, `LGCL002`, ...
+- Agent IDs: `LGAG001`, `LGAG002`, ...
+- Employee IDs: `LGEM001`, `LGEM002`, ...
+- Customer IDs: `LGCU001`, `LGCU002`, ...
+- Onboarding Request IDs: `LGRQ001`, `LGRQ002`, ...
+
+### Security
+
+- Revenue is available only to ADMIN users.
+- Client shipment access is isolated by Client ID.
+- Agent shipment access is isolated by Agent ID.
+- Protected APIs require authenticated users.
+- Admin-only areas are protected server-side.
+
+## Changed
+
+- Simplified Masters navigation to focus on Onboarding & Access.
+- Removed Users from the current navigation.
+- Removed Branch Master, Customer Master and Vehicle Master cards from the current Masters screen.
+- Dashboard Revenue KPI is now conditionally returned and rendered only for Admin.
+- Docket ownership now records Client / Agent association.
+
+## Documentation
+
+- Updated README for RBAC and onboarding.
+- Updated project requirements to v1.2.0.
+- Updated deployment and environment configuration guidance.
+
+---
+
+
 ## v0.4.0
 
 ### Added
