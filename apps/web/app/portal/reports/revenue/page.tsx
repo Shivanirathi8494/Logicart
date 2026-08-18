@@ -1,8 +1,16 @@
 import ReportLayout from "@/features/reports/components/ReportLayout";
 import ReportSummary from "@/features/reports/components/ReportSummary";
 import ReportTable from "@/features/reports/components/ReportTable";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth/authorization";
 
-export default function Page() {
+export default async function Page() {
+
+  const user = await getCurrentUser();
+
+  if (!user || user.role !== "ADMIN") {
+    redirect("/portal/dashboard");
+  }
 
   return (
 

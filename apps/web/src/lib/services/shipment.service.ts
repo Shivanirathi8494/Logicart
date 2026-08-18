@@ -19,7 +19,14 @@ export class ShipmentService {
 
   }
 
-  static async create(data: any) {
+  static async create(
+    data: any,
+    ownership?: {
+      clientId?: string | null;
+      agentId?: string | null;
+      createdByUserId?: string | null;
+    },
+  ) {
 
     if (!data.airlineId) {
       throw new Error("Airline is required.");
@@ -40,6 +47,10 @@ export class ShipmentService {
       data: {
 
         trackingNumber,
+
+        clientId: ownership?.clientId ?? null,
+        agentId: ownership?.agentId ?? null,
+        createdByUserId: ownership?.createdByUserId ?? null,
 
         bookingDate: new Date(data.bookingDate),
 

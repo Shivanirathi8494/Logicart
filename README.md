@@ -391,3 +391,88 @@ BLR-DEL-YYMMDD-000001
 ### Branding
 
 - Company branding uses `Logicarts`.
+
+
+---
+
+# RBAC & Onboarding Release
+
+The Operations Portal now includes role-based access and onboarding workflows.
+
+## Role-Based Access
+
+### Admin
+
+- Full portal access
+- Dashboard
+- Docket operations
+- Warehouse operations
+- Delivery
+- Reports
+- Revenue
+- Masters
+- Onboarding & Access
+
+### Client
+
+- Dashboard
+- Create Docket
+- Docket Management / Tracking
+- Access limited to the Client's own shipments
+- No Revenue access
+
+### Agent
+
+- Dashboard
+- Create Docket
+- Docket Management / Tracking
+- Access limited to the Agent's own shipments
+- No Revenue access
+
+### Employee
+
+- Dashboard
+- Create Docket
+- Docket Management
+- Docket Update
+- Inscan
+- Outscan
+- Delivery
+- No Revenue access
+
+## Onboarding & Access
+
+Admin can create:
+
+- Client
+- Agent
+- Customer
+- Employee
+
+Client and Agent onboarding requires approval from both Finance and MD before account activation.
+
+Approval recipients:
+
+- Finance: sujit.jha@logicarts.in
+- MD: souravmishra@logicarts.in
+
+## Logicarts ID Format
+
+- Client: LGCL001
+- Agent: LGAG001
+- Employee: LGEM001
+- Customer: LGCU001
+- Onboarding Request: LGRQ001
+
+IDs are system-generated and sequential.
+
+## Current Navigation Simplification
+
+The following items are removed from the current navigation:
+
+- Users
+- Branch Master
+- Customer Master
+- Vehicle Master
+
+The current administration workflow is focused on Onboarding & Access.

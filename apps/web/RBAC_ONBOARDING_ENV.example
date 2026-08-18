@@ -1,0 +1,15 @@
+# Add these to your LOCAL .env only.
+# Do not commit real passwords.
+
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=
+SMTP_PASS=
+MAIL_FROM=
+
+# Fixed approval recipients in application:
+# Finance: sujit.jha@logicarts.in
+# MD: souravmishra@logicarts.in

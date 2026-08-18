@@ -1,75 +1,142 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import { prisma } from "@/lib/prisma";
 import { ShipmentService } from "@/lib/services/shipment.service";
+import {
+  requireRole,
+  requireUser,
+} from "@/lib/auth/authorization";
 
 export async function GET(request: NextRequest) {
+  try {
+    const user = await requireUser();
 
-  const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(request.url);
 
-  const tracking = searchParams.get("tracking");
-  const mobile = searchParams.get("mobile");
-  const origin = searchParams.get("origin");
-  const destination = searchParams.get("destination");
-  const status = searchParams.get("status");
+    const tracking = searchParams.get("tracking");
+    const mobile = searchParams.get("mobile");
+    const origin = searchParams.get("origin");
+    const destination = searchParams.get("destination");
+    const status = searchParams.get("status");
 
-  const shipments = await prisma.shipment.findMany({
+    const ownerScope =
+      user.role === "CLIENT"
+        ? { clientId: user.clientId ?? "__NO_CLIENT__" }
+        : user.role === "AGENT"
+          ? { agentId: user.agentId ?? "__NO_AGENT__" }
+          : {};
 
-    where: {
+    const shipments = await prisma.shipment.findMany({
+      where: {
+        ...ownerScope,
 
-      ...(tracking
-        ? {
-            trackingNumber: {
-              contains: tracking,
-              mode: "insensitive",
-            },
-          }
-        : {}),
-
-      ...(mobile
-        ? {
-            OR: [
-              {
-                senderPhone: {
-                  contains: mobile,
-                },
+        ...(tracking
+          ? {
+              trackingNumber: {
+                contains: tracking,
+                mode: "insensitive",
               },
-              {
-                receiverPhone: {
-                  contains: mobile,
+            }
+          : {}),
+
+        ...(mobile
+          ? {
+              OR: [
+                {
+                  senderPhone: {
+                    contains: mobile,
+                  },
                 },
-              },
-            ],
-          }
-        : {}),
+                {
+                  receiverPhone: {
+                    contains: mobile,
+                  },
+                },
+              ],
+            }
+          : {}),
 
-      ...(origin ? { origin } : {}),
+        ...(origin ? { origin } : {}),
+        ...(destination ? { destination } : {}),
+        ...(status ? { status: status as any } : {}),
+      },
 
-      ...(destination ? { destination } : {}),
+      include: {
+        packages: true,
+      },
 
-      ...(status ? { status: status as any } : {}),
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
-    },
+    return NextResponse.json(shipments);
+  } catch (error: any) {
+    if (error?.message === "UNAUTHORIZED") {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
 
-    include: {
-      packages: true,
-    },
-
-    orderBy: {
-      createdAt: "desc",
-    },
-
-  });
-
-  return NextResponse.json(shipments);
-
+    return NextResponse.json(
+      { error: "Unable to fetch dockets." },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: Request) {
+  try {
+    const user = await requireRole([
+      "ADMIN",
+      "CLIENT",
+      "AGENT",
+      "EMPLOYEE",
+      "BOOKING",
+    ]);
 
-  const body = await request.json();
+    const body = await request.json();
 
-  const shipment = await ShipmentService.create(body);
+    const shipment = await ShipmentService.create(
+      body,
+      {
+        clientId:
+          user.role === "CLIENT"
+            ? user.clientId
+            : null,
 
-  return NextResponse.json(shipment,{status:201});
+        agentId:
+          user.role === "AGENT"
+            ? user.agentId
+            : null,
 
+        createdByUserId: user.id,
+      }
+    );
+
+    return NextResponse.json(
+      shipment,
+      { status: 201 }
+    );
+  } catch (error: any) {
+    if (
+      error?.message === "UNAUTHORIZED" ||
+      error?.message === "FORBIDDEN"
+    ) {
+      return NextResponse.json(
+        { error: "Access denied." },
+        { status: 403 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        error:
+          error?.message ||
+          "Unable to create docket.",
+      },
+      { status: 500 }
+    );
+  }
 }

@@ -7,6 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model LogicartsSequence {
+  key       String   @id
+  value     Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
 model Airline {
   id             String   @id @default(cuid())
   name           String   @unique
@@ -94,6 +100,18 @@ model Shipment {
   manifestEntries  ManifestShipment[]
   packages         ShipmentPackage[]
   loadingTallies   LoadingTallyShipment[]
+
+  clientId        String?
+  agentId         String?
+  createdByUserId String?
+
+  client    Client? @relation(fields: [clientId], references: [id])
+  agent     Agent?  @relation(fields: [agentId], references: [id])
+  createdBy User?   @relation("ShipmentCreatedBy", fields: [createdByUserId], references: [id])
+
+  @@index([clientId])
+  @@index([agentId])
+  @@index([createdByUserId])
 }
 
 model ShipmentPackage {
@@ -205,11 +223,25 @@ model User {
   phone        String?
   role         UserRole     @default(BOOKING)
   status       MasterStatus @default(ACTIVE)
-  branchId     String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  sessions     Session[]
-  branch       Branch?      @relation(fields: [branchId], references: [id])
+
+  branchId String?
+  clientId String?
+  agentId  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions Session[]
+  branch   Branch?   @relation(fields: [branchId], references: [id])
+  client   Client?   @relation(fields: [clientId], references: [id])
+  agent    Agent?    @relation(fields: [agentId], references: [id])
+
+  employeeProfile    EmployeeProfile?
+  createdShipments   Shipment[]          @relation("ShipmentCreatedBy")
+  onboardingRequests OnboardingRequest[] @relation("OnboardingCreatedBy")
+
+  @@index([clientId])
+  @@index([agentId])
 }
 
 model Session {
@@ -258,6 +290,95 @@ model Customer {
   status        MasterStatus @default(ACTIVE)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+}
+
+model Client {
+  id                String       @id @default(cuid())
+  code              String       @unique
+  companyName       String
+  gstNumber         String?
+  contactPerson     String?
+  designation       String?
+  phone             String?
+  email             String?
+  address           String?
+  city              String?
+  state             String?
+  origin            String?
+  destination       String?
+  serviceType       String?
+  shipmentFrequency String?
+  status            MasterStatus @default(ACTIVE)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  users     User[]
+  shipments Shipment[]
+}
+
+model Agent {
+  id                String       @id @default(cuid())
+  code              String       @unique
+  companyName       String
+  agentType         AgentType
+  gstNumber         String?
+  contactPerson     String?
+  designation       String?
+  phone             String?
+  email             String?
+  address           String?
+  city              String?
+  airport           String?
+  destination       String?
+  serviceType       String?
+  shipmentFrequency String?
+  status            MasterStatus @default(ACTIVE)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  users     User[]
+  shipments Shipment[]
+}
+
+model EmployeeProfile {
+  id           String       @id @default(cuid())
+  userId       String       @unique
+  employeeCode String?      @unique
+  city         String?
+  airport      String?
+  destination  String?
+  status       MasterStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OnboardingRequest {
+  id            String           @id @default(cuid())
+  requestNumber String           @unique
+  type          OnboardingType
+  status        OnboardingStatus @default(PENDING)
+  details       Json
+
+  financeStatus ApprovalDecision @default(PENDING)
+  mdStatus      ApprovalDecision @default(PENDING)
+
+  financeToken String @unique
+  mdToken      String @unique
+
+  createdByUserId String
+  createdBy       User   @relation("OnboardingCreatedBy", fields: [createdByUserId], references: [id])
+
+  rejectionReason String?
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([type])
 }
 
 model LoadingTally {
@@ -322,8 +443,36 @@ enum MasterStatus {
   INACTIVE
 }
 
+enum AgentType {
+  COURIER_COMPANY
+  LOGISTICS_COMPANY
+  AGGREGATOR
+}
+
+enum OnboardingType {
+  CLIENT
+  AGENT
+}
+
+enum OnboardingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApprovalDecision {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum UserRole {
   ADMIN
+
+  CLIENT
+  AGENT
+  EMPLOYEE
+
   BOOKING
   WAREHOUSE
   DELIVERY

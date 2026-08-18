@@ -1,13 +1,15 @@
 # Logicarts Logistics Management System (LMS)
 
-**Version:** v1.1.0  
-**Last Updated:** 02 August 2026
+**Version:** v1.2.0
+**Last Updated:** 18 August 2026
 
 ---
 
 # Project Overview
 
-Logicarts Logistics Management System (LMS) is a modern web-based logistics platform designed to manage shipments, logistics operations, customer interactions, and partner onboarding. The project currently includes a production-ready public website with a dynamic career application workflow and will evolve into a complete operations platform.
+Logicarts Logistics Management System (LMS) is a modern web-based logistics platform designed to manage shipments, logistics operations, customer interactions, partner onboarding, and air cargo operations.
+
+The platform currently includes a production-ready public website, a complete Operations Portal, role-based access control, and a dual-approval onboarding workflow.
 
 ---
 
@@ -22,6 +24,8 @@ Logicarts Logistics Management System (LMS) is a modern web-based logistics plat
 - Career Page
 - Contact Us Page
 - Custom 404 Page
+
+---
 
 ## Career Application Module
 
@@ -44,11 +48,15 @@ Features:
 - Gmail SMTP integration
 - Success confirmation dialog
 
+---
+
 ## Shipment Tracking
 
 ### Current
 
-- Shipment Tracking UI
+- Shipment tracking
+- AWB search
+- Shipment lookup
 
 ### Planned
 
@@ -57,17 +65,149 @@ Features:
 - Status timeline
 - Proof of delivery
 
-## Operations Portal (Planned)
+---
 
-- Authentication
+## Operations Portal
+
+### Authentication
+
+- Secure login
+- Session management
+- Protected routes
+
+### Dashboard
+
+- Shipment KPIs
+- Operational metrics
+- Role-specific dashboards
+
+### Docket Management
+
+- Docket generation
+- AWB generation
+- Shipment search
+- Shipment tracking
+- Shipment status updates
+
+### Warehouse Operations
+
+- Loading tally
+- Manifest generation
+- Manifest search
+- Inscan
+- Outscan
+
+### Delivery Operations
+
+- Delivery challan generation
+- Delivery updates
+
+### Reports
+
+- Booking reports
+- Shipment reports
+- Manifest reports
+- Delivery reports
+- Revenue reports
+
+---
+
+## Role-Based Access Control (RBAC)
+
+### Admin
+
+- Full portal access
 - Dashboard
-- Shipment Management
-- Docket Management
-- Manifest Management
-- Barcode & QR Code Support
-- Inscan / Outscan
+- Docket operations
+- Warehouse operations
+- Delivery operations
 - Reports
-- User Management
+- Revenue visibility
+- Masters
+- Onboarding and access management
+
+### Client
+
+- Dashboard
+- Docket generation
+- Shipment tracking
+- Access restricted to the client's own shipments
+- No revenue access
+
+### Agent
+
+- Dashboard
+- Docket generation
+- Shipment tracking
+- Access restricted to the agent's own shipments
+- No revenue access
+
+### Employee
+
+- Dashboard
+- Docket generation
+- Docket updates
+- Inscan
+- Outscan
+- Delivery operations
+- No revenue access
+
+---
+
+## Onboarding and Access Management
+
+Admin can create:
+
+- Clients
+- Agents
+- Customers
+- Employees
+
+### Approval Workflow
+
+Client and Agent onboarding requires approval from both Finance and the Managing Director.
+
+Approval flow:
+
+Admin
+
+↓
+
+Finance Approval
+
+↓
+
+MD Approval
+
+↓
+
+Account Activation
+
+↓
+
+Credential Email Delivery
+
+### Approval Recipients
+
+Finance:
+
+- sujit.jha@logicarts.in
+
+Managing Director:
+
+- souravmishra@logicarts.in
+
+---
+
+## Identifier Standards
+
+| Entity | Format |
+| --- | --- |
+| Client | LGCL001 |
+| Agent | LGAG001 |
+| Employee | LGEM001 |
+| Customer | LGCU001 |
+| Onboarding Request | LGRQ001 |
 
 ---
 
@@ -83,7 +223,10 @@ Features:
 
 - Protected APIs
 - Environment-based configuration
-- Role-based access control
+- Role-based menu visibility
+- Revenue visibility restricted to administrators
+- Client-specific shipment isolation
+- Agent-specific shipment isolation
 
 ## Scalability
 
@@ -109,18 +252,27 @@ Features:
 - Tailwind CSS
 - shadcn/ui
 
-## Backend (Current)
+## Backend
+
+### Current
 
 - Next.js API Routes
 
-## Backend (Future)
+### Future
 
 - Node.js
-- Express.js / NestJS
+- Express.js
+- NestJS
 
-## Database (Future)
+## Database
+
+### Current
 
 - PostgreSQL
+- Prisma ORM
+
+### Future
+
 - Redis
 
 ## Email
@@ -132,24 +284,28 @@ Features:
 
 # Project Status
 
-## Completed (v1.1.0)
+## Completed (v1.2.0)
 
-- Public Website
-- Career Application Module
-- Dynamic Email Notifications
-- Professional Email Templates
-- Reference ID Generation
+- Public website
+- Career application module
+- Dashboard
+- Docket management
+- Manifest workflow
+- Inscan and Outscan
+- Delivery workflow
+- RBAC
+- Dual-approval onboarding
+- Email notifications
 
 ## In Progress
 
-- Project Documentation
+- Documentation
 
 ## Planned
 
-- Operations Portal
-- Customer Portal
-- Admin Portal
-- Mobile Application
+- Customer self-service enhancements
+- Audit logs
+- Mobile application
 
 ---
 
@@ -159,7 +315,6 @@ Features:
 - Applicant acknowledgement email
 - SEO optimization
 - Performance optimization
-- Analytics Dashboard
-- GPS Vehicle Tracking
+- Analytics dashboard
+- GPS vehicle tracking
 - AI-powered logistics insights
-
