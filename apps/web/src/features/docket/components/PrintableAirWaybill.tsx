@@ -123,48 +123,63 @@ export default function PrintableAirWaybill({
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textAlign: "center",
+                  gap: "8px",
+                  paddingTop: "6px",
                 }}
               >
-                <div>
-                  <div
-                    style={{
-                      fontSize: "22px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    AIR WAYBILL
-                  </div>
-
-                  <div style={{ fontWeight: "bold" }}>
-                    (Air Consignment Note)
-                  </div>
-
-                  <div style={{ marginTop: "4px" }}>
-                    issued by
-                  </div>
-
-                  <div
-                    style={{
-                      fontSize: "18px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    LOGICARTS
-                  </div>
-
-                  <div style={{ marginTop: "6px" }}>
-                    {airlineName} ({airlineCode})
-                  </div>
+                <div
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  AIR WAYBILL
                 </div>
 
-                <Image
-                  src="/logo/logicarts-logo.png"
-                  alt="Logicarts"
-                  width={120}
-                  height={45}
-                />
+                <div
+                  style={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  (Air Consignment Note)
+                </div>
+
+                <div>issued by</div>
+
+                <div>
+                  <img
+                    src="/logo/alliance-air-logo.png"
+                    alt="Alliance Air"
+                    style={{
+                      maxWidth: "220px",
+                      maxHeight: "60px",
+                      objectFit: "contain",
+                    }}
+                    onError={(e) => {
+                      e.currentTarget.style.display="none";
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <Image
+                    src="/logo/logicarts-logo.png"
+                    alt="Logicarts"
+                    width={130}
+                    height={45}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  {airlineName} ({airlineCode})
+                </div>
               </div>
             </td>
           </tr>
@@ -352,7 +367,7 @@ export default function PrintableAirWaybill({
               <b>Reference Number</b>
               <br />
               <br />
-              {value(shipment.customerReference)}
+              
             </td>
           </tr>
 
@@ -453,7 +468,17 @@ export default function PrintableAirWaybill({
                 height: "40px",
               }}
             >
-              {value(shipment.flightNumber)}
+              <div>
+                {value(shipment.flightNumber) || "Alliance Air"}
+              </div>
+
+              <div>
+                {value(shipment.aircraftType)}
+              </div>
+
+              <div>
+                Terminal {value(shipment.arrivalTerminal)}
+              </div>
             </td>
 
             <td
@@ -462,7 +487,17 @@ export default function PrintableAirWaybill({
                 padding: "8px",
               }}
             >
-              {value(shipment.flightNumber)}
+              <div>
+                {value(shipment.flightNumber) || "Alliance Air"}
+              </div>
+
+              <div>
+                {value(shipment.aircraftType)}
+              </div>
+
+              <div>
+                Terminal {value(shipment.arrivalTerminal)}
+              </div>
             </td>
 
             <td
@@ -551,7 +586,41 @@ export default function PrintableAirWaybill({
                   marginTop: "8px",
                 }}
               >
-                {value(shipment.remarks)}
+                
+{value(shipment.contents)}
+
+<div style={{marginTop:"8px"}}>
+STD:
+{" "}
+{shipment.scheduledDeparture
+?new Date(
+shipment.scheduledDeparture
+).toLocaleTimeString(
+"en-IN",
+{
+hour:"2-digit",
+minute:"2-digit",
+}
+)
+:""}
+</div>
+
+<div>
+STA:
+{" "}
+{shipment.scheduledArrival
+?new Date(
+shipment.scheduledArrival
+).toLocaleTimeString(
+"en-IN",
+{
+hour:"2-digit",
+minute:"2-digit",
+}
+)
+:""}
+</div>
+
               </div>
             </td>
           </tr>

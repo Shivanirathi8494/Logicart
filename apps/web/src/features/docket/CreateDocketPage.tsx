@@ -51,11 +51,23 @@ export default function CreateDocketPage({
       .toISOString()
       .split("T")[0],
 
+    customerId: data.customerId ?? "",
     origin: data.origin,
     destination: data.destination,
 
     airlineId: data.airlineId ?? "",
     flightNumber: data.flightNumber ?? "",
+
+    scheduledDeparture:
+      data.scheduledDeparture ?? "",
+    scheduledArrival:
+      data.scheduledArrival ?? "",
+    aircraftType:
+      data.aircraftType ?? "",
+    departureTerminal:
+      data.departureTerminal ?? "",
+    arrivalTerminal:
+      data.arrivalTerminal ?? "",
 
     senderName: data.senderName ?? "",
     senderPhone: data.senderPhone ?? "",
@@ -105,6 +117,11 @@ export default function CreateDocketPage({
       setLoading(true);
 
       
+      if (!shipment.customerId) {
+        alert("Please select Customer ID.");
+        return;
+      }
+
       if (!shipment.origin) {
         alert("Please select Origin.");
         return;
@@ -117,6 +134,16 @@ export default function CreateDocketPage({
 
       if (shipment.origin === shipment.destination) {
         alert("Origin and Destination cannot be the same.");
+        return;
+      }
+
+      if (!shipment.airlineId) {
+        alert("Please select Airline.");
+        return;
+      }
+
+      if (!shipment.flightNumber?.trim()) {
+        alert("Please enter Flight Number.");
         return;
       }
 

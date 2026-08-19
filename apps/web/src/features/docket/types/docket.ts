@@ -47,7 +47,6 @@ export interface Payment {
 
 export interface Docket {
   docketNumber: string;
-  customerReference?: string;
 
   bookingDate: string;
 

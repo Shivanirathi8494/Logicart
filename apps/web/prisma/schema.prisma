@@ -14,19 +14,59 @@ model LogicartsSequence {
 }
 
 model Airline {
-  id             String   @id @default(cuid())
-  name           String   @unique
-  iataDesignator String   @unique
-  icaoCode       String   @unique
-  iataPrefix     String?  @unique
-  country        String   @default("India")
-  active         Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id              String           @id @default(cuid())
+  name            String           @unique
+  iataDesignator  String           @unique
+  icaoCode        String           @unique
+  iataPrefix      String?          @unique
+  country         String           @default("India")
+  active          Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  cargoTariffs    AirCargoTariff[]
+  awbSequence     AwbSequence?
+  flightSchedules FlightSchedule[]
+  shipments       Shipment[]
+}
 
-  shipments    Shipment[]
-  awbSequence  AwbSequence?
-  cargoTariffs AirCargoTariff[]
+model FlightScheduleSync {
+  id           String   @id @default(cuid())
+  origin       String
+  destination  String
+  flightDate   DateTime
+  provider     String   @default("AERODATABOX")
+  resultCount  Int      @default(0)
+  lastSyncedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([origin, destination, flightDate])
+  @@index([origin, destination])
+  @@index([lastSyncedAt])
+}
+
+model FlightSchedule {
+  id                 String   @id @default(cuid())
+  airlineId          String
+  flightNumber       String
+  origin             String
+  destination        String
+  scheduledDeparture DateTime
+  scheduledArrival   DateTime
+  aircraftType       String?
+  departureTerminal  String?
+  arrivalTerminal    String?
+  source             String   @default("AERODATABOX")
+  externalId         String?
+  active             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  airline            Airline  @relation(fields: [airlineId], references: [id], onDelete: Cascade)
+
+  @@unique([flightNumber, origin, destination, scheduledDeparture])
+  @@index([origin, destination, scheduledDeparture])
+  @@index([airlineId])
+  @@index([flightNumber])
 }
 
 model AirCargoTariff {
@@ -42,73 +82,88 @@ model AirCargoTariff {
   active        Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
-  airline Airline @relation(fields: [airlineId], references: [id], onDelete: Cascade)
+  airline       Airline  @relation(fields: [airlineId], references: [id], onDelete: Cascade)
 
   @@unique([airlineId, origin, destination, cargoType])
   @@index([airlineId, origin, destination])
 }
 
 model AwbSequence {
-  id         String @id @default(cuid())
-  airlineId  String @unique
-  nextSerial Int    @default(1)
-
-  airline Airline @relation(fields: [airlineId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  airlineId  String   @unique
+  nextSerial Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  airline    Airline  @relation(fields: [airlineId], references: [id], onDelete: Cascade)
 }
 
 model Shipment {
-  id               String                    @id @default(cuid())
-  trackingNumber   String                    @unique
-  airlineId        String?
-  airline          Airline?                  @relation(fields: [airlineId], references: [id])
-  flightNumber     String?
-  bookingDate      DateTime
-  origin           String
-  destination      String
-  status           ShipmentStatus            @default(BOOKED)
-  senderName       String
-  senderPhone      String
-  senderAddress    String
-  receiverName     String
-  receiverPhone    String
-  receiverAddress  String
-  packageCount     Int
-  actualWeight     Float
-  volumetricWeight Float
-  chargeableWeight Float
-  contents         String?
-  freight          Float
-  gst              Float
-  total            Float
-  paymentReference String?
-  remarks          String?
-  createdAt        DateTime                  @default(now())
-  updatedAt        DateTime                  @updatedAt
-  receiverCity     String?
-  receiverGSTIN    String?
-  receiverPincode  String?
-  receiverState    String?
-  senderCity       String?
-  senderGSTIN      String?
-  senderPincode    String?
-  senderState      String?
-  deliveryChallans DeliveryChallanShipment[]
-  manifestEntries  ManifestShipment[]
-  packages         ShipmentPackage[]
-  loadingTallies   LoadingTallyShipment[]
+  id                 String                    @id @default(cuid())
+  trackingNumber     String                    @unique
+  bookingDate        DateTime
+  origin             String
+  destination        String
+  status             ShipmentStatus            @default(BOOKED)
+  senderName         String
+  senderPhone        String
+  senderAddress      String
+  receiverName       String
+  receiverPhone      String
+  receiverAddress    String
+  packageCount       Int
+  actualWeight       Float
+  volumetricWeight   Float
+  chargeableWeight   Float
+  contents           String?
+  freight            Float
+  gst                Float
+  total              Float
+  paymentReference   String?
+  remarks            String?
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  receiverCity       String?
+  receiverGSTIN      String?
+  receiverPincode    String?
+  receiverState      String?
+  senderCity         String?
+  senderGSTIN        String?
+  senderPincode      String?
+  senderState        String?
+  airlineId          String?
+  flightNumber       String?
+  agentId            String?
+  clientId           String?
+  createdByUserId    String?
+  aircraftType       String?
+  arrivalTerminal    String?
+  customerId         String?
+  departureTerminal  String?
+  scheduledArrival          DateTime?
+  scheduledDeparture        DateTime?
 
-  clientId        String?
-  agentId         String?
-  createdByUserId String?
+  // Optional Air Waybill fields.
+  // Leave null unless the actual AWB/business value is known.
+  shipperAccountNumber      String?
+  consigneeAccountNumber    String?
+  agentIataCode             String?
+  rateClass                 String?
+  commodityItemNumber       String?
+  declaredValueForCarriage  Float?
+  declaredValueForCustoms   Float?
+  insuranceAmount           Float?
+  specialCargoIndicator     String?
+  deliveryChallans   DeliveryChallanShipment[]
+  loadingTallies     LoadingTallyShipment[]
+  manifestEntries    ManifestShipment[]
+  agent              Agent?                    @relation(fields: [agentId], references: [id])
+  airline            Airline?                  @relation(fields: [airlineId], references: [id])
+  client             Client?                   @relation(fields: [clientId], references: [id])
+  createdBy          User?                     @relation("ShipmentCreatedBy", fields: [createdByUserId], references: [id])
+  customer           Customer?                 @relation(fields: [customerId], references: [id])
+  packages           ShipmentPackage[]
 
-  client    Client? @relation(fields: [clientId], references: [id])
-  agent     Agent?  @relation(fields: [agentId], references: [id])
-  createdBy User?   @relation("ShipmentCreatedBy", fields: [createdByUserId], references: [id])
-
+  @@index([customerId])
   @@index([clientId])
   @@index([agentId])
   @@index([createdByUserId])
@@ -124,24 +179,22 @@ model ShipmentPackage {
 }
 
 model Manifest {
-  id             String         @id @default(cuid())
-  manifestNumber String         @unique
-  manifestDate   DateTime
-  origin         String
-  destination    String
-  flightNumber   String?
-  vehicleNumber  String?
-  remarks        String?
-  status         ManifestStatus @default(OPEN)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-
-  loadingTallyId String?
-  loadingTally   LoadingTally? @relation(fields: [loadingTallyId], references: [id])
-
+  id                    String                 @id @default(cuid())
+  manifestNumber        String                 @unique
+  manifestDate          DateTime
+  origin                String
+  destination           String
+  flightNumber          String?
+  vehicleNumber         String?
+  remarks               String?
+  status                ManifestStatus         @default(OPEN)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  loadingTallyId        String?
   deliveryChallans      DeliveryChallan[]
-  shipments             ManifestShipment[]
   loadingTallyShipments LoadingTallyShipment[]
+  loadingTally          LoadingTally?          @relation(fields: [loadingTallyId], references: [id])
+  shipments             ManifestShipment[]
 }
 
 model ManifestShipment {
@@ -215,30 +268,26 @@ model Branch {
 }
 
 model User {
-  id           String       @id @default(cuid())
-  username     String       @unique
-  passwordHash String
-  fullName     String
-  email        String?      @unique
-  phone        String?
-  role         UserRole     @default(BOOKING)
-  status       MasterStatus @default(ACTIVE)
-
-  branchId String?
-  clientId String?
-  agentId  String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  sessions Session[]
-  branch   Branch?   @relation(fields: [branchId], references: [id])
-  client   Client?   @relation(fields: [clientId], references: [id])
-  agent    Agent?    @relation(fields: [agentId], references: [id])
-
+  id                 String              @id @default(cuid())
+  username           String              @unique
+  passwordHash       String
+  fullName           String
+  email              String?             @unique
+  phone              String?
+  role               UserRole            @default(BOOKING)
+  status             MasterStatus        @default(ACTIVE)
+  branchId           String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  agentId            String?
+  clientId           String?
   employeeProfile    EmployeeProfile?
-  createdShipments   Shipment[]          @relation("ShipmentCreatedBy")
   onboardingRequests OnboardingRequest[] @relation("OnboardingCreatedBy")
+  sessions           Session[]
+  createdShipments   Shipment[]          @relation("ShipmentCreatedBy")
+  agent              Agent?              @relation(fields: [agentId], references: [id])
+  branch             Branch?             @relation(fields: [branchId], references: [id])
+  client             Client?             @relation(fields: [clientId], references: [id])
 
   @@index([clientId])
   @@index([agentId])
@@ -290,6 +339,7 @@ model Customer {
   status        MasterStatus @default(ACTIVE)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  shipments     Shipment[]
 }
 
 model Client {
@@ -311,9 +361,8 @@ model Client {
   status            MasterStatus @default(ACTIVE)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
-
-  users     User[]
-  shipments Shipment[]
+  shipments         Shipment[]
+  users             User[]
 }
 
 model Agent {
@@ -335,9 +384,8 @@ model Agent {
   status            MasterStatus @default(ACTIVE)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
-
-  users     User[]
-  shipments Shipment[]
+  shipments         Shipment[]
+  users             User[]
 }
 
 model EmployeeProfile {
@@ -350,60 +398,52 @@ model EmployeeProfile {
   status       MasterStatus @default(ACTIVE)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model OnboardingRequest {
-  id            String           @id @default(cuid())
-  requestNumber String           @unique
-  type          OnboardingType
-  status        OnboardingStatus @default(PENDING)
-  details       Json
-
-  financeStatus ApprovalDecision @default(PENDING)
-  mdStatus      ApprovalDecision @default(PENDING)
-
-  financeToken String @unique
-  mdToken      String @unique
-
+  id              String           @id @default(cuid())
+  requestNumber   String           @unique
+  type            OnboardingType
+  status          OnboardingStatus @default(PENDING)
+  details         Json
+  financeStatus   ApprovalDecision @default(PENDING)
+  mdStatus        ApprovalDecision @default(PENDING)
+  financeToken    String           @unique
+  mdToken         String           @unique
   createdByUserId String
-  createdBy       User   @relation("OnboardingCreatedBy", fields: [createdByUserId], references: [id])
-
   rejectionReason String?
   approvedAt      DateTime?
   rejectedAt      DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  createdBy       User             @relation("OnboardingCreatedBy", fields: [createdByUserId], references: [id])
 
   @@index([status])
   @@index([type])
 }
 
 model LoadingTally {
-  id                 String             @id @default(cuid())
-  loadingTallyNumber String             @unique
+  id                 String                 @id @default(cuid())
+  loadingTallyNumber String                 @unique
   loadingDate        DateTime
   remarks            String?
-  status             LoadingTallyStatus @default(OPEN)
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-
-  shipments LoadingTallyShipment[]
-  manifests Manifest[]
+  status             LoadingTallyStatus     @default(OPEN)
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  shipments          LoadingTallyShipment[]
+  manifests          Manifest[]
 }
 
 model LoadingTallyShipment {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   loadingTallyId String
   shipmentId     String
   manifestId     String?
-  createdAt      DateTime @default(now())
-
-  loadingTally LoadingTally @relation(fields: [loadingTallyId], references: [id])
-  shipment     Shipment     @relation(fields: [shipmentId], references: [id])
-  manifest     Manifest?    @relation(fields: [manifestId], references: [id])
+  createdAt      DateTime     @default(now())
+  loadingTally   LoadingTally @relation(fields: [loadingTallyId], references: [id])
+  manifest       Manifest?    @relation(fields: [manifestId], references: [id])
+  shipment       Shipment     @relation(fields: [shipmentId], references: [id])
 
   @@unique([loadingTallyId, shipmentId])
 }
@@ -468,14 +508,12 @@ enum ApprovalDecision {
 
 enum UserRole {
   ADMIN
-
-  CLIENT
-  AGENT
-  EMPLOYEE
-
   BOOKING
   WAREHOUSE
   DELIVERY
   ACCOUNTS
   READONLY
+  CLIENT
+  AGENT
+  EMPLOYEE
 }

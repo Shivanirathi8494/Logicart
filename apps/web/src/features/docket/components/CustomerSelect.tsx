@@ -7,26 +7,35 @@ import {
   useState,
 } from "react";
 
-import { airports } from "@/lib/master/airports";
-
-type Props = {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
+type Customer = {
+  id: string;
+  code: string;
+  name: string;
+  contactPerson?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  gstNumber?: string | null;
 };
 
-export default function StationSelect({
-  label,
+type Props = {
+  value: string;
+  onChange: (
+    customer: Customer | null,
+  ) => void;
+};
+
+export default function CustomerSelect({
   value,
   onChange,
 }: Props) {
   const wrapperRef =
     useRef<HTMLDivElement>(null);
 
-  const selected =
-    airports.find(
-      (station) => station.code === value,
-    );
+  const [customers, setCustomers] =
+    useState<Customer[]>([]);
 
   const [query, setQuery] =
     useState("");
@@ -35,7 +44,25 @@ export default function StationSelect({
     useState(false);
 
   useEffect(() => {
-    function handleClickOutside(
+    fetch("/api/customers/active")
+      .then((response) =>
+        response.json(),
+      )
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCustomers(data);
+        }
+      })
+      .catch((error) =>
+        console.error(
+          "Unable to load customers",
+          error,
+        ),
+      );
+  }, []);
+
+  useEffect(() => {
+    function handleOutside(
       event: MouseEvent,
     ) {
       if (
@@ -50,38 +77,44 @@ export default function StationSelect({
 
     document.addEventListener(
       "mousedown",
-      handleClickOutside,
+      handleOutside,
     );
 
     return () =>
       document.removeEventListener(
         "mousedown",
-        handleClickOutside,
+        handleOutside,
       );
   }, []);
+
+  const selected =
+    customers.find(
+      (customer) =>
+        customer.id === value,
+    ) ?? null;
 
   const filtered = useMemo(() => {
     const text =
       query.trim().toLowerCase();
 
     if (!text) {
-      return airports.slice(0, 25);
+      return customers.slice(0, 30);
     }
 
-    return airports
-      .filter((station) =>
-        `${station.code} ${station.city} ${station.airport}`
+    return customers
+      .filter((customer) =>
+        `${customer.code} ${customer.name}`
           .toLowerCase()
           .includes(text),
       )
       .slice(0, 40);
-  }, [query]);
+  }, [customers, query]);
 
   const displayValue =
     open
       ? query
       : selected
-        ? `${selected.code} - ${selected.city} - ${selected.airport}`
+        ? `${selected.code} - ${selected.name}`
         : "";
 
   return (
@@ -90,24 +123,26 @@ export default function StationSelect({
       className="relative"
     >
       <label className="mb-2 block text-sm font-medium text-slate-700">
-        {label}
+        Customer ID
         <span className="text-red-600">
           {" "}*
         </span>
       </label>
 
       <input
-        type="text"
         value={displayValue}
-        placeholder={`Search ${label.toLowerCase()} airport...`}
+        placeholder="Search Customer ID or name..."
         className="w-full rounded-lg border p-3"
         onFocus={() => {
           setQuery("");
           setOpen(true);
         }}
         onChange={(event) => {
-          setQuery(event.target.value);
-          onChange("");
+          setQuery(
+            event.target.value,
+          );
+
+          onChange(null);
           setOpen(true);
         }}
       />
@@ -116,13 +151,13 @@ export default function StationSelect({
         <div className="absolute z-50 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border bg-white shadow-lg">
           {filtered.length === 0 ? (
             <div className="p-3 text-sm text-slate-500">
-              No airport found.
+              No active customer found.
             </div>
           ) : (
             filtered.map(
-              (station) => (
+              (customer) => (
                 <button
-                  key={station.code}
+                  key={customer.id}
                   type="button"
                   className="block w-full border-b px-4 py-3 text-left last:border-b-0 hover:bg-slate-50"
                   onMouseDown={(
@@ -131,7 +166,7 @@ export default function StationSelect({
                     event.preventDefault();
 
                     onChange(
-                      station.code,
+                      customer,
                     );
 
                     setQuery("");
@@ -139,14 +174,16 @@ export default function StationSelect({
                   }}
                 >
                   <div className="font-semibold">
-                    {station.code}
+                    {customer.code}
                     {" - "}
-                    {station.city}
+                    {customer.name}
                   </div>
 
-                  <div className="text-sm text-slate-500">
-                    {station.airport}
-                  </div>
+                  {customer.city && (
+                    <div className="text-sm text-slate-500">
+                      {customer.city}
+                    </div>
+                  )}
                 </button>
               ),
             )
@@ -156,3 +193,5 @@ export default function StationSelect({
     </div>
   );
 }
+
+export type { Customer };

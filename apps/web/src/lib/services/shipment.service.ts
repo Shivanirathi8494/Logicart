@@ -48,11 +48,31 @@ export class ShipmentService {
 
         trackingNumber,
 
+        customerId: data.customerId,
         clientId: ownership?.clientId ?? null,
         agentId: ownership?.agentId ?? null,
         createdByUserId: ownership?.createdByUserId ?? null,
 
         bookingDate: new Date(data.bookingDate),
+
+        scheduledDeparture:
+          data.scheduledDeparture
+            ? new Date(data.scheduledDeparture)
+            : null,
+
+        scheduledArrival:
+          data.scheduledArrival
+            ? new Date(data.scheduledArrival)
+            : null,
+
+        aircraftType:
+          data.aircraftType || null,
+
+        departureTerminal:
+          data.departureTerminal || null,
+
+        arrivalTerminal:
+          data.arrivalTerminal || null,
 
         origin: data.origin,
         destination: data.destination,

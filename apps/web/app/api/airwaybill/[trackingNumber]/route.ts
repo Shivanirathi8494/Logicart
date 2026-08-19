@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { generateAirWaybill } from "@/lib/airwaybill/generateAirWaybill";
+import { generateCompleteAirWaybill } from "@/lib/airwaybill/generateCompleteAirWaybill";
 
 export async function GET(
   request: NextRequest,
@@ -14,7 +14,12 @@ export async function GET(
 
   const shipment = await prisma.shipment.findUnique({
     where: { trackingNumber },
-    include: { packages: true },
+    include: {
+      packages: true,
+      airline: true,
+      customer: true,
+      agent: true,
+    },
   });
 
   if (!shipment) {
@@ -27,7 +32,7 @@ export async function GET(
     );
   }
 
-  const pdf = await generateAirWaybill(shipment);
+  const pdf = await generateCompleteAirWaybill(shipment);
 
   return new Response(Buffer.from(pdf), {
     headers: {

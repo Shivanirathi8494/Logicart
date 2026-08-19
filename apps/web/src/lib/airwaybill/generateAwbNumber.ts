@@ -20,9 +20,9 @@ export async function generateAwbNumber(airlineId: string) {
       throw new Error("Airline is inactive.");
     }
 
-    if (!airline.iataPrefix) {
+    if (!airline.iataDesignator && !airline.iataPrefix) {
       throw new Error(
-        `No verified IATA AWB prefix is configured for ${airline.name}.`,
+        `No IATA airline code or AWB prefix is configured for ${airline.name}.`,
       );
     }
 
@@ -52,6 +52,11 @@ export async function generateAwbNumber(airlineId: string) {
     const serialText = String(serial).padStart(7, "0");
     const checkDigit = calculateCheckDigit(serial);
 
-    return `${airline.iataPrefix}-${serialText}${checkDigit}`;
+    const airlineCode =
+  airline.iataDesignator ||
+  airline.iataPrefix ||
+  "NA";
+
+return `${airlineCode}-${serialText}${checkDigit}`;
   });
 }
