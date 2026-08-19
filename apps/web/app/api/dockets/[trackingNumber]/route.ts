@@ -22,6 +22,8 @@ export async function GET(
 
     include: {
       packages: true,
+      airline: true,
+      customer: true,
     },
 
   });
@@ -93,8 +95,32 @@ export async function PUT(
 
       bookingDate: new Date(body.bookingDate),
 
+      customerId: body.customerId || null,
+
       origin: body.origin,
       destination: body.destination,
+
+      airlineId: body.airlineId || null,
+      flightNumber: body.flightNumber || null,
+
+      scheduledDeparture:
+        body.scheduledDeparture
+          ? new Date(body.scheduledDeparture)
+          : null,
+
+      scheduledArrival:
+        body.scheduledArrival
+          ? new Date(body.scheduledArrival)
+          : null,
+
+      aircraftType:
+        body.aircraftType || null,
+
+      departureTerminal:
+        body.departureTerminal || null,
+
+      arrivalTerminal:
+        body.arrivalTerminal || null,
 
       senderName: body.senderName,
       senderPhone: body.senderPhone,

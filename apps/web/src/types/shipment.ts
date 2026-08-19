@@ -9,10 +9,17 @@ export interface CreateShipmentRequest {
 
   bookingDate: string;
 
+  customerId: string;
   origin: string;
   destination: string;
   airlineId: string;
   flightNumber: string;
+
+  scheduledDeparture: string;
+  scheduledArrival: string;
+  aircraftType: string;
+  departureTerminal: string;
+  arrivalTerminal: string;
 
   // Sender
   senderName: string;

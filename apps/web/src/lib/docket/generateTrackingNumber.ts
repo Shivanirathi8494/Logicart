@@ -13,9 +13,9 @@ export async function generateTrackingNumber(
     throw new Error("Airline not found.");
   }
 
-  if (!airline.iataPrefix) {
+  if (!airline.iataDesignator && !airline.iataPrefix) {
     throw new Error(
-      `${airline.name} does not have an IATA AWB prefix configured.`,
+      `${airline.name} does not have an IATA airline code or AWB prefix configured.`,
     );
   }
 
@@ -42,5 +42,10 @@ export async function generateTrackingNumber(
 
   const checkDigit = serialNumber % 7;
 
-  return `${airline.iataPrefix}-${serial}-${checkDigit}`;
+  const airlineCode =
+  airline.iataDesignator ||
+  airline.iataPrefix ||
+  "NA";
+
+return `${airlineCode}-${serial}-${checkDigit}`;
 }
