@@ -1,0 +1,30 @@
+-- AlterTable
+ALTER TABLE "Airline" ADD COLUMN     "gstNumber" TEXT,
+ADD COLUMN     "panNumber" TEXT;
+
+-- AlterTable
+ALTER TABLE "Shipment" ADD COLUMN     "accountingInformation" TEXT,
+ADD COLUMN     "carrierUseAtDestination" TEXT,
+ADD COLUMN     "chargesAtDestination" DOUBLE PRECISION,
+ADD COLUMN     "chargesCode" TEXT,
+ADD COLUMN     "collectWeightCharge" DOUBLE PRECISION,
+ADD COLUMN     "currency" TEXT DEFAULT 'INR',
+ADD COLUMN     "currencyConversionRate" DOUBLE PRECISION,
+ADD COLUMN     "destinationCurrency" TEXT,
+ADD COLUMN     "executedAt" TIMESTAMP(3),
+ADD COLUMN     "executedPlace" TEXT,
+ADD COLUMN     "handlingCode" TEXT,
+ADD COLUMN     "handlingDescription" TEXT,
+ADD COLUMN     "issuingCarrierSignatureName" TEXT,
+ADD COLUMN     "otherChargesDescription" TEXT,
+ADD COLUMN     "otherChargesDueAgent" DOUBLE PRECISION,
+ADD COLUMN     "otherChargesDueCarrier" DOUBLE PRECISION,
+ADD COLUMN     "otherChargesPaymentType" TEXT,
+ADD COLUMN     "receiverCountry" TEXT,
+ADD COLUMN     "shipperCountry" TEXT,
+ADD COLUMN     "shipperSignatureName" TEXT,
+ADD COLUMN     "totalCollect" DOUBLE PRECISION,
+ADD COLUMN     "totalCollectCharges" DOUBLE PRECISION,
+ADD COLUMN     "totalPrepaid" DOUBLE PRECISION,
+ADD COLUMN     "valuationCharge" DOUBLE PRECISION,
+ADD COLUMN     "weightValuationPaymentType" TEXT;

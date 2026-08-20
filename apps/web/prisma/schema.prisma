@@ -27,6 +27,9 @@ model Airline {
   awbSequence     AwbSequence?
   flightSchedules FlightSchedule[]
   shipments       Shipment[]
+
+  panNumber String?
+  gstNumber String?
 }
 
 model FlightScheduleSync {
@@ -98,12 +101,12 @@ model AwbSequence {
 }
 
 model Shipment {
-  id                 String                    @id @default(cuid())
-  trackingNumber     String                    @unique
+  id                 String         @id @default(cuid())
+  trackingNumber     String         @unique
   bookingDate        DateTime
   origin             String
   destination        String
-  status             ShipmentStatus            @default(BOOKED)
+  status             ShipmentStatus @default(BOOKED)
   senderName         String
   senderPhone        String
   senderAddress      String
@@ -120,8 +123,8 @@ model Shipment {
   total              Float
   paymentReference   String?
   remarks            String?
-  createdAt          DateTime                  @default(now())
-  updatedAt          DateTime                  @updatedAt
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
   receiverCity       String?
   receiverGSTIN      String?
   receiverPincode    String?
@@ -139,29 +142,63 @@ model Shipment {
   arrivalTerminal    String?
   customerId         String?
   departureTerminal  String?
-  scheduledArrival          DateTime?
-  scheduledDeparture        DateTime?
+  scheduledArrival   DateTime?
+  scheduledDeparture DateTime?
 
   // Optional Air Waybill fields.
   // Leave null unless the actual AWB/business value is known.
-  shipperAccountNumber      String?
-  consigneeAccountNumber    String?
-  agentIataCode             String?
-  rateClass                 String?
-  commodityItemNumber       String?
-  declaredValueForCarriage  Float?
-  declaredValueForCustoms   Float?
-  insuranceAmount           Float?
-  specialCargoIndicator     String?
-  deliveryChallans   DeliveryChallanShipment[]
-  loadingTallies     LoadingTallyShipment[]
-  manifestEntries    ManifestShipment[]
-  agent              Agent?                    @relation(fields: [agentId], references: [id])
-  airline            Airline?                  @relation(fields: [airlineId], references: [id])
-  client             Client?                   @relation(fields: [clientId], references: [id])
-  createdBy          User?                     @relation("ShipmentCreatedBy", fields: [createdByUserId], references: [id])
-  customer           Customer?                 @relation(fields: [customerId], references: [id])
-  packages           ShipmentPackage[]
+  shipperAccountNumber     String?
+  consigneeAccountNumber   String?
+  agentIataCode            String?
+  rateClass                String?
+  commodityItemNumber      String?
+  declaredValueForCarriage Float?
+  declaredValueForCustoms  Float?
+  insuranceAmount          Float?
+  specialCargoIndicator    String?
+  deliveryChallans         DeliveryChallanShipment[]
+  loadingTallies           LoadingTallyShipment[]
+  manifestEntries          ManifestShipment[]
+  agent                    Agent?                    @relation(fields: [agentId], references: [id])
+  airline                  Airline?                  @relation(fields: [airlineId], references: [id])
+  client                   Client?                   @relation(fields: [clientId], references: [id])
+  createdBy                User?                     @relation("ShipmentCreatedBy", fields: [createdByUserId], references: [id])
+  customer                 Customer?                 @relation(fields: [customerId], references: [id])
+  packages                 ShipmentPackage[]
+
+  // IATA-style AWB supplementary fields
+  currency                   String? @default("INR")
+  accountingInformation      String?
+  chargesCode                String?
+  weightValuationPaymentType String?
+  otherChargesPaymentType    String?
+
+  shipperCountry  String?
+  receiverCountry String?
+
+  handlingCode        String?
+  handlingDescription String?
+
+  valuationCharge         Float?
+  collectWeightCharge     Float?
+  otherChargesDueAgent    Float?
+  otherChargesDueCarrier  Float?
+  otherChargesDescription String?
+
+  totalPrepaid Float?
+  totalCollect Float?
+
+  currencyConversionRate Float?
+  destinationCurrency    String?
+  chargesAtDestination   Float?
+  totalCollectCharges    Float?
+
+  carrierUseAtDestination String?
+
+  executedAt                  DateTime?
+  executedPlace               String?
+  shipperSignatureName        String?
+  issuingCarrierSignatureName String?
 
   @@index([customerId])
   @@index([clientId])
