@@ -147,6 +147,30 @@ export async function GET(
       request.nextUrl.searchParams
         .get("airlineId") ?? "";
 
+    /*
+     * Alliance Air uses the official imported
+     * schedule as the primary source.
+     */
+    const selectedAirline =
+      airlineId
+        ? await prisma.airline.findUnique({
+            where: {
+              id: airlineId,
+            },
+            select: {
+              id: true,
+              name: true,
+              iataDesignator: true,
+            },
+          })
+        : null;
+
+    const isAllianceAir =
+      selectedAirline?.iataDesignator === "9I" ||
+      selectedAirline?.name
+        ?.toLowerCase()
+        .includes("alliance air") === true;
+
     if (
       !origin ||
       !destination ||
@@ -212,7 +236,36 @@ export async function GET(
         origin,
         destination,
         date,
+        airlineId || undefined,
       );
+
+    /*
+     * Alliance Air official schedule has priority.
+     *
+     * Do not depend on AeroDataBox coverage when
+     * Alliance Air is explicitly selected.
+     */
+    if (isAllianceAir) {
+      const allianceFlights =
+        existingFlights.filter(
+          (flight) =>
+            flight.source ===
+            "ALLIANCE_SCHEDULE",
+        );
+
+      if (allianceFlights.length > 0) {
+        return NextResponse.json({
+          configured: true,
+          provider:
+            "ALLIANCE_SCHEDULE",
+          cached: true,
+          schedules:
+            serialize(
+              allianceFlights,
+            ),
+        });
+      }
+    }
 
     if (
       !syncRecord &&
@@ -317,6 +370,12 @@ export async function GET(
       where: {
         origin,
         destination,
+
+        /*
+         * Never delete official Alliance Air
+         * schedule rows during AeroDataBox refresh.
+         */
+        source: "AERODATABOX",
 
         scheduledDeparture: {
           gte: start,

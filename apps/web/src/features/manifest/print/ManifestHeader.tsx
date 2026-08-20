@@ -32,6 +32,21 @@ export default function ManifestHeader({
   return (
     <div className="w-full font-sans text-[11px] leading-tight text-black">
 
+      {/* LOGOS */}
+      <div className="flex w-full items-center justify-between px-3 py-2">
+        <img
+          src="/logo/logicarts-logo.png"
+          alt="Logicarts"
+          className="h-[42px] w-auto object-contain"
+        />
+
+        <img
+          src="/logo/alliance-air-logo.jpeg"
+          alt="Alliance Air"
+          className="h-[48px] w-auto object-contain"
+        />
+      </div>
+
       {/* TOP ROW */}
       <table className="w-full border-collapse border border-black">
         <tbody>
