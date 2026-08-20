@@ -102,6 +102,268 @@ function fitSize(
   return size;
 }
 
+
+type SafeTextField = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+
+  fontSize: number;
+  minFontSize: number;
+
+  align?: "left" | "center" | "right";
+
+  maxLines?: number;
+  lineHeight?: number;
+
+  paddingX?: number;
+  paddingY?: number;
+};
+
+function wrapText(
+  font: any,
+  text: string,
+  size: number,
+  width: number,
+) {
+  const words =
+    text.split(/\s+/).filter(Boolean);
+
+  const lines: string[] = [];
+
+  let current = "";
+
+  for (const word of words) {
+    const candidate =
+      current
+        ? `${current} ${word}`
+        : word;
+
+    if (
+      current &&
+      font.widthOfTextAtSize(
+        candidate,
+        size,
+      ) > width
+    ) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = candidate;
+    }
+  }
+
+  if (current) {
+    lines.push(current);
+  }
+
+  return lines;
+}
+
+function drawFittedText(
+  page: any,
+  font: any,
+  value: unknown,
+  field: SafeTextField,
+) {
+  const text = clean(value);
+
+  if (!text) return;
+
+  const paddingX =
+    field.paddingX ?? 3;
+
+  const paddingY =
+    field.paddingY ?? 2;
+
+  const usableWidth =
+    Math.max(
+      1,
+      field.width -
+        paddingX * 2,
+    );
+
+  const usableHeight =
+    Math.max(
+      1,
+      field.height -
+        paddingY * 2,
+    );
+
+  const maxLines =
+    Math.max(
+      1,
+      field.maxLines ?? 1,
+    );
+
+  let size =
+    field.fontSize;
+
+  let lines: string[] = [];
+
+  while (
+    size >= field.minFontSize
+  ) {
+    if (maxLines === 1) {
+      lines = [text];
+    } else {
+      lines =
+        wrapText(
+          font,
+          text,
+          size,
+          usableWidth,
+        );
+    }
+
+    const lineHeight =
+      field.lineHeight ??
+      size * 1.18;
+
+    const textHeight =
+      lines.length *
+      lineHeight;
+
+    const widest =
+      Math.max(
+        ...lines.map(
+          (line) =>
+            font.widthOfTextAtSize(
+              line,
+              size,
+            ),
+        ),
+      );
+
+    if (
+      lines.length <= maxLines &&
+      widest <= usableWidth &&
+      textHeight <= usableHeight
+    ) {
+      break;
+    }
+
+    size -= 0.2;
+  }
+
+  size =
+    Math.max(
+      size,
+      field.minFontSize,
+    );
+
+  if (maxLines === 1) {
+    /*
+     * Last-resort clipping by characters.
+     * Nothing is ever allowed outside the cell.
+     */
+    let fitted = text;
+
+    while (
+      fitted.length > 1 &&
+      font.widthOfTextAtSize(
+        fitted,
+        size,
+      ) > usableWidth
+    ) {
+      fitted =
+        fitted.slice(0, -1);
+    }
+
+    lines = [fitted];
+  } else {
+    lines =
+      wrapText(
+        font,
+        text,
+        size,
+        usableWidth,
+      ).slice(0, maxLines);
+  }
+
+  const lineHeight =
+    field.lineHeight ??
+    size * 1.18;
+
+  let y =
+    field.y +
+    field.height -
+    paddingY -
+    size;
+
+  for (const line of lines) {
+    const textWidth =
+      font.widthOfTextAtSize(
+        line,
+        size,
+      );
+
+    let x =
+      field.x + paddingX;
+
+    if (
+      field.align === "center"
+    ) {
+      x =
+        field.x +
+        (field.width -
+          textWidth) /
+          2;
+    } else if (
+      field.align === "right"
+    ) {
+      x =
+        field.x +
+        field.width -
+        paddingX -
+        textWidth;
+    }
+
+    /*
+     * Clamp X so text can never start
+     * outside the field.
+     */
+    x =
+      Math.max(
+        field.x + paddingX,
+        Math.min(
+          x,
+          field.x +
+            field.width -
+            paddingX -
+            textWidth,
+        ),
+      );
+
+    page.drawText(
+      line,
+      {
+        x,
+        y,
+        size,
+        font,
+        color: rgb(
+          0,
+          0,
+          0,
+        ),
+        maxWidth:
+          usableWidth,
+      },
+    );
+
+    y -= lineHeight;
+
+    if (
+      y <
+      field.y + paddingY
+    ) {
+      break;
+    }
+  }
+}
+
 function draw(
   page: any,
   font: any,

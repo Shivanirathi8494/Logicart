@@ -1576,15 +1576,6 @@ export async function generatePixelPerfectAirWaybill(
     );
   }
 
-  if (FIELD_MAP.routing?.chargesCode) {
-    drawField(
-      page,
-      regular,
-      awbValue.chargesCode,
-      FIELD_MAP.routing.chargesCode,
-    );
-  }
-
   if (FIELD_MAP.routing?.wtVal) {
     drawField(
       page,
@@ -1600,24 +1591,6 @@ export async function generatePixelPerfectAirWaybill(
       bold,
       awbValue.other,
       FIELD_MAP.routing.other,
-    );
-  }
-
-  if (FIELD_MAP.routing?.declaredCarriage) {
-    drawField(
-      page,
-      regular,
-      awbValue.declaredCarriage,
-      FIELD_MAP.routing.declaredCarriage,
-    );
-  }
-
-  if (FIELD_MAP.routing?.declaredCustoms) {
-    drawField(
-      page,
-      regular,
-      awbValue.declaredCustoms,
-      FIELD_MAP.routing.declaredCustoms,
     );
   }
 
@@ -1810,38 +1783,10 @@ export async function generatePixelPerfectAirWaybill(
     );
   }
 
-  if (FIELD_MAP.accounting?.carrierUseAtDestination) {
-    drawField(
-      page,
-      regular,
-      tbd(
-        shipment.carrierUseAtDestination,
-      ),
-      FIELD_MAP.accounting.carrierUseAtDestination,
-    );
-  }
-
   /*
    * DESTINATION CHARGES RESTORE
    */
 
-  if (FIELD_MAP.accounting?.chargesAtDestination) {
-    drawField(
-      page,
-      regular,
-      "0.00",
-      FIELD_MAP.accounting.chargesAtDestination,
-    );
-  }
-
-  if (FIELD_MAP.accounting?.totalCollectCharges) {
-    drawField(
-      page,
-      regular,
-      "0.00",
-      FIELD_MAP.accounting.totalCollectCharges,
-    );
-  }
 
   if (FIELD_MAP.certification?.executedOn) {
     drawField(
