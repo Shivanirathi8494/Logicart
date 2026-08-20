@@ -82,6 +82,16 @@ export class ShipmentService {
         // Sender
         senderName: data.senderName,
         senderPhone: data.senderPhone,
+        invoiceNumber:
+          data.invoiceNumber?.trim() || null,
+
+        invoiceValue:
+          data.invoiceValue !== undefined &&
+          data.invoiceValue !== null &&
+          String(data.invoiceValue).trim() !== ""
+            ? Number(data.invoiceValue)
+            : null,
+
         senderGSTIN: data.senderGSTIN || null,
         senderPincode: data.senderPincode || null,
         senderState: data.senderState || null,

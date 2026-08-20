@@ -26,6 +26,8 @@ export interface CreateShipmentRequest {
   senderPhone: string;
   senderGSTIN: string;
   senderPincode: string;
+  invoiceNumber: string;
+  invoiceValue: string;
   senderState: string;
   senderCity: string;
   senderAddress: string;

@@ -73,6 +73,12 @@ export default function CreateDocketPage({
     senderPhone: data.senderPhone ?? "",
     senderGSTIN: data.senderGSTIN ?? "",
     senderPincode: data.senderPincode ?? "",
+    invoiceNumber: data.invoiceNumber ?? "",
+    invoiceValue:
+      data.invoiceValue !== null &&
+      data.invoiceValue !== undefined
+        ? String(data.invoiceValue)
+        : "",
     senderState: data.senderState ?? "",
     senderCity: data.senderCity ?? "",
     senderAddress: data.senderAddress ?? "",

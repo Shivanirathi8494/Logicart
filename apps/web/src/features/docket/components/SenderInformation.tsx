@@ -115,7 +115,36 @@ export default function SenderInformation({
           }
         />
 
+        
         <input
+          type="text"
+          placeholder="Invoice Number"
+          value={shipment.invoiceNumber ?? ""}
+          onChange={(e) =>
+            setShipment((previous) => ({
+              ...previous,
+              invoiceNumber: e.target.value,
+            }))
+          }
+          className="w-full rounded-xl border border-slate-200 px-4 py-3"
+        />
+
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="Invoice Value"
+          value={shipment.invoiceValue ?? ""}
+          onChange={(e) =>
+            setShipment((previous) => ({
+              ...previous,
+              invoiceValue: e.target.value,
+            }))
+          }
+          className="w-full rounded-xl border border-slate-200 px-4 py-3"
+        />
+
+<input
           readOnly
           placeholder="State"
           className="rounded-lg border bg-slate-100 p-3"

@@ -147,6 +147,8 @@ model Shipment {
 
   // Optional Air Waybill fields.
   // Leave null unless the actual AWB/business value is known.
+  invoiceNumber             String?
+  invoiceValue              Float?
   shipperAccountNumber     String?
   consigneeAccountNumber   String?
   agentIataCode            String?

@@ -24,6 +24,8 @@ export const initialShipment: CreateShipmentRequest = {
   senderPhone: "",
   senderGSTIN: "",
   senderPincode: "",
+  invoiceNumber: "",
+  invoiceValue: "",
   senderState: "",
   senderCity: "",
   senderAddress: "",
