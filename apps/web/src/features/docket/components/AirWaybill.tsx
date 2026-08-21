@@ -53,7 +53,7 @@ export default function AirWaybill({
 
   function handlePrint() {
     window.open(
-      `/api/airwaybill/${encodeURIComponent(trackingNumber)}`,
+      `/api/airwaybill-pixel/${encodeURIComponent(trackingNumber)}`,
       "_blank",
     );
   }
@@ -74,7 +74,7 @@ export default function AirWaybill({
     );
   }
 
-  const pdfUrl = `/api/airwaybill/${encodeURIComponent(
+  const pdfUrl = `/api/airwaybill-pixel/${encodeURIComponent(
     shipment.trackingNumber,
   )}`;
 
