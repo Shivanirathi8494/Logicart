@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ShipmentService } from "@/lib/services/shipment.service";
 import {
+  getShipmentWorkflow,
+} from "@/lib/workflow/shipmentWorkflow";
+import {
+  getUserBranchCode,
   requireRole,
   requireUser,
 } from "@/lib/auth/authorization";
@@ -26,9 +30,45 @@ export async function GET(request: NextRequest) {
           ? { agentId: user.agentId ?? "__NO_AGENT__" }
           : {};
 
+    /*
+     * Branch employees only see shipments where their
+     * assigned branch participates as either:
+     *
+     *   Origin Working
+     *   OR
+     *   Destination Working
+     *
+     * ADMIN and other existing roles keep their
+     * current visibility rules.
+     */
+    const branchCode =
+      user.role === "EMPLOYEE"
+        ? user.branch?.code?.trim().toUpperCase()
+        : null;
+
+    const branchScope =
+      user.role === "EMPLOYEE"
+        ? branchCode
+          ? {
+              OR: [
+                { origin: branchCode },
+                { destination: branchCode },
+              ],
+            }
+          : {
+              // Employee without an assigned branch
+              // must not receive shipment data.
+              id: "__NO_BRANCH__",
+            }
+        : {};
+
     const shipments = await prisma.shipment.findMany({
       where: {
         ...ownerScope,
+
+        AND: [
+          branchScope,
+        ],
 
         ...(tracking
           ? {
@@ -63,6 +103,12 @@ export async function GET(request: NextRequest) {
 
       include: {
         packages: true,
+
+        deliveryChallans: {
+          include: {
+            challan: true,
+          },
+        },
       },
 
       orderBy: {
@@ -70,7 +116,41 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(shipments);
+    const responseShipments =
+      shipments.map((shipment) => {
+
+        const workflow =
+          user.role === "EMPLOYEE" &&
+          branchCode
+            ? getShipmentWorkflow(
+                branchCode,
+                shipment,
+              )
+            : {};
+
+        const activeDeliveryChallan =
+          shipment.deliveryChallans.find(
+            (entry) =>
+              entry.challan.status === "OPEN"
+          );
+
+        return {
+          ...shipment,
+          ...workflow,
+
+          hasDeliveryChallan:
+            !!activeDeliveryChallan,
+
+          deliveryChallanNumber:
+            activeDeliveryChallan
+              ?.challan
+              .challanNumber ?? null,
+        };
+      });
+
+    return NextResponse.json(
+      responseShipments
+    );
   } catch (error: any) {
     if (error?.message === "UNAUTHORIZED") {
       return NextResponse.json(
@@ -97,6 +177,29 @@ export async function POST(request: Request) {
     ]);
 
     const body = await request.json();
+
+    /*
+     * Branch employee booking rule:
+     * the employee's assigned branch is always
+     * the origin of a newly created shipment.
+     */
+    if (user.role === "EMPLOYEE") {
+      const branchCode = getUserBranchCode(user);
+
+      if (!branchCode) {
+        return NextResponse.json(
+          {
+            error:
+              "Your user account is not assigned to a branch.",
+          },
+          { status: 403 }
+        );
+      }
+
+      // Server-side source of truth.
+      // Do not trust an origin supplied by the browser.
+      body.origin = branchCode;
+    }
 
     if (!body.customerId) {
       return NextResponse.json(

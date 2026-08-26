@@ -56,7 +56,7 @@ Shipments
 
 <tbody>
 
-{dashboard.recentManifests.map((manifest:any)=>(
+{(dashboard?.recentManifests ?? []).map((manifest:any)=>(
 
 <tr
 key={manifest.id}

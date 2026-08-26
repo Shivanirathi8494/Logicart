@@ -35,7 +35,7 @@ export default function Page() {
   if (loading) {
     return (
       <ReportLayout title="Day End Report">
-        <div className="rounded-xl border bg-white p-8 text-slate-500">
+        <div className="rounded-xl border bg-white p-5 sm:p-8 text-slate-500">
           Loading Day End report...
         </div>
       </ReportLayout>
@@ -45,7 +45,7 @@ export default function Page() {
   if (!data) {
     return (
       <ReportLayout title="Day End Report">
-        <div className="rounded-xl border bg-white p-8 text-red-600">
+        <div className="rounded-xl border bg-white p-5 sm:p-8 text-red-600">
           Unable to load Day End report.
         </div>
       </ReportLayout>

@@ -13,3 +13,7 @@ MAIL_FROM=
 # Fixed approval recipients in application:
 # Finance: sujit.jha@logicarts.in
 # MD: souravmishra@logicarts.in
+
+# Flight Schedule Synchronization
+AERODATABOX_API_KEY=
+AERODATABOX_API_HOST=aerodatabox.p.rapidapi.com

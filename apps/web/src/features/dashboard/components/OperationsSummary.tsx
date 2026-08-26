@@ -8,15 +8,15 @@ dashboard,
 
 return(
 
-<section className="rounded-xl border bg-white p-6 shadow-sm">
+<section className="rounded-xl border bg-white p-4 shadow-sm sm:p-6">
 
-<h2 className="mb-6 text-xl font-bold">
+<h2 className="mb-5 text-lg font-bold text-[#0b2340] sm:mb-6 sm:text-xl">
 
 Operations Summary
 
 </h2>
 
-<div className="grid gap-6 md:grid-cols-2">
+<div className="grid grid-cols-2 gap-4 sm:gap-6">
 
 <div>
 
@@ -26,7 +26,7 @@ Total Shipments
 
 </div>
 
-<div className="text-3xl font-bold">
+<div className="mt-1 text-2xl font-bold text-[#0b2340] sm:text-3xl">
 
 {dashboard.totalShipment}
 
@@ -42,7 +42,7 @@ Total Manifest
 
 </div>
 
-<div className="text-3xl font-bold">
+<div className="mt-1 text-2xl font-bold text-[#0b2340] sm:text-3xl">
 
 {dashboard.totalManifest}
 
@@ -58,7 +58,7 @@ Delivery Challans
 
 </div>
 
-<div className="text-3xl font-bold">
+<div className="mt-1 text-2xl font-bold text-[#0b2340] sm:text-3xl">
 
 {dashboard.totalChallan}
 
@@ -74,7 +74,7 @@ Pending Delivery
 
 </div>
 
-<div className="text-3xl font-bold text-red-600">
+<div className="mt-1 text-2xl font-bold text-red-600 sm:text-3xl">
 
 {dashboard.pendingDelivery}
 

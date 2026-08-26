@@ -8,7 +8,7 @@
 
 | Version | Status |
 |----------|--------|
-| **v1.1.0** | ✅ Public Website & Career Module Completed |
+| **v1.3.0** | ✅ Logistics Operations & Delivery Workflow Completed |
 
 ---
 
@@ -476,3 +476,41 @@ The following items are removed from the current navigation:
 - Vehicle Master
 
 The current administration workflow is focused on Onboarding & Access.
+
+---
+
+
+
+# v1.3.0 Logistics Operations Release
+
+
+
+Implemented workflow:
+
+
+
+- Package-wise dimensions and weight
+
+- Piece-level Loading Tally
+
+- Manifest generation and package-wise unloading
+
+- RECEIVED and OUTSCAN destination workflow
+
+- Airport Delivery Challan with vendor name, phone and address
+
+- Out for Delivery with vehicle number and dispatch remarks
+
+- Delivered confirmation with receiver name, phone, address and remarks
+
+- Not Delivered attempt handling
+
+- Branch-aware RBAC and operational queues
+
+
+
+Shipment flow:
+
+
+
+BOOKED → MANIFESTED → RECEIVED → OUTSCAN → AIRPORT DELIVERY CHALLAN → OUT_FOR_DELIVERY → DELIVERED

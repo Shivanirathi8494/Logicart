@@ -2,6 +2,7 @@ export interface PackageDetail {
   length: number;
   width: number;
   height: number;
+  weight: number;
 }
 
 export interface CreateShipmentRequest {

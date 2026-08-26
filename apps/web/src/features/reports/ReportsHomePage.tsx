@@ -4,11 +4,11 @@ export default function ReportsHomePage() {
 
   return (
 
-    <div className="space-y-8">
+    <div className="space-y-5 sm:space-y-8">
 
       <div>
 
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-2xl font-bold text-[#0b2340] sm:text-3xl">
           Reports
         </h1>
 
@@ -18,7 +18,7 @@ export default function ReportsHomePage() {
 
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
 
         <ReportCard
           title="Booking Report"

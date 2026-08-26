@@ -56,3 +56,15 @@ next-env.d.ts
 
 # Logs
 *.log
+
+# Development backup files
+*.before-*
+*.backup.*
+*.bak
+*.tmp
+*.orig
+*.rej
+*~
+
+# macOS
+.DS_Store

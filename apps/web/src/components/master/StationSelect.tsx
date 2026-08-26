@@ -13,12 +13,14 @@ type Props = {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
 };
 
 export default function StationSelect({
   label,
   value,
   onChange,
+  disabled = false,
 }: Props) {
   const wrapperRef =
     useRef<HTMLDivElement>(null);
@@ -100,19 +102,26 @@ export default function StationSelect({
         type="text"
         value={displayValue}
         placeholder={`Search ${label.toLowerCase()} airport...`}
-        className="w-full rounded-lg border p-3"
+        disabled={disabled}
+        className={`w-full rounded-lg border p-3 ${
+          disabled
+            ? "cursor-not-allowed bg-slate-100 text-slate-600"
+            : "bg-white"
+        }`}
         onFocus={() => {
+          if (disabled) return;
           setQuery("");
           setOpen(true);
         }}
         onChange={(event) => {
+          if (disabled) return;
           setQuery(event.target.value);
           onChange("");
           setOpen(true);
         }}
       />
 
-      {open && (
+      {open && !disabled && (
         <div className="absolute z-50 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border bg-white shadow-lg">
           {filtered.length === 0 ? (
             <div className="p-3 text-sm text-slate-500">

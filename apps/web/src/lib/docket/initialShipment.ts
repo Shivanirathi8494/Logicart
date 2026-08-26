@@ -1,7 +1,6 @@
 import { CreateShipmentRequest } from "@/types/shipment";
 
 export const initialShipment: CreateShipmentRequest = {
-
   trackingNumber: "",
 
   bookingDate: new Date().toISOString().split("T")[0],
@@ -59,7 +58,7 @@ export const initialShipment: CreateShipmentRequest = {
       length: 0,
       width: 0,
       height: 0,
+      weight: 0,
     },
   ],
-
 };

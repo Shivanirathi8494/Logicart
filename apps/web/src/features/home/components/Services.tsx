@@ -13,30 +13,35 @@ const services = [
     icon: Plane,
     desc: "Domestic & International Air Freight",
     eyebrow: "DOMESTIC & INTERNATIONAL AIR FREIGHT",
+    image: "/services/service-air-cargo.png",
   },
   {
     title: "Express Cargo",
     icon: PackageCheck,
     desc: "Fast Time Critical Deliveries",
     eyebrow: "FAST TIME-CRITICAL DELIVERIES",
+    image: "/services/service-express-cargo.png",
   },
   {
     title: "E-Commerce",
     icon: ShoppingCart,
     desc: "Last Mile & Fulfilment Logistics",
     eyebrow: "LAST-MILE & FULFILMENT LOGISTICS",
+    image: "/services/service-ecommerce.png",
   },
   {
     title: "Critical Shipment",
     icon: ShieldCheck,
     desc: "Priority & Sensitive Shipments",
     eyebrow: "PRIORITY & SENSITIVE SHIPMENTS",
+    image: "/services/service-critical-shipment.png",
   },
   {
     title: "Domestic Trade",
     icon: Truck,
     desc: "Pan India Distribution Network with PTL, FTL, LMD",
     eyebrow: "PAN INDIA PTL, FTL & LMD",
+    image: "/services/service-domestic-trade.png",
   },
 ];
 
@@ -75,7 +80,7 @@ export default function Services() {
                   <div
                     className="absolute inset-0 bg-cover bg-center opacity-55 transition duration-500 group-hover:scale-105"
                     style={{
-                      backgroundImage: "url('/hero-air-cargo.png')",
+                      backgroundImage: `url('${service.image}')`,
                     }}
                   />
 

@@ -2,11 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { generateAwbNumber } from "@/lib/airwaybill/generateAwbNumber";
 
 export class ShipmentService {
-
   static async getAll() {
-
     return prisma.shipment.findMany({
-
       include: {
         packages: true,
       },
@@ -14,9 +11,7 @@ export class ShipmentService {
       orderBy: {
         createdAt: "desc",
       },
-
     });
-
   }
 
   static async create(
@@ -27,7 +22,6 @@ export class ShipmentService {
       createdByUserId?: string | null;
     },
   ) {
-
     if (!data.airlineId) {
       throw new Error("Airline is required.");
     }
@@ -36,16 +30,12 @@ export class ShipmentService {
       throw new Error("Flight number is required.");
     }
 
-    const trackingNumber = await generateAwbNumber(
-      data.airlineId,
-    );
+    const trackingNumber = await generateAwbNumber(data.airlineId);
 
     console.log("Generated AWB:", trackingNumber);
 
     return prisma.shipment.create({
-
       data: {
-
         trackingNumber,
 
         customerId: data.customerId,
@@ -55,24 +45,19 @@ export class ShipmentService {
 
         bookingDate: new Date(data.bookingDate),
 
-        scheduledDeparture:
-          data.scheduledDeparture
-            ? new Date(data.scheduledDeparture)
-            : null,
+        scheduledDeparture: data.scheduledDeparture
+          ? new Date(data.scheduledDeparture)
+          : null,
 
-        scheduledArrival:
-          data.scheduledArrival
-            ? new Date(data.scheduledArrival)
-            : null,
+        scheduledArrival: data.scheduledArrival
+          ? new Date(data.scheduledArrival)
+          : null,
 
-        aircraftType:
-          data.aircraftType || null,
+        aircraftType: data.aircraftType || null,
 
-        departureTerminal:
-          data.departureTerminal || null,
+        departureTerminal: data.departureTerminal || null,
 
-        arrivalTerminal:
-          data.arrivalTerminal || null,
+        arrivalTerminal: data.arrivalTerminal || null,
 
         origin: data.origin,
         destination: data.destination,
@@ -82,8 +67,7 @@ export class ShipmentService {
         // Sender
         senderName: data.senderName,
         senderPhone: data.senderPhone,
-        invoiceNumber:
-          data.invoiceNumber?.trim() || null,
+        invoiceNumber: data.invoiceNumber?.trim() || null,
 
         invoiceValue:
           data.invoiceValue !== undefined &&
@@ -127,17 +111,14 @@ export class ShipmentService {
             length: pkg.length,
             width: pkg.width,
             height: pkg.height,
+            weight: Number(pkg.weight || 0),
           })),
         },
-
       },
 
       include: {
         packages: true,
       },
-
     });
-
   }
-
 }

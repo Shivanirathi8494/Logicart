@@ -60,13 +60,13 @@ export default function ShipmentSearch({
 
   return (
 
-    <section className="rounded-xl border bg-white p-6 shadow-sm">
+    <section className="rounded-xl border bg-white p-4 shadow-sm sm:p-6">
 
-      <h2 className="mb-5 text-xl font-semibold">
+      <h2 className="mb-4 text-lg font-semibold text-[#0b2340] sm:mb-5 sm:text-xl">
         Add Shipments
       </h2>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
 
         <input
 
@@ -76,7 +76,7 @@ export default function ShipmentSearch({
 
           value={awb}
 
-          className="flex-1 rounded-lg border p-3 uppercase"
+          className="min-h-11 w-full flex-1 rounded-lg border p-3 text-base uppercase"
 
           onChange={(e)=>
             setAwb(
@@ -100,7 +100,7 @@ export default function ShipmentSearch({
 
         <button
           onClick={search}
-          className="rounded-lg bg-[#1877F2] px-8 text-white"
+          className="min-h-11 w-full rounded-lg bg-[#1877F2] px-6 py-3 font-semibold text-white sm:w-auto sm:px-8"
         >
 
           Add Shipment

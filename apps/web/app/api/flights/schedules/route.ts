@@ -59,7 +59,20 @@ async function getFlights(
         : {}),
 
       scheduledDeparture: {
-        gte: start,
+        /*
+         * Never offer a flight that has already departed.
+         *
+         * For today's booking date:
+         *   departure must be later than the current time.
+         *
+         * For a future booking date:
+         *   `start` is already later than now, so the normal
+         *   beginning-of-day boundary is used.
+         */
+        gte:
+          start > new Date()
+            ? start
+            : new Date(),
         lte: end,
       },
     },

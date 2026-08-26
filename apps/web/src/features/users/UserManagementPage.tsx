@@ -65,13 +65,13 @@ alert("Backend will be connected later.");
 
 return(
 
-<div className="space-y-8">
+<div className="space-y-5 sm:space-y-8">
 
-<div className="flex items-center justify-between">
+<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
 <div>
 
-<h1 className="text-3xl font-bold">
+<h1 className="text-2xl font-bold text-[#0b2340] sm:text-3xl">
 
 User Management
 
@@ -117,9 +117,9 @@ className="w-full rounded-lg border p-3"
 
 />
 
-<div className="overflow-hidden rounded-xl border bg-white shadow-sm">
+<div className="overflow-x-auto rounded-xl border bg-white shadow-sm">
 
-<table className="min-w-full">
+<table className="min-w-[760px] w-full">
 
 <thead className="bg-slate-100">
 

@@ -147,8 +147,8 @@ model Shipment {
 
   // Optional Air Waybill fields.
   // Leave null unless the actual AWB/business value is known.
-  invoiceNumber             String?
-  invoiceValue              Float?
+  invoiceNumber            String?
+  invoiceValue             Float?
   shipperAccountNumber     String?
   consigneeAccountNumber   String?
   agentIataCode            String?
@@ -159,6 +159,8 @@ model Shipment {
   insuranceAmount          Float?
   specialCargoIndicator    String?
   deliveryChallans         DeliveryChallanShipment[]
+  deliveryAttempts         DeliveryAttempt[]
+  outForDeliveryRecords    OutForDeliveryRecord[]
   loadingTallies           LoadingTallyShipment[]
   manifestEntries          ManifestShipment[]
   agent                    Agent?                    @relation(fields: [agentId], references: [id])
@@ -209,31 +211,53 @@ model Shipment {
 }
 
 model ShipmentPackage {
-  id         String   @id @default(cuid())
+  id         String @id @default(cuid())
   shipmentId String
   length     Float
   width      Float
   height     Float
-  shipment   Shipment @relation(fields: [shipmentId], references: [id])
+  weight     Float  @default(0)
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id])
+
+  loadingTallyPackages   LoadingTallyPackage[]
+  manifestUnloadPackages ManifestUnloadPackage[]
 }
 
 model Manifest {
-  id                    String                 @id @default(cuid())
-  manifestNumber        String                 @unique
+  id                    String                  @id @default(cuid())
+  manifestNumber        String                  @unique
   manifestDate          DateTime
   origin                String
   destination           String
   flightNumber          String?
   vehicleNumber         String?
   remarks               String?
-  status                ManifestStatus         @default(OPEN)
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
+  status                ManifestStatus          @default(OPEN)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
   loadingTallyId        String?
   deliveryChallans      DeliveryChallan[]
   loadingTallyShipments LoadingTallyShipment[]
-  loadingTally          LoadingTally?          @relation(fields: [loadingTallyId], references: [id])
+  loadingTally          LoadingTally?           @relation(fields: [loadingTallyId], references: [id])
   shipments             ManifestShipment[]
+  unloadPackages        ManifestUnloadPackage[]
+}
+
+model ManifestUnloadPackage {
+  id         String   @id @default(cuid())
+  manifestId String
+  packageId  String
+  unloaded   Boolean  @default(true)
+  remarks    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  manifest Manifest        @relation(fields: [manifestId], references: [id], onDelete: Cascade)
+  package  ShipmentPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@unique([manifestId, packageId])
+  @@index([packageId])
 }
 
 model ManifestShipment {
@@ -248,21 +272,32 @@ model ManifestShipment {
 }
 
 model DeliveryChallan {
-  id              String                    @id @default(cuid())
-  challanNumber   String                    @unique
-  challanDate     DateTime
-  manifestId      String?
+  id            String   @id @default(cuid())
+  challanNumber String   @unique
+  challanDate   DateTime
+  manifestId    String?
+
+  deliveryType DeliveryType @default(DOOR_TO_DOOR)
+
+  // Snapshot of the party receiving the shipment.
+  // For DOOR_TO_DOOR these contain receiver details.
+  // For AIRPORT_DELIVERY these contain airport vendor details.
   customerName    String
   customerAddress String
   customerPhone   String
-  flightNumber    String?
-  vehicleNumber   String?
-  remarks         String?
-  status          DeliveryChallanStatus     @default(OPEN)
-  createdAt       DateTime                  @default(now())
-  updatedAt       DateTime                  @updatedAt
-  manifest        Manifest?                 @relation(fields: [manifestId], references: [id])
-  shipments       DeliveryChallanShipment[]
+
+  flightNumber  String?
+  vehicleNumber String?
+  remarks       String?
+
+  status    DeliveryChallanStatus @default(OPEN)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  manifest  Manifest?                 @relation(fields: [manifestId], references: [id])
+  shipments DeliveryChallanShipment[]
+
+  @@index([deliveryType])
 }
 
 model DeliveryChallanShipment {
@@ -272,7 +307,48 @@ model DeliveryChallanShipment {
   challan    DeliveryChallan @relation(fields: [challanId], references: [id])
   shipment   Shipment        @relation(fields: [shipmentId], references: [id])
 
-  @@unique([challanId, shipmentId])
+  // One shipment/AWB can belong to only one Delivery Challan.
+  // This also protects against two operators generating
+  // separate challans for the same AWB concurrently.
+  @@unique([shipmentId])
+}
+
+model OutForDeliveryRecord {
+  id              String   @id @default(cuid())
+  shipmentId      String
+  vehicleNumber   String
+  receiverName    String
+  receiverPhone   String
+  receiverAddress String
+  remarks         String?
+  dispatchedAt    DateTime @default(now())
+  createdByUserId String?
+
+  shipment  Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  createdBy User?    @relation("OutForDeliveryCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([shipmentId])
+  @@index([vehicleNumber])
+  @@index([dispatchedAt])
+}
+
+model DeliveryAttempt {
+  id              String   @id @default(cuid())
+  shipmentId      String
+  createdByUserId String?
+  outcome         String
+  remarks         String
+  receiverName    String?
+  receiverPhone   String?
+  receiverAddress String?
+  attemptedAt     DateTime @default(now())
+
+  shipment  Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  createdBy User?    @relation("DeliveryAttemptCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([shipmentId])
+  @@index([createdByUserId])
+  @@index([attemptedAt])
 }
 
 model DayEnd {
@@ -307,26 +383,28 @@ model Branch {
 }
 
 model User {
-  id                 String              @id @default(cuid())
-  username           String              @unique
-  passwordHash       String
-  fullName           String
-  email              String?             @unique
-  phone              String?
-  role               UserRole            @default(BOOKING)
-  status             MasterStatus        @default(ACTIVE)
-  branchId           String?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  agentId            String?
-  clientId           String?
-  employeeProfile    EmployeeProfile?
-  onboardingRequests OnboardingRequest[] @relation("OnboardingCreatedBy")
-  sessions           Session[]
-  createdShipments   Shipment[]          @relation("ShipmentCreatedBy")
-  agent              Agent?              @relation(fields: [agentId], references: [id])
-  branch             Branch?             @relation(fields: [branchId], references: [id])
-  client             Client?             @relation(fields: [clientId], references: [id])
+  id                    String                 @id @default(cuid())
+  username              String                 @unique
+  passwordHash          String
+  fullName              String
+  email                 String?                @unique
+  phone                 String?
+  role                  UserRole               @default(BOOKING)
+  status                MasterStatus           @default(ACTIVE)
+  branchId              String?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  agentId               String?
+  clientId              String?
+  employeeProfile       EmployeeProfile?
+  onboardingRequests    OnboardingRequest[]    @relation("OnboardingCreatedBy")
+  sessions              Session[]
+  createdShipments      Shipment[]             @relation("ShipmentCreatedBy")
+  deliveryAttempts      DeliveryAttempt[]      @relation("DeliveryAttemptCreatedBy")
+  outForDeliveryCreated OutForDeliveryRecord[] @relation("OutForDeliveryCreatedBy")
+  agent                 Agent?                 @relation(fields: [agentId], references: [id])
+  branch                Branch?                @relation(fields: [branchId], references: [id])
+  client                Client?                @relation(fields: [clientId], references: [id])
 
   @@index([clientId])
   @@index([agentId])
@@ -471,6 +549,7 @@ model LoadingTally {
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
   shipments          LoadingTallyShipment[]
+  packages           LoadingTallyPackage[]
   manifests          Manifest[]
 }
 
@@ -487,6 +566,21 @@ model LoadingTallyShipment {
   @@unique([loadingTallyId, shipmentId])
 }
 
+model LoadingTallyPackage {
+  id             String   @id @default(cuid())
+  loadingTallyId String
+  packageId      String
+  loaded         Boolean  @default(true)
+  remarks        String?
+  createdAt      DateTime @default(now())
+
+  loadingTally LoadingTally    @relation(fields: [loadingTallyId], references: [id], onDelete: Cascade)
+  package      ShipmentPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@unique([loadingTallyId, packageId])
+  @@index([packageId])
+}
+
 enum LoadingTallyStatus {
   OPEN
   COMPLETED
@@ -496,7 +590,9 @@ enum ShipmentStatus {
   BOOKED
   INSCAN
   MANIFESTED
+  RECEIVED
   OUTSCAN
+  OUT_FOR_DELIVERY
   DELIVERED
   CANCELLED
 }
@@ -504,6 +600,11 @@ enum ShipmentStatus {
 enum ManifestStatus {
   OPEN
   CLOSED
+}
+
+enum DeliveryType {
+  AIRPORT_DELIVERY
+  DOOR_TO_DOOR
 }
 
 enum DeliveryChallanStatus {

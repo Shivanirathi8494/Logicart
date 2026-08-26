@@ -30,18 +30,27 @@ export default function Hero() {
   return (
     <section className="relative overflow-visible bg-[#0b2340]">
 
-      {/* Background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/hero-air-cargo.png')",
-        }}
-      />
+      {/* Animated hero background - clipped independently */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
 
-      {/* Navy overlay */}
-      <div className="absolute inset-0 bg-[#071d36]/75" />
+        <div
+          className="hero-operations-bg absolute -inset-[5%] bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('/hero-operations-collage.jpg')",
+          }}
+        />
 
-      <div className="absolute inset-0 bg-gradient-to-r from-[#071d36] via-[#071d36]/75 to-[#071d36]/45" />
+        {/* Overall darkening */}
+        <div className="absolute inset-0 bg-[#071d36]/55" />
+
+        {/* Keep left-side text readable */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#071d36]/95 via-[#071d36]/72 to-[#071d36]/20" />
+
+        {/* Clean dark fade near bottom */}
+        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-b from-transparent via-[#071d36]/80 to-[#071d36]" />
+
+      </div>
 
       {/* Hero content */}
       <div className="relative mx-auto max-w-7xl px-6 pb-40 pt-20 lg:pt-24">

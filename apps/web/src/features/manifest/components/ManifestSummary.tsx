@@ -95,9 +95,9 @@ export default function ManifestSummary({
 
   return (
 
-    <section className="rounded-xl border bg-white p-6 shadow-sm">
+    <section className="rounded-xl border bg-white p-4 shadow-sm sm:p-6">
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3">
 
         <div>
 
@@ -105,7 +105,7 @@ export default function ManifestSummary({
             Total Shipments
           </div>
 
-          <div className="text-3xl font-bold">
+          <div className="mt-1 text-2xl font-bold text-[#0b2340] sm:text-3xl">
             {totalShipment}
           </div>
 
@@ -117,7 +117,7 @@ export default function ManifestSummary({
             Total Pieces
           </div>
 
-          <div className="text-3xl font-bold">
+          <div className="mt-1 text-2xl font-bold text-[#0b2340] sm:text-3xl">
             {totalPieces}
           </div>
 
@@ -129,7 +129,7 @@ export default function ManifestSummary({
             Total Weight
           </div>
 
-          <div className="text-3xl font-bold">
+          <div className="mt-1 text-2xl font-bold text-[#0b2340] sm:text-3xl">
             {totalWeight.toFixed(2)} Kg
           </div>
 
@@ -137,17 +137,17 @@ export default function ManifestSummary({
 
       </div>
 
-      <div className="mt-8 flex justify-end gap-4">
+      <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-end sm:gap-4">
 
         <button
-          className="rounded-lg border px-6 py-3"
+          className="min-h-11 w-full rounded-lg border px-6 py-3 font-semibold sm:w-auto"
         >
           Preview Manifest
         </button>
 
         <button
           onClick={generateManifest}
-          className="rounded-lg bg-[#1877F2] px-6 py-3 text-white"
+          className="min-h-11 w-full rounded-lg bg-[#1877F2] px-6 py-3 font-semibold text-white sm:w-auto"
         >
           Generate Manifest
         </button>

@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth/authorization";
+import {
+  getCurrentUser,
+  getUserBranchCode,
+} from "@/lib/auth/authorization";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -13,93 +16,300 @@ export async function GET() {
     );
   }
 
-  const shipmentScope =
+  const externalUser =
+    user.role === "CLIENT" ||
+    user.role === "AGENT";
+
+  const branchCode =
+    user.role === "EMPLOYEE"
+      ? getUserBranchCode(user)
+      : null;
+
+  if (
+    user.role === "EMPLOYEE" &&
+    !branchCode
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Your account is not assigned to a branch.",
+      },
+      { status: 403 }
+    );
+  }
+
+  /*
+   * Shipment visibility
+   *
+   * CLIENT -> own shipments
+   * AGENT  -> own shipments
+   * EMPLOYEE -> shipments involving working branch
+   * ADMIN/other internal roles -> global
+   */
+  const shipmentScope: any =
     user.role === "CLIENT"
-      ? { clientId: user.clientId ?? "__NO_CLIENT__" }
+      ? {
+          clientId:
+            user.clientId ??
+            "__NO_CLIENT__",
+        }
       : user.role === "AGENT"
-        ? { agentId: user.agentId ?? "__NO_AGENT__" }
-        : {};
+        ? {
+            agentId:
+              user.agentId ??
+              "__NO_AGENT__",
+          }
+        : user.role === "EMPLOYEE"
+          ? {
+              OR: [
+                { origin: branchCode! },
+                { destination: branchCode! },
+              ],
+            }
+          : {};
+
+  /*
+   * Operational status counts are intentionally
+   * branch-side aware.
+   *
+   * Origin work:
+   * BOOKED / INSCAN
+   *
+   * In-transit:
+   * MANIFESTED
+   *
+   * Destination work:
+   * RECEIVED / OUTSCAN / DELIVERED
+   */
+
+  const bookedWhere: any =
+    user.role === "EMPLOYEE"
+      ? {
+          origin: branchCode!,
+          status: "BOOKED",
+        }
+      : {
+          ...shipmentScope,
+          status: "BOOKED",
+        };
+
+  const inscanWhere: any =
+    user.role === "EMPLOYEE"
+      ? {
+          origin: branchCode!,
+          status: "INSCAN",
+        }
+      : {
+          ...shipmentScope,
+          status: "INSCAN",
+        };
+
+  const manifestedWhere: any =
+    user.role === "EMPLOYEE"
+      ? {
+          status: "MANIFESTED",
+          OR: [
+            { origin: branchCode! },
+            { destination: branchCode! },
+          ],
+        }
+      : {
+          ...shipmentScope,
+          status: "MANIFESTED",
+        };
+
+  const receivedWhere: any =
+    user.role === "EMPLOYEE"
+      ? {
+          destination: branchCode!,
+          status: "RECEIVED",
+        }
+      : {
+          ...shipmentScope,
+          status: "RECEIVED",
+        };
+
+  const outscanWhere: any =
+    user.role === "EMPLOYEE"
+      ? {
+          destination: branchCode!,
+          status: "OUTSCAN",
+        }
+      : {
+          ...shipmentScope,
+          status: "OUTSCAN",
+        };
+
+  const deliveredWhere: any =
+    user.role === "EMPLOYEE"
+      ? {
+          destination: branchCode!,
+          status: "DELIVERED",
+        }
+      : {
+          ...shipmentScope,
+          status: "DELIVERED",
+        };
 
   const [
     booked,
     inscan,
     manifested,
+    received,
     outscan,
     delivered,
+    totalShipment,
     recentShipments,
   ] = await Promise.all([
     prisma.shipment.count({
-      where: { ...shipmentScope, status: "BOOKED" },
+      where: bookedWhere,
     }),
 
     prisma.shipment.count({
-      where: { ...shipmentScope, status: "INSCAN" },
+      where: inscanWhere,
     }),
 
     prisma.shipment.count({
-      where: { ...shipmentScope, status: "MANIFESTED" },
+      where: manifestedWhere,
     }),
 
     prisma.shipment.count({
-      where: { ...shipmentScope, status: "OUTSCAN" },
+      where: receivedWhere,
     }),
 
     prisma.shipment.count({
-      where: { ...shipmentScope, status: "DELIVERED" },
+      where: outscanWhere,
+    }),
+
+    prisma.shipment.count({
+      where: deliveredWhere,
+    }),
+
+    prisma.shipment.count({
+      where: shipmentScope,
     }),
 
     prisma.shipment.findMany({
       where: shipmentScope,
-      orderBy: { createdAt: "desc" },
+      orderBy: {
+        createdAt: "desc",
+      },
       take: 10,
     }),
   ]);
 
-  const externalUser =
-    user.role === "CLIENT" || user.role === "AGENT";
-
-  let recentManifests: unknown[] = [];
+  let recentManifests: any[] = [];
   let openManifests = 0;
   let openChallans = 0;
+  let totalManifest = 0;
+  let totalChallan = 0;
 
   if (!externalUser) {
+    const manifestScope: any =
+      user.role === "EMPLOYEE"
+        ? {
+            OR: [
+              { origin: branchCode! },
+              { destination: branchCode! },
+            ],
+          }
+        : {};
+
+    const challanScope: any =
+      user.role === "EMPLOYEE"
+        ? {
+            shipments: {
+              some: {
+                shipment: {
+                  destination:
+                    branchCode!,
+                },
+              },
+            },
+          }
+        : {};
+
     [
       recentManifests,
       openManifests,
       openChallans,
+      totalManifest,
+      totalChallan,
     ] = await Promise.all([
       prisma.manifest.findMany({
-        orderBy: { createdAt: "desc" },
+        where: manifestScope,
+        orderBy: {
+          createdAt: "desc",
+        },
         take: 5,
-        include: { shipments: true },
+        include: {
+          shipments: true,
+        },
       }),
 
       prisma.manifest.count({
-        where: { status: "OPEN" },
+        where: {
+          ...manifestScope,
+          status: "OPEN",
+        },
       }),
 
       prisma.deliveryChallan.count({
-        where: { status: "OPEN" },
+        where: {
+          ...challanScope,
+          status: "OPEN",
+        },
+      }),
+
+      prisma.manifest.count({
+        where: manifestScope,
+      }),
+
+      prisma.deliveryChallan.count({
+        where: challanScope,
       }),
     ]);
   }
 
-  let revenue: number | undefined;
+  /*
+   * At destination:
+   *
+   * RECEIVED = waiting for delivery processing
+   * OUTSCAN  = currently out for delivery
+   */
+  const pendingDelivery =
+    received + outscan;
+
+  let revenue:
+    | number
+    | undefined;
 
   if (user.role === "ADMIN") {
-    const result = await prisma.shipment.aggregate({
-      _sum: { total: true },
-    });
+    const result =
+      await prisma.shipment.aggregate({
+        _sum: {
+          total: true,
+        },
+      });
 
-    revenue = result._sum.total ?? 0;
+    revenue =
+      result._sum.total ?? 0;
   }
 
   return NextResponse.json({
+    branchCode,
+
     booked,
     inscan,
     manifested,
+    received,
     outscan,
     delivered,
+
+    totalShipment,
+    totalManifest,
+    totalChallan,
+    pendingDelivery,
 
     ...(user.role === "ADMIN"
       ? { revenue }

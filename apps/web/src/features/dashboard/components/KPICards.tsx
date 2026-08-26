@@ -36,17 +36,17 @@ export default function KPICards({
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-3 xl:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
       {cards.map((card) => (
         <div
           key={card.title}
-          className="rounded-xl border bg-white p-6 shadow-sm"
+          className="min-w-0 rounded-xl border bg-white p-4 shadow-sm sm:p-5 lg:p-6"
         >
-          <div className="text-sm text-slate-500">
+          <div className="truncate text-xs font-medium text-slate-500 sm:text-sm">
             {card.title}
           </div>
 
-          <div className="mt-3 text-3xl font-bold">
+          <div className="mt-2 break-words text-2xl font-bold text-[#0b2340] sm:mt-3 sm:text-3xl">
             {card.value}
           </div>
         </div>

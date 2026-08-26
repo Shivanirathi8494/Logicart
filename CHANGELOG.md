@@ -1,3 +1,25 @@
+# v1.3.0 — 26 August 2026
+
+## Added
+- Package-wise shipment weight
+- Piece-level Loading Tally and unloading
+- Airport Delivery Challan vendor handover
+- Out-for-Delivery vehicle dispatch
+- Receiver confirmation on final delivery
+- Delivery Attempt receiver details
+- Branch-aware destination workflows
+
+## Database
+- Added RECEIVED shipment status migration
+- Added package weight migration
+- Added loading tally package records
+- Added manifest unload package records
+- Added Delivery Challan type
+- Added Out-for-Delivery records
+- Added Delivery Attempt receiver details
+
+---
+
 # Changelog
 
 # v1.2.0 — RBAC & Onboarding

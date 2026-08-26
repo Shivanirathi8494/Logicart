@@ -15,6 +15,7 @@ type Props = {
   setShipment: React.Dispatch<
     React.SetStateAction<CreateShipmentRequest>
   >;
+  originLocked?: boolean;
 };
 
 type FlightSchedule = {
@@ -43,6 +44,7 @@ function displayDateTime(value: string) {
 export default function ShipmentInformation({
   shipment,
   setShipment,
+  originLocked = false,
 }: Props) {
   const [schedules, setSchedules] =
     useState<FlightSchedule[]>([]);
@@ -315,12 +317,12 @@ export default function ShipmentInformation({
   }
 
   return (
-    <section className="rounded-xl border bg-white p-6 shadow-sm">
-      <h2 className="mb-6 text-xl font-semibold">
+    <section className="rounded-xl border bg-white p-4 shadow-sm sm:p-6">
+      <h2 className="mb-4 text-lg font-semibold text-[#0b2340] sm:mb-6 sm:text-xl">
         Shipment Information
       </h2>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
         <div>
           <label className="mb-2 block text-sm font-medium text-slate-700">
             Booking Date *
@@ -329,7 +331,7 @@ export default function ShipmentInformation({
           <input
             required
             type="date"
-            className="w-full rounded-lg border p-3"
+            className="min-h-11 w-full rounded-lg border p-3 text-base"
             value={shipment.bookingDate ?? ""}
             onChange={(event) =>
               setShipment((previous) => ({
@@ -347,7 +349,7 @@ export default function ShipmentInformation({
 
           <input
             readOnly
-            className="w-full rounded-lg border bg-slate-100 p-3"
+            className="min-h-11 w-full rounded-lg border bg-slate-100 p-3 text-base"
             value={shipment.trackingNumber ?? ""}
             placeholder="Generated after flight/airline selection"
           />
@@ -362,6 +364,7 @@ export default function ShipmentInformation({
         <StationSelect
           label="Origin"
           value={shipment.origin ?? ""}
+          disabled={originLocked}
           onChange={(origin) =>
             setShipment((previous) => ({
               ...previous,
@@ -483,7 +486,7 @@ export default function ShipmentInformation({
 
 
 
-        <div className="lg:col-span-3">
+        <div className="sm:col-span-2 lg:col-span-3">
           <label className="mb-2 block text-sm font-medium text-slate-700">
             Available Flight
           </label>
@@ -500,7 +503,7 @@ export default function ShipmentInformation({
             onChange={(event) =>
               selectFlight(event.target.value)
             }
-            className="w-full rounded-lg border p-3"
+            className="min-h-11 w-full rounded-lg border p-3 text-base"
           >
             <option value="">
               {loadingFlights
@@ -606,7 +609,7 @@ function ReadOnlyField({
       <input
         readOnly
         value={value ?? ""}
-        className="w-full rounded-lg border bg-slate-100 p-3"
+        className="min-h-11 w-full rounded-lg border bg-slate-100 p-3 text-base"
       />
     </div>
   );

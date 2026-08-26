@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "seed": "tsx prisma/seed.ts",
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "prisma generate && next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "import:alliance": "tsx scripts/import-alliance-air-schedule.ts",
+    "seed:alliance": "tsx scripts/seed-alliance-air-schedule.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

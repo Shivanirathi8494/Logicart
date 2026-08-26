@@ -15,11 +15,11 @@ export default function LoadingTallySearch({
       setLoading(true);
 
       const response = await fetch(
-        "/api/dockets?status=BOOKED"
+        "/api/dispatch/available"
       );
 
       if (!response.ok) {
-        throw new Error("Unable to load BOOKED AWBs");
+        throw new Error("Unable to load INSCAN AWBs");
       }
 
       const data = await response.json();
@@ -68,9 +68,9 @@ export default function LoadingTallySearch({
 
       const shipment = data[0];
 
-      if (shipment.status !== "BOOKED") {
+      if (shipment.status !== "INSCAN") {
         alert(
-          "This AWB is not available for loading. Only BOOKED AWBs can be added."
+          "This AWB is not ready for dispatch. Only INSCAN AWBs can be added."
         );
         return;
       }
@@ -97,7 +97,7 @@ export default function LoadingTallySearch({
   }
 
   function addAvailableShipment(shipment: any) {
-    if (shipment.status !== "BOOKED") {
+    if (shipment.status !== "INSCAN") {
       return;
     }
 
@@ -141,7 +141,7 @@ export default function LoadingTallySearch({
       <div className="mt-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">
-            Available BOOKED AWBs
+            Ready for Dispatch
           </h2>
 
           <span className="text-sm text-slate-500">
@@ -155,7 +155,7 @@ export default function LoadingTallySearch({
           </div>
         ) : available.length === 0 ? (
           <div className="rounded-lg border p-5 text-center text-slate-500">
-            No BOOKED AWBs available.
+            No INSCAN AWBs ready for dispatch.
           </div>
         ) : (
           <div className="max-h-72 overflow-y-auto rounded-lg border">

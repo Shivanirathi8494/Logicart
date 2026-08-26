@@ -23,12 +23,12 @@ export default function PaymentInformation({
   setShipment,
 }: Props) {
   return (
-    <section className="rounded-xl border bg-white p-6 shadow-sm">
-      <h2 className="mb-6 text-xl font-semibold">
+    <section className="rounded-xl border bg-white p-4 shadow-sm sm:p-6">
+      <h2 className="mb-4 text-lg font-semibold text-[#0b2340] sm:mb-6 sm:text-xl">
         Charges & Additional Information
       </h2>
 
-      <div className="mb-8 grid gap-4 md:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 sm:mb-8">
         <div className="rounded-lg border bg-slate-50 p-4">
           <div className="text-sm text-slate-500">
             Freight
@@ -67,7 +67,7 @@ export default function PaymentInformation({
 
         <textarea
           rows={4}
-          className="w-full rounded-lg border p-3"
+          className="w-full rounded-lg border p-3 text-base"
           value={shipment.remarks ?? ""}
           onChange={(event) =>
             setShipment((previous) => ({

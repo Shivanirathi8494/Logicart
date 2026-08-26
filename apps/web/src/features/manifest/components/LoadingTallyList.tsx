@@ -1,121 +1,176 @@
 "use client";
 
-import { useEffect,useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 export default function LoadingTallyList({
   onSelect,
-}:any){
+}: any) {
 
-  const [rows,setRows]=useState([]);
+  const [rows, setRows] =
+    useState<any[]>([]);
 
-  useEffect(()=>{
-
+  useEffect(() => {
     load();
+  }, []);
 
-  },[]);
+  async function load() {
+    const response =
+      await fetch(
+        "/api/loading-tallies/open"
+      );
 
-  async function load(){
-
-    const response=await fetch(
-      "/api/loading-tallies/open"
-    );
-
-    if(response.ok){
-
-      setRows(await response.json());
-
+    if (response.ok) {
+      setRows(
+        await response.json()
+      );
     }
-
   }
 
-  return(
+  if (!rows.length) {
+    return (
+      <div className="rounded-xl border bg-white p-6 text-center text-sm text-slate-500">
+        No open Loading Tallies.
+      </div>
+    );
+  }
 
-    <div className="rounded-xl border bg-white">
+  return (
+    <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
 
-      <table className="w-full">
+      {/* MOBILE */}
+      <div className="divide-y md:hidden">
 
-        <thead>
+        {rows.map((row: any) => (
+          <div
+            key={row.id}
+            className="p-4"
+          >
 
-          <tr className="border-b">
+            <div className="break-all font-bold text-[#0b2340]">
+              {row.loadingTallyNumber}
+            </div>
 
-            <th className="p-3 text-left">
+            <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
 
-              Loading Tally
+              <div>
+                <div className="text-xs text-slate-400">
+                  Date
+                </div>
 
-            </th>
+                <div className="mt-1 font-medium text-slate-700">
+                  {new Date(
+                    row.loadingDate
+                  ).toLocaleDateString(
+                    "en-IN"
+                  )}
+                </div>
+              </div>
 
-            <th className="p-3">
+              <div>
+                <div className="text-xs text-slate-400">
+                  Shipments
+                </div>
 
-              Date
+                <div className="mt-1 font-semibold text-slate-700">
+                  {row.shipments?.length ?? 0}
+                </div>
+              </div>
 
-            </th>
+            </div>
 
-            <th className="p-3">
-
-              Shipments
-
-            </th>
-
-            <th className="p-3">
-
-            </th>
-
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-          {rows.map((row:any)=>(
-
-            <tr
-              key={row.id}
-              className="border-b"
+            <button
+              type="button"
+              onClick={() =>
+                onSelect(row)
+              }
+              className="mt-4 min-h-11 w-full rounded-lg bg-[#ff7417] px-4 py-2.5 font-semibold text-white transition hover:bg-[#e9680d]"
             >
+              Open Loading Tally
+            </button>
 
-              <td className="p-3">
+          </div>
+        ))}
 
-                {row.loadingTallyNumber}
+      </div>
 
-              </td>
 
-              <td className="p-3">
+      {/* DESKTOP */}
+      <div className="hidden overflow-x-auto md:block">
 
-                {new Date(
-                  row.loadingDate
-                ).toLocaleDateString()}
+        <table className="w-full">
 
-              </td>
+          <thead className="bg-slate-50">
+            <tr className="border-b">
 
-              <td className="p-3">
+              <th className="p-4 text-left">
+                Loading Tally
+              </th>
 
-                {row.shipments.length}
+              <th className="p-4 text-left">
+                Date
+              </th>
 
-              </td>
+              <th className="p-4 text-left">
+                Shipments
+              </th>
 
-              <td className="p-3">
-
-                <button
-                  onClick={()=>onSelect(row)}
-                  className="rounded bg-blue-600 px-4 py-2 text-white"
-                >
-
-                  Open
-
-                </button>
-
-              </td>
+              <th className="p-4 text-right">
+                Action
+              </th>
 
             </tr>
+          </thead>
 
-          ))}
+          <tbody>
 
-        </tbody>
+            {rows.map((row: any) => (
+              <tr
+                key={row.id}
+                className="border-b last:border-b-0 hover:bg-slate-50"
+              >
 
-      </table>
+                <td className="p-4 font-semibold text-[#0b2340]">
+                  {row.loadingTallyNumber}
+                </td>
+
+                <td className="p-4">
+                  {new Date(
+                    row.loadingDate
+                  ).toLocaleDateString(
+                    "en-IN"
+                  )}
+                </td>
+
+                <td className="p-4">
+                  {row.shipments?.length ?? 0}
+                </td>
+
+                <td className="p-4 text-right">
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onSelect(row)
+                    }
+                    className="rounded-lg bg-[#ff7417] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#e9680d]"
+                  >
+                    Open
+                  </button>
+
+                </td>
+
+              </tr>
+            ))}
+
+          </tbody>
+
+        </table>
+
+      </div>
 
     </div>
-
   );
-
 }

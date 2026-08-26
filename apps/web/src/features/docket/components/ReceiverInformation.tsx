@@ -60,17 +60,17 @@ export default function ReceiverInformation({
 
   return (
 
-    <section className="rounded-xl border bg-white p-6 shadow-sm">
+    <section className="rounded-xl border bg-white p-4 shadow-sm sm:p-6">
 
-      <h2 className="mb-6 text-xl font-semibold">
+      <h2 className="mb-4 text-lg font-semibold text-[#0b2340] sm:mb-6 sm:text-xl">
         Consignee's Information
       </h2>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
 
         <input
           placeholder="Consignee's Name"
-          className="rounded-lg border p-3"
+          className="min-h-11 w-full rounded-lg border p-3 text-base"
           value={shipment.receiverName}
           onChange={(e)=>
             setShipment(prev=>({
@@ -82,7 +82,7 @@ export default function ReceiverInformation({
 
         <input
           placeholder="Mobile Number"
-          className="rounded-lg border p-3"
+          className="min-h-11 w-full rounded-lg border p-3 text-base"
           value={shipment.receiverPhone}
           onChange={(e)=>
             setShipment(prev=>({
@@ -94,7 +94,7 @@ export default function ReceiverInformation({
 
         <input
           placeholder="GSTIN"
-          className="rounded-lg border p-3 uppercase"
+          className="min-h-11 w-full rounded-lg border p-3 text-base uppercase"
           maxLength={15}
           value={shipment.receiverGSTIN ?? ""}
           onChange={(e)=>
@@ -107,7 +107,7 @@ export default function ReceiverInformation({
 
         <input
           placeholder="Pincode"
-          className="rounded-lg border p-3"
+          className="min-h-11 w-full rounded-lg border p-3 text-base"
           maxLength={6}
           value={shipment.receiverPincode ?? ""}
           onChange={(e)=>
@@ -118,21 +118,21 @@ export default function ReceiverInformation({
         <input
           readOnly
           placeholder="State"
-          className="rounded-lg border bg-slate-100 p-3"
+          className="min-h-11 w-full rounded-lg border bg-slate-100 p-3 text-base"
           value={shipment.receiverState ?? ""}
         />
 
         <input
           readOnly
           placeholder="City"
-          className="rounded-lg border bg-slate-100 p-3"
+          className="min-h-11 w-full rounded-lg border bg-slate-100 p-3 text-base"
           value={shipment.receiverCity ?? ""}
         />
 
         <textarea
           rows={3}
           placeholder="Complete Address"
-          className="rounded-lg border p-3 lg:col-span-3"
+          className="w-full rounded-lg border p-3 text-base sm:col-span-2 lg:col-span-3"
           value={shipment.receiverAddress}
           onChange={(e)=>
             setShipment(prev=>({

@@ -1,7 +1,7 @@
 # Logicarts Logistics Management System (LMS)
 
-**Version:** v1.2.0
-**Last Updated:** 18 August 2026
+**Version:** v1.3.0
+**Last Updated:** 26 August 2026
 
 ---
 
@@ -284,7 +284,7 @@ Managing Director:
 
 # Project Status
 
-## Completed (v1.2.0)
+## Completed (v1.3.0)
 
 - Public website
 - Career application module
@@ -318,3 +318,27 @@ Managing Director:
 - Analytics dashboard
 - GPS vehicle tracking
 - AI-powered logistics insights
+
+---
+
+
+
+# Shipment Lifecycle Requirements — v1.3.0
+
+
+
+- Multiple packages per shipment with package-level weight
+
+- Piece-level loading and unloading records
+
+- Vendor details required for Airport Delivery Challan
+
+- Vehicle Number required before OUT_FOR_DELIVERY
+
+- Only OUT_FOR_DELIVERY shipments may be marked DELIVERED
+
+- Final delivery stores actual receiver name, phone, address and remarks
+
+- Failed delivery attempts must preserve history
+
+- Branch ownership and workflow transitions are validated server-side

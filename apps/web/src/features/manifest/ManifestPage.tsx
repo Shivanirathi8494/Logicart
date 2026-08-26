@@ -18,11 +18,11 @@ export default function ManifestPage() {
 
       <div>
         <h1 className="text-3xl font-bold">
-          Loading & Manifest
+          Dispatch / Manifest
         </h1>
 
         <p className="mt-2 text-slate-500">
-          Add BOOKED AWBs, create a Loading Tally, and generate the Manifest.
+          Select INSCAN shipments ready for dispatch and generate the manifest.
         </p>
       </div>
 
@@ -33,11 +33,11 @@ export default function ManifestPage() {
       <section className="space-y-5">
         <div>
           <h2 className="text-xl font-semibold">
-            Create Loading Tally
+            Prepare Dispatch
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            Only BOOKED AWBs can be added.
+            Only INSCAN shipments ready for dispatch are shown.
           </p>
         </div>
 

@@ -17,5 +17,7 @@ export async function GET() {
     clientId: user.clientId,
     agentId: user.agentId,
     branchId: user.branchId,
+    branchCode: user.branch?.code ?? null,
+    branchName: user.branch?.name ?? null,
   });
 }

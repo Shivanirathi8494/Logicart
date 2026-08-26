@@ -124,7 +124,7 @@ export default function LoadingTallyGroups({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {groups.map((group: any, index: number) => {
         const pieces = group.shipments.reduce(
           (total: number, shipment: any) =>
@@ -145,11 +145,11 @@ export default function LoadingTallyGroups({
         return (
           <section
             key={index}
-            className="rounded-xl border bg-white p-6 shadow-sm"
+            className="rounded-xl border bg-white p-4 shadow-sm sm:p-6"
           >
-            <div className="flex items-center justify-between gap-6">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
               <div>
-                <h2 className="text-xl font-bold">
+                <h2 className="text-lg font-bold text-[#0b2340] sm:text-xl">
                   {group.origin} →{" "}
                   {group.destination}
                 </h2>
@@ -173,7 +173,7 @@ export default function LoadingTallyGroups({
                 onClick={() =>
                   generateManifest(group)
                 }
-                className="rounded-lg bg-green-600 px-6 py-3 text-white hover:bg-green-700"
+                className="min-h-11 w-full rounded-lg bg-[#ff7417] px-6 py-3 font-semibold text-white transition hover:bg-[#e9680d] sm:w-auto"
               >
                 Generate Manifest
               </button>

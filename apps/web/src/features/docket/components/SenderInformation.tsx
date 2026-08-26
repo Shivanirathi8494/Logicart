@@ -60,17 +60,17 @@ export default function SenderInformation({
 
   return (
 
-    <section className="rounded-xl border bg-white p-6 shadow-sm">
+    <section className="rounded-xl border bg-white p-4 shadow-sm sm:p-6">
 
-      <h2 className="mb-6 text-xl font-semibold">
+      <h2 className="mb-4 text-lg font-semibold text-[#0b2340] sm:mb-6 sm:text-xl">
         Shipper's Information
       </h2>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
 
         <input
           placeholder="Shipper's Name"
-          className="rounded-lg border p-3"
+          className="min-h-11 w-full rounded-lg border p-3 text-base"
           value={shipment.senderName}
           onChange={(e)=>
             setShipment(prev=>({
@@ -82,7 +82,7 @@ export default function SenderInformation({
 
         <input
           placeholder="Mobile Number"
-          className="rounded-lg border p-3"
+          className="min-h-11 w-full rounded-lg border p-3 text-base"
           value={shipment.senderPhone}
           onChange={(e)=>
             setShipment(prev=>({
@@ -94,7 +94,7 @@ export default function SenderInformation({
 
         <input
           placeholder="GSTIN"
-          className="rounded-lg border p-3 uppercase"
+          className="min-h-11 w-full rounded-lg border p-3 text-base uppercase"
           maxLength={15}
           value={shipment.senderGSTIN ?? ""}
           onChange={(e)=>
@@ -108,7 +108,7 @@ export default function SenderInformation({
         <input
           placeholder="Pincode"
           maxLength={6}
-          className="rounded-lg border p-3"
+          className="min-h-11 w-full rounded-lg border p-3 text-base"
           value={shipment.senderPincode ?? ""}
           onChange={(e)=>
             lookupPincode(e.target.value.replace(/\D/g,""))
@@ -126,7 +126,7 @@ export default function SenderInformation({
               invoiceNumber: e.target.value,
             }))
           }
-          className="w-full rounded-xl border border-slate-200 px-4 py-3"
+          className="min-h-11 w-full rounded-xl border border-slate-200 px-4 py-3 text-base"
         />
 
         <input
@@ -141,27 +141,27 @@ export default function SenderInformation({
               invoiceValue: e.target.value,
             }))
           }
-          className="w-full rounded-xl border border-slate-200 px-4 py-3"
+          className="min-h-11 w-full rounded-xl border border-slate-200 px-4 py-3 text-base"
         />
 
 <input
           readOnly
           placeholder="State"
-          className="rounded-lg border bg-slate-100 p-3"
+          className="min-h-11 w-full rounded-lg border bg-slate-100 p-3 text-base"
           value={shipment.senderState ?? ""}
         />
 
         <input
           readOnly
           placeholder="City"
-          className="rounded-lg border bg-slate-100 p-3"
+          className="min-h-11 w-full rounded-lg border bg-slate-100 p-3 text-base"
           value={shipment.senderCity ?? ""}
         />
 
         <textarea
           rows={3}
           placeholder="Complete Address"
-          className="rounded-lg border p-3 lg:col-span-3"
+          className="w-full rounded-lg border p-3 text-base sm:col-span-2 lg:col-span-3"
           value={shipment.senderAddress}
           onChange={(e)=>
             setShipment(prev=>({

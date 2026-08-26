@@ -7,21 +7,29 @@ export default function LoadingTallySummary({
 }: any) {
   const [loading, setLoading] = useState(false);
 
-  const totalPieces = shipments.reduce(
-    (total: number, shipment: any) =>
-      total + Number(shipment.packageCount || 0),
-    0
+  const allPackages = shipments.flatMap(
+    (shipment: any) => shipment.packages || []
   );
 
-  const totalWeight = shipments.reduce(
-    (total: number, shipment: any) =>
-      total + Number(shipment.chargeableWeight || 0),
+  const totalPieces = allPackages.length;
+
+  const loadedPackages = allPackages.filter(
+    (pkg: any) => pkg.loadingSelected !== false
+  );
+
+  const notLoadedPackages = allPackages.filter(
+    (pkg: any) => pkg.loadingSelected === false
+  );
+
+  const loadedWeight = loadedPackages.reduce(
+    (total: number, pkg: any) =>
+      total + Number(pkg.weight || 0),
     0
   );
 
   async function saveAndGenerate() {
     if (!shipments.length) {
-      alert("Please add at least one BOOKED AWB.");
+      alert("Please add at least one INSCAN shipment.");
       return;
     }
 
@@ -37,6 +45,40 @@ export default function LoadingTallySummary({
     if (mixedRoute) {
       alert(
         "All AWBs must have the same Origin and Destination."
+      );
+      return;
+    }
+
+    const shipmentsWithoutPackages =
+      shipments.filter(
+        (shipment: any) =>
+          !Array.isArray(shipment.packages) ||
+          shipment.packages.length === 0
+      );
+
+    if (shipmentsWithoutPackages.length) {
+      alert(
+        "Package details are missing for one or more AWBs. Remove them and add them again from Ready for Dispatch."
+      );
+      return;
+    }
+
+    const missingRemarks =
+      notLoadedPackages.filter(
+        (pkg: any) =>
+          !String(pkg.loadingRemark || "").trim()
+      );
+
+    if (missingRemarks.length) {
+      alert(
+        "Please enter a remark for every piece that is not being loaded."
+      );
+      return;
+    }
+
+    if (!loadedPackages.length) {
+      alert(
+        "At least one piece must be selected for loading."
       );
       return;
     }
@@ -63,24 +105,54 @@ export default function LoadingTallySummary({
             shipmentIds: shipments.map(
               (shipment: any) => shipment.id
             ),
+
+            packages: allPackages.map(
+              (pkg: any) => ({
+                packageId: pkg.id,
+                loaded:
+                  pkg.loadingSelected !== false,
+                remarks:
+                  pkg.loadingSelected === false
+                    ? String(
+                        pkg.loadingRemark || ""
+                      ).trim()
+                    : "",
+              })
+            ),
           }),
         }
       );
 
       const tallyData = await tallyResponse.json();
 
+      /*
+       * If this AWB already has a Loading Tally,
+       * reuse the existing tally instead of
+       * treating it as an error.
+       */
       if (!tallyResponse.ok) {
-        console.error(
-          "Loading Tally error:",
-          tallyData
-        );
+        const reusableExistingTally =
+          tallyResponse.status === 409 &&
+          tallyData?.id;
 
-        alert(
-          tallyData?.error ||
-            "Unable to save Loading Tally."
-        );
+        if (!reusableExistingTally) {
+          console.error(
+            "Loading Tally error:",
+            tallyData
+          );
 
-        return;
+          alert(
+            tallyData?.error ||
+              "Unable to save Loading Tally."
+          );
+
+          return;
+        }
+
+        console.info(
+          "Reusing existing Loading Tally:",
+          tallyData.loadingTallyNumber
+        );
       }
 
       if (!tallyData?.id) {
@@ -195,53 +267,63 @@ export default function LoadingTallySummary({
   }
 
   return (
-    <section className="rounded-xl border bg-white p-6 shadow-sm">
+    <section className="rounded-xl border bg-white p-4 shadow-sm sm:p-6">
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-6">
 
         <div>
           <div className="text-sm text-slate-500">
-            Shipments
+            Total Pieces
           </div>
 
-          <div className="text-2xl font-bold">
-            {shipments.length}
+          <div className="mt-1 text-xl font-bold text-[#0b2340] sm:text-2xl">
+            {loadedPackages.length}
           </div>
         </div>
 
         <div>
           <div className="text-sm text-slate-500">
-            Pieces
+            Loading
           </div>
 
-          <div className="text-2xl font-bold">
+          <div className="mt-1 text-xl font-bold text-[#0b2340] sm:text-2xl">
             {totalPieces}
           </div>
         </div>
 
         <div>
           <div className="text-sm text-slate-500">
-            Weight
+            Not Loading
           </div>
 
-          <div className="text-2xl font-bold">
-            {totalWeight} Kg
+          <div className="mt-1 text-xl font-bold text-[#0b2340] sm:text-2xl">
+            {notLoadedPackages.length}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-sm text-slate-500">
+            Loading Weight
+          </div>
+
+          <div className="mt-1 text-xl font-bold text-[#0b2340] sm:text-2xl">
+            {loadedWeight.toFixed(2)} Kg
           </div>
         </div>
 
       </div>
 
-      <div className="mt-8 flex justify-end">
+      <div className="mt-6 flex sm:mt-8 sm:justify-end">
 
         <button
           type="button"
           onClick={saveAndGenerate}
           disabled={loading || !shipments.length}
-          className="rounded-lg bg-green-600 px-8 py-3 font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="min-h-11 w-full rounded-lg bg-[#ff7417] px-6 py-3 font-semibold text-white transition hover:bg-[#e9680d] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-8"
         >
           {loading
             ? "Creating Manifest..."
-            : "Save & Generate Manifest"}
+            : "Generate Manifest"}
         </button>
 
       </div>

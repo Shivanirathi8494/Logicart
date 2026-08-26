@@ -24,3 +24,25 @@ pnpm-debug.log*
 # OS
 Thumbs.dbtasks/
 tasks/
+
+# Local backup / scratch files
+*.before-*
+*.backup.*
+*.bak
+*.tmp
+*.orig
+*.rej
+*~
+
+# macOS metadata
+.DS_Store
+
+# Build / generated
+.next/
+node_modules/
+*.tsbuildinfo
+
+# Local environment
+.env
+.env.local
+.env.*.local

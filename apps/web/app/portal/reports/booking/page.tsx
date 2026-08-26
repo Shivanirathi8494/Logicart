@@ -155,7 +155,7 @@ export default function Page() {
       />
 
       {loading ? (
-        <div className="rounded-xl border bg-white p-8 text-slate-500">
+        <div className="rounded-xl border bg-white p-5 sm:p-8 text-slate-500">
           Loading booking records...
         </div>
       ) : (

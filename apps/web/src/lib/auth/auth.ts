@@ -8,12 +8,6 @@ export async function authenticate(
   password: string,
 ) {
 
-  console.log("========== AUTH DEBUG ==========");
-  console.log("prisma =", prisma);
-  console.log("prisma.user =", prisma.user);
-  console.log("keys =", Object.keys(prisma));
-  console.log("================================");
-
   const user = await prisma.user.findUnique({
     where: {
       username,

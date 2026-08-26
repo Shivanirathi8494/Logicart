@@ -19,7 +19,7 @@ export default function InscanManifestSummary({
 
   return(
 
-<section className="grid grid-cols-6 gap-4 rounded-xl border bg-white p-5 shadow-sm">
+<section className="grid grid-cols-2 gap-4 rounded-xl border bg-white p-4 shadow-sm sm:grid-cols-3 sm:p-5 lg:grid-cols-6">
 
 <div>
 

@@ -49,11 +49,11 @@ export default function CloseDayButton({
 
   return(
 
-<section className="rounded-xl border bg-white p-6 shadow-sm">
+<section className="rounded-xl border bg-white p-4 shadow-sm sm:p-6">
 
-<div className="mb-6">
+<div className="mb-4 sm:mb-6">
 
-<h2 className="text-xl font-bold">
+<h2 className="text-lg font-bold text-[#0b2340] sm:text-xl">
 
 Operational Checklist
 
@@ -73,13 +73,13 @@ Operational Checklist
 
 </div>
 
-<div className="mt-8 flex justify-end">
+<div className="mt-6 flex sm:mt-8 sm:justify-end">
 
 <button
 
 onClick={closeDay}
 
-className="rounded-lg bg-red-600 px-8 py-3 text-white"
+className="min-h-11 w-full rounded-lg bg-red-600 px-6 py-3 font-semibold text-white sm:w-auto sm:px-8"
 
 >
 

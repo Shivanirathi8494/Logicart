@@ -27,11 +27,11 @@ export default function CreateSuccessDialog({
   return (
     <Dialog open={open} onOpenChange={onClose}>
 
-      <DialogContent className="max-w-lg">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-lg rounded-xl p-4 sm:p-6">
 
         <DialogHeader>
 
-          <DialogTitle className="text-2xl text-green-600">
+          <DialogTitle className="pr-6 text-xl text-emerald-600 sm:text-2xl">
             ✓ Docket Created Successfully
           </DialogTitle>
 
@@ -45,7 +45,7 @@ export default function CreateSuccessDialog({
               AWB Number
             </p>
 
-            <h2 className="text-3xl font-bold">
+            <h2 className="break-all text-2xl font-bold text-[#0b2340] sm:text-3xl">
               {trackingNumber}
             </h2>
 
@@ -55,21 +55,21 @@ export default function CreateSuccessDialog({
 
             <button
               onClick={onPreview}
-              className="rounded-lg bg-slate-900 py-3 text-white"
+              className="min-h-11 w-full rounded-lg bg-[#0b2340] px-4 py-3 font-semibold text-white"
             >
               Preview Air Waybill
             </button>
 
             <button
               onClick={onPrint}
-              className="rounded-lg border py-3"
+              className="min-h-11 w-full rounded-lg border px-4 py-3 font-semibold"
             >
               Print
             </button>
 
             <button
               onClick={onNew}
-              className="rounded-lg border py-3"
+              className="min-h-11 w-full rounded-lg border px-4 py-3 font-semibold"
             >
               Create New Docket
             </button>

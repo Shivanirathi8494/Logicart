@@ -1,22 +1,46 @@
 import PageHero from "@/components/page/PageHero";
 import PageContainer from "@/components/page/PageContainer";
+import {
+  Target,
+  Eye,
+  HeartHandshake,
+  BadgeCheck,
+  Scale,
+  Lightbulb,
+  ShieldCheck,
+} from "lucide-react";
 
-const values = [
+const coreValues = [
   {
-    title: "Our Mission",
+    title: "Customer Focus",
     description:
-      "To provide reliable, secure, and technology-driven logistics solutions that enable businesses to move faster."
+      "We put our customers at the centre of every decision.",
+    icon: HeartHandshake,
   },
   {
-    title: "Our Vision",
+    title: "Reliability",
     description:
-      "To become one of India's most trusted logistics and supply chain partners."
+      "We deliver consistent and dependable logistics solutions.",
+    icon: BadgeCheck,
   },
   {
-    title: "Core Values",
+    title: "Integrity",
     description:
-      "Integrity, Customer Focus, Innovation, Reliability, and Operational Excellence."
-  }
+      "We believe in transparency, accountability and doing the right thing.",
+    icon: Scale,
+  },
+  {
+    title: "Innovation",
+    description:
+      "We continuously use technology and better processes to improve logistics.",
+    icon: Lightbulb,
+  },
+  {
+    title: "Operational Excellence",
+    description:
+      "We focus on efficiency, quality and execution at every stage of the logistics journey.",
+    icon: ShieldCheck,
+  },
 ];
 
 export default function AboutPage() {
@@ -29,37 +53,153 @@ export default function AboutPage() {
 
       <PageContainer>
 
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl font-bold">
-            Who We Are
-          </h2>
+        {/* WHO WE ARE */}
+        <section className="py-16 lg:py-20">
 
-          <p className="mt-6 text-lg leading-8 text-gray-600">
-            Logicarts is a logistics technology company focused on providing
-            efficient cargo movement, shipment visibility, and customer-first
-            logistics solutions across India.
-          </p>
-        </div>
+          <div className="mx-auto max-w-5xl text-center">
 
-        <div className="mt-16 grid gap-8 md:grid-cols-3">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#ff7417]">
+              Who We Are
+            </p>
 
-          {values.map((item) => (
-            <div
-              key={item.title}
-              className="rounded-2xl border bg-white p-8 shadow-sm transition hover:shadow-lg"
-            >
-              <h3 className="text-2xl font-semibold">
-                {item.title}
-              </h3>
+            <h2 className="mt-4 text-4xl font-black tracking-tight text-[#0b2340] sm:text-5xl">
+              Technology-enabled multimodal logistics across India.
+            </h2>
 
-              <p className="mt-4 text-gray-600">
-                {item.description}
-              </p>
+            <p className="mx-auto mt-7 max-w-4xl text-lg leading-8 text-slate-600">
+              <strong className="font-semibold text-[#0b2340]">
+                Logicarts is a technology-enabled multimodal logistics company
+                providing reliable cargo movement solutions across India.
+              </strong>
+            </p>
+
+            <p className="mx-auto mt-5 max-w-4xl text-lg leading-8 text-slate-600">
+              We connect businesses and markets through integrated{" "}
+              <strong className="font-semibold text-[#0b2340]">
+                Air Cargo, PTL, First Mile, Mid Mile, Last Mile and Long-Haul
+                logistics solutions
+              </strong>
+              , supported by technology, operational expertise and a growing
+              pan-India network.
+            </p>
+
+            <p className="mt-7 text-xl font-bold text-[#ff7417]">
+              Move cargo faster, smarter and more reliably.
+            </p>
+
+          </div>
+
+        </section>
+
+        {/* MISSION AND VISION */}
+        <section className="grid gap-8 pb-16 lg:grid-cols-2">
+
+          <div className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
+
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fff1e8] text-[#ff7417]">
+              <Target size={28} />
             </div>
-          ))}
 
-        </div>
+            <p className="mt-6 text-sm font-bold uppercase tracking-[0.18em] text-[#ff7417]">
+              Our Mission
+            </p>
 
-      </PageContainer>    </>
+            <p className="mt-4 text-lg leading-8 text-slate-600">
+              To provide reliable, secure and technology-driven logistics
+              solutions that help businesses move faster.
+            </p>
+
+          </div>
+
+          <div className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
+
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fff1e8] text-[#ff7417]">
+              <Eye size={28} />
+            </div>
+
+            <p className="mt-6 text-sm font-bold uppercase tracking-[0.18em] text-[#ff7417]">
+              Our Vision
+            </p>
+
+            <p className="mt-4 text-lg leading-8 text-slate-600">
+              To become one of India's most trusted multimodal logistics
+              partners, connecting businesses and markets through seamless
+              cargo movement.
+            </p>
+
+          </div>
+
+        </section>
+
+        {/* CORE VALUES */}
+        <section className="pb-20">
+
+          <div className="mx-auto max-w-3xl text-center">
+
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#ff7417]">
+              Our Core Values
+            </p>
+
+            <h2 className="mt-4 text-4xl font-black tracking-tight text-[#0b2340] sm:text-5xl">
+              The principles behind every movement.
+            </h2>
+
+          </div>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-5">
+
+            {coreValues.map((value) => {
+              const Icon = value.icon;
+
+              return (
+                <div
+                  key={value.title}
+                  className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                >
+
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fff1e8] text-[#ff7417]">
+                    <Icon size={24} />
+                  </div>
+
+                  <h3 className="mt-5 text-xl font-bold text-[#0b2340]">
+                    {value.title}
+                  </h3>
+
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    {value.description}
+                  </p>
+
+                </div>
+              );
+            })}
+
+          </div>
+
+        </section>
+
+        {/* PEOPLE SECTION */}
+        <section className="pb-20">
+
+          <div className="rounded-[32px] bg-[#0b2340] px-8 py-12 text-center text-white lg:px-14 lg:py-14">
+
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#ff7417]">
+              People Behind Every Movement
+            </p>
+
+            <h2 className="mx-auto mt-4 max-w-3xl text-4xl font-black tracking-tight sm:text-5xl">
+              Operations powered by people, technology and execution.
+            </h2>
+
+            <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-slate-300">
+              Our people and operational network work together to keep cargo
+              moving across India.
+            </p>
+
+          </div>
+
+        </section>
+
+      </PageContainer>
+    </>
   );
 }

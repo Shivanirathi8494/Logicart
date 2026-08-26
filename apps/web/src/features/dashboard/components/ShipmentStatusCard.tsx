@@ -47,9 +47,9 @@ export default function ShipmentStatusCard({
 
   return (
 
-<section className="rounded-xl border bg-white p-6 shadow-sm">
+<section className="rounded-xl border bg-white p-4 shadow-sm sm:p-6">
 
-<h2 className="mb-6 text-xl font-bold">
+<h2 className="mb-5 text-lg font-bold text-[#0b2340] sm:mb-6 sm:text-xl">
 
 Shipment Status
 

@@ -12,6 +12,7 @@ export default async function Layout({
 
   const allowed = [
     "ADMIN",
+    "EMPLOYEE",
     "WAREHOUSE",
   ];
 

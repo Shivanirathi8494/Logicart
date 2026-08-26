@@ -5,16 +5,10 @@ export default function PrintableDeliveryChallan({
 }: {
   challan: any;
 }) {
-  const actualRows = Array.isArray(challan?.shipments)
-    ? challan.shipments
-    : [];
+  const actualRows = Array.isArray(challan?.shipments) ? challan.shipments : [];
 
   // Only two blank rows after the actual AWBs.
-  const rows = [
-    ...actualRows,
-    null,
-    null,
-  ];
+  const rows = [...actualRows, null, null];
 
   const firstShipment = actualRows[0]?.shipment;
 
@@ -30,84 +24,66 @@ export default function PrintableDeliveryChallan({
         style={{ backgroundColor: "#ffffff" }}
       >
         <tbody>
-
           {/* HEADER */}
           <tr>
-            <td
-              colSpan={4}
-              className="border border-black px-4 py-4"
-            >
+            <td colSpan={4} className="border border-black px-4 py-4">
               <div className="relative flex items-center justify-center">
-
                 <div className="text-center">
-                  <div className="text-[28px] font-bold">
-                    DELIVERY CHALLAN
-                  </div>
+                  <div className="text-[28px] font-bold">DELIVERY CHALLAN</div>
                 </div>
 
                 <div className="absolute right-0 top-0 text-right text-[13px]">
                   <div>
-                    <strong>No :</strong>{" "}
-                    {challan.challanNumber}
+                    <strong>No :</strong> {challan.challanNumber}
                   </div>
 
                   <div className="mt-1">
                     <strong>Date :</strong>{" "}
-                    {new Date(
-                      challan.challanDate
-                    ).toLocaleDateString("en-GB")}
+                    {new Date(challan.challanDate).toLocaleDateString("en-GB")}
                   </div>
                 </div>
-
               </div>
             </td>
           </tr>
 
-          {/* CUSTOMER */}
+          {/* AIRPORT VENDOR HANDOVER */}
           <tr>
-            <td
-              colSpan={4}
-              className="border border-black px-4 py-4 text-[15px]"
-            >
-              Please deliver to M/s.{" "}
-              <strong>
-                {challan.customerName}
-              </strong>
+            <td colSpan={4} className="border border-black px-4 py-4">
+              <div className="mb-3 text-[14px] font-bold">
+                AIRPORT DELIVERY / VENDOR HANDOVER
+              </div>
+
+              <div className="grid grid-cols-[130px_1fr] gap-y-2 text-[13px]">
+                <strong>Vendor Name :</strong>
+                <span>{challan.customerName || "-"}</span>
+
+                <strong>Vendor Phone :</strong>
+                <span>{challan.customerPhone || "-"}</span>
+
+                <strong>Vendor Address :</strong>
+                <span>{challan.customerAddress || "-"}</span>
+              </div>
             </td>
           </tr>
 
-          {/* ARRIVAL INFORMATION */}
+          {/* HANDOVER INFORMATION */}
           <tr>
             <td
               colSpan={2}
-              className="border border-black px-4 py-4 text-[15px]"
+              className="border border-black px-4 py-4 text-[14px]"
             >
-              Order the following package which arrived{" "}
-              <strong>
-                {firstShipment?.origin || "-"}
-              </strong>
-              /
-              <strong>
-                {firstShipment?.destination || "-"}
-              </strong>
+              Route : <strong>{firstShipment?.origin || "-"}</strong>
+              <span className="mx-2">→</span>
+              <strong>{firstShipment?.destination || "-"}</strong>
             </td>
 
             <td
               colSpan={2}
-              className="border border-black px-4 py-4 text-[15px]"
+              className="border border-black px-4 py-4 text-[14px]"
             >
-              Flight No:{" "}
+              Handover Date :{" "}
               <strong>
-                {challan.flightNumber || "-"}
-              </strong>
-
-              <br />
-
-              Dated{" "}
-              <strong>
-                {new Date(
-                  challan.challanDate
-                ).toLocaleDateString("en-GB")}
+                {new Date(challan.challanDate).toLocaleDateString("en-GB")}
               </strong>
             </td>
           </tr>
@@ -153,9 +129,7 @@ export default function PrintableDeliveryChallan({
 
                 <td className="border border-black bg-white px-3 text-center">
                   {shipment
-                    ? Number(
-                        shipment.chargeableWeight ?? 0
-                      ).toFixed(2)
+                    ? Number(shipment.chargeableWeight ?? 0).toFixed(2)
                     : ""}
                 </td>
 
@@ -172,25 +146,18 @@ export default function PrintableDeliveryChallan({
               colSpan={2}
               className="border border-black px-4 py-8 align-bottom"
             >
-              <div className="mt-12">
-                Receiver's Signature
-              </div>
+              <div className="mt-12">Vendor / Receiver Signature</div>
 
-              <div className="mt-4">
-                Name / Date / Time
-              </div>
+              <div className="mt-4">Name / Mobile / Date / Time</div>
             </td>
 
             <td
               colSpan={2}
               className="border border-black px-4 py-8 text-right align-bottom"
             >
-              <div className="mt-12">
-                For ALLIANCE AIR
-              </div>
+              <div className="mt-12">For ALLIANCE AIR</div>
             </td>
           </tr>
-
         </tbody>
       </table>
     </div>
