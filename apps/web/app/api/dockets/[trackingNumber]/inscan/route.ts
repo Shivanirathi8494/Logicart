@@ -1,9 +1,8 @@
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { airportByCode } from "@/lib/master/airports";
+import { recordShipmentTrackingEvent } from "@/lib/tracking/recordShipmentTrackingEvent";
 
 import {
   getShipmentWorkingSide,
@@ -22,9 +21,7 @@ type PackageInput = {
 function positiveNumber(value: unknown) {
   const number = Number(value);
 
-  return Number.isFinite(number) && number >= 0
-    ? number
-    : null;
+  return Number.isFinite(number) && number >= 0 ? number : null;
 }
 
 export async function POST(
@@ -40,21 +37,19 @@ export async function POST(
   try {
     const user = await requireUser();
 
-    const { trackingNumber } =
-      await params;
+    const { trackingNumber } = await params;
 
     const body = await request.json();
 
-    const shipment =
-      await prisma.shipment.findUnique({
-        where: {
-          trackingNumber,
-        },
+    const shipment = await prisma.shipment.findUnique({
+      where: {
+        trackingNumber,
+      },
 
-        include: {
-          packages: true,
-        },
-      });
+      include: {
+        packages: true,
+      },
+    });
 
     if (!shipment) {
       return NextResponse.json(
@@ -71,14 +66,12 @@ export async function POST(
      * INSCAN is an origin operation.
      */
     if (user.role === "EMPLOYEE") {
-      const branchCode =
-        getUserBranchCode(user);
+      const branchCode = getUserBranchCode(user);
 
       if (!branchCode) {
         return NextResponse.json(
           {
-            error:
-              "Your account is not assigned to a branch.",
+            error: "Your account is not assigned to a branch.",
           },
           {
             status: 403,
@@ -86,20 +79,12 @@ export async function POST(
         );
       }
 
-      const workingSide =
-        getShipmentWorkingSide(
-          branchCode,
-          shipment,
-        );
+      const workingSide = getShipmentWorkingSide(branchCode, shipment);
 
-      if (
-        workingSide !== "ORIGIN" &&
-        workingSide !== "BOTH"
-      ) {
+      if (workingSide !== "ORIGIN" && workingSide !== "BOTH") {
         return NextResponse.json(
           {
-            error:
-              "Only the origin branch can Inscan this shipment.",
+            error: "Only the origin branch can Inscan this shipment.",
           },
           {
             status: 403,
@@ -111,8 +96,7 @@ export async function POST(
     if (shipment.status !== "BOOKED") {
       return NextResponse.json(
         {
-          error:
-            `Shipment must be BOOKED before Inscan. Current status: ${shipment.status}.`,
+          error: `Shipment must be BOOKED before Inscan. Current status: ${shipment.status}.`,
         },
         {
           status: 409,
@@ -120,28 +104,20 @@ export async function POST(
       );
     }
 
-    const packageCount =
-      Number(body.packageCount);
+    const packageCount = Number(body.packageCount);
 
-    const actualWeight =
-      positiveNumber(body.actualWeight);
+    const actualWeight = positiveNumber(body.actualWeight);
 
-    const packages: PackageInput[] =
-      Array.isArray(body.packages)
-        ? body.packages
-        : [];
+    const packages: PackageInput[] = Array.isArray(body.packages)
+      ? body.packages
+      : [];
 
-    const remarks =
-      String(body.remarks ?? "").trim();
+    const remarks = String(body.remarks ?? "").trim();
 
-    if (
-      !Number.isInteger(packageCount) ||
-      packageCount <= 0
-    ) {
+    if (!Number.isInteger(packageCount) || packageCount <= 0) {
       return NextResponse.json(
         {
-          error:
-            "Received package count must be greater than zero.",
+          error: "Received package count must be greater than zero.",
         },
         {
           status: 400,
@@ -149,14 +125,10 @@ export async function POST(
       );
     }
 
-    if (
-      actualWeight === null ||
-      actualWeight <= 0
-    ) {
+    if (actualWeight === null || actualWeight <= 0) {
       return NextResponse.json(
         {
-          error:
-            "Actual weight must be greater than zero.",
+          error: "Actual weight must be greater than zero.",
         },
         {
           status: 400,
@@ -172,15 +144,10 @@ export async function POST(
       const width = positiveNumber(pkg.width);
       const height = positiveNumber(pkg.height);
 
-      if (
-        length === null ||
-        width === null ||
-        height === null
-      ) {
+      if (length === null || width === null || height === null) {
         return NextResponse.json(
           {
-            error:
-              "Package dimensions cannot contain invalid values.",
+            error: "Package dimensions cannot contain invalid values.",
           },
           {
             status: 400,
@@ -201,31 +168,18 @@ export async function POST(
         ? packages.reduce(
             (total, pkg) =>
               total +
-              (
-                Number(pkg.length) *
-                Number(pkg.width) *
-                Number(pkg.height)
-              ) /
+              (Number(pkg.length) * Number(pkg.width) * Number(pkg.height)) /
                 5000,
             0,
           )
         : shipment.volumetricWeight;
 
-    const chargeableWeight =
-      Math.max(
-        actualWeight,
-        volumetricWeight,
-      );
+    const chargeableWeight = Math.max(actualWeight, volumetricWeight);
 
-    const packageChanged =
-      packageCount !==
-      shipment.packageCount;
+    const packageChanged = packageCount !== shipment.packageCount;
 
     const actualWeightChanged =
-      Math.abs(
-        actualWeight -
-          shipment.actualWeight,
-      ) > 0.001;
+      Math.abs(actualWeight - shipment.actualWeight) > 0.001;
 
     const dimensionsChanged =
       JSON.stringify(
@@ -246,14 +200,9 @@ export async function POST(
       );
 
     const hasDiscrepancy =
-      packageChanged ||
-      actualWeightChanged ||
-      dimensionsChanged;
+      packageChanged || actualWeightChanged || dimensionsChanged;
 
-    if (
-      hasDiscrepancy &&
-      !remarks
-    ) {
+    if (hasDiscrepancy && !remarks) {
       return NextResponse.json(
         {
           error:
@@ -265,57 +214,68 @@ export async function POST(
       );
     }
 
-    const updated =
-      await prisma.$transaction(
-        async (tx) => {
-          /*
-           * Replace dimension rows only when package
-           * information was supplied by the operator.
-           */
-          if (packages.length > 0) {
-            await tx.shipmentPackage.deleteMany({
-              where: {
-                shipmentId: shipment.id,
-              },
-            });
+    const updated = await prisma.$transaction(async (tx) => {
+      /*
+       * Replace dimension rows only when package
+       * information was supplied by the operator.
+       */
+      if (packages.length > 0) {
+        await tx.shipmentPackage.deleteMany({
+          where: {
+            shipmentId: shipment.id,
+          },
+        });
 
-            await tx.shipmentPackage.createMany({
-              data: packages.map((pkg) => ({
-                shipmentId: shipment.id,
-                length: Number(pkg.length),
-                width: Number(pkg.width),
-                height: Number(pkg.height),
-                weight: Number(pkg.weight || 0),
-              })),
-            });
-          }
+        await tx.shipmentPackage.createMany({
+          data: packages.map((pkg) => ({
+            shipmentId: shipment.id,
+            length: Number(pkg.length),
+            width: Number(pkg.width),
+            height: Number(pkg.height),
+            weight: Number(pkg.weight || 0),
+          })),
+        });
+      }
 
-          return tx.shipment.update({
-            where: {
-              id: shipment.id,
-            },
-
-            data: {
-              packageCount,
-              actualWeight,
-              volumetricWeight,
-              chargeableWeight,
-
-              remarks:
-                remarks ||
-                shipment.remarks,
-
-              status: "INSCAN",
-            },
-
-            include: {
-              packages: true,
-              airline: true,
-              customer: true,
-            },
-          });
+      const updatedShipment = await tx.shipment.update({
+        where: {
+          id: shipment.id,
         },
-      );
+
+        data: {
+          packageCount,
+          actualWeight,
+          volumetricWeight,
+          chargeableWeight,
+
+          remarks: remarks || shipment.remarks,
+
+          status: "INSCAN",
+        },
+
+        include: {
+          packages: true,
+          airline: true,
+          customer: true,
+        },
+      });
+
+      const locationCode = shipment.origin.trim().toUpperCase();
+
+      const airport = airportByCode[locationCode];
+
+      await recordShipmentTrackingEvent({
+        db: tx,
+        shipmentId: shipment.id,
+        status: "INSCAN",
+        locationCode,
+        locationName: airport?.city ?? locationCode,
+        createdByUserId: user.id ?? null,
+        remarks: remarks || "Shipment received and Inscanned at origin",
+      });
+
+      return updatedShipment;
+    });
 
     return NextResponse.json({
       success: true,
@@ -325,10 +285,7 @@ export async function POST(
   } catch (error: any) {
     console.error(error);
 
-    if (
-      error?.message ===
-      "UNAUTHORIZED"
-    ) {
+    if (error?.message === "UNAUTHORIZED") {
       return NextResponse.json(
         {
           error: "Unauthorized",
@@ -341,9 +298,7 @@ export async function POST(
 
     return NextResponse.json(
       {
-        error:
-          error?.message ||
-          "Unable to Inscan shipment.",
+        error: error?.message || "Unable to Inscan shipment.",
       },
       {
         status: 500,

@@ -1,13 +1,9 @@
 import ReportCard from "./components/ReportCard";
 
 export default function ReportsHomePage() {
-
   return (
-
     <div className="space-y-5 sm:space-y-8">
-
       <div>
-
         <h1 className="text-2xl font-bold text-[#0b2340] sm:text-3xl">
           Reports
         </h1>
@@ -15,11 +11,9 @@ export default function ReportsHomePage() {
         <p className="mt-2 text-slate-500">
           View operational and financial reports.
         </p>
-
       </div>
 
       <div className="grid gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
-
         <ReportCard
           title="Booking Report"
           description="View shipment booking reports."
@@ -51,15 +45,11 @@ export default function ReportsHomePage() {
         />
 
         <ReportCard
-          title="Day End Report"
-          description="Daily closing summary."
-          href="/portal/reports/day-end"
+          title="Day End Closing"
+          description="Verify the daily summary and close today's business."
+          href="/portal/day-end"
         />
-
       </div>
-
     </div>
-
   );
-
 }

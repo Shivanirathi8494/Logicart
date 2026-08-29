@@ -11,6 +11,9 @@ import SenderInformation from "./components/SenderInformation";
 import ReceiverInformation from "./components/ReceiverInformation";
 import ShipmentDetails from "./components/ShipmentDetails";
 import PaymentInformation from "./components/PaymentInformation";
+import ClientCommercialSummary, {
+  ClientPricingPreview,
+} from "./components/ClientCommercialSummary";
 
 type Props = {
   trackingNumber?: string;
@@ -27,7 +30,18 @@ export default function CreateDocketPage({ trackingNumber }: Props) {
 
   const [originLocked, setOriginLocked] = useState(false);
 
+  const [currentRole, setCurrentRole] = useState<string | null>(null);
+
+  const [clientPricing, setClientPricing] =
+    useState<ClientPricingPreview | null>(null);
+
+  const [clientPricingLoading, setClientPricingLoading] = useState(false);
+
+  const [clientPricingError, setClientPricingError] = useState("");
+
   const isEdit = !!trackingNumber;
+
+  const isClient = currentRole === "CLIENT";
 
   useEffect(() => {
     console.log("[CreateDocket] shipment changed:", {
@@ -65,6 +79,8 @@ export default function CreateDocketPage({ trackingNumber }: Props) {
 
         const user = await response.json();
 
+        setCurrentRole(user?.role ?? null);
+
         if (user?.role === "EMPLOYEE" && user?.branchCode) {
           const branchCode = String(user.branchCode).trim().toUpperCase();
 
@@ -99,6 +115,176 @@ export default function CreateDocketPage({ trackingNumber }: Props) {
   }, [isEdit]);
 
   useEffect(() => {
+    if (
+      isEdit ||
+      !isClient ||
+      !shipment.origin ||
+      !shipment.destination ||
+      shipment.packages.length === 0
+    ) {
+      setClientPricing(null);
+      setClientPricingError("");
+      return;
+    }
+
+    const hasValidWeight = shipment.packages.some(
+      (pkg) =>
+        Number(pkg.weight) > 0 &&
+        Number(pkg.length) > 0 &&
+        Number(pkg.width) > 0 &&
+        Number(pkg.height) > 0,
+    );
+
+    if (!hasValidWeight) {
+      setClientPricing(null);
+      setClientPricingError("");
+      return;
+    }
+
+    const controller = new AbortController();
+
+    const timer = window.setTimeout(async () => {
+      try {
+        setClientPricingLoading(true);
+        setClientPricingError("");
+
+        const response = await fetch("/api/client/pricing/preview", {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            origin: shipment.origin,
+
+            destination: shipment.destination,
+
+            serviceType: shipment.serviceType,
+            airlineId: shipment.airlineId,
+
+            packages: shipment.packages,
+          }),
+
+          signal: controller.signal,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Unable to calculate client pricing.");
+        }
+
+        /*
+         * No negotiated route exists yet and the
+         * client has not selected an airline.
+         *
+         * This is not an error. It simply means
+         * pricing is waiting for the airline so the
+         * standard backend tariff can be resolved.
+         */
+        if (data.pricingPending) {
+          setClientPricing(null);
+
+          setClientPricingError(
+            data.message || "Select an airline to calculate the standard rate.",
+          );
+
+          setShipment((previous) => ({
+            ...previous,
+
+            actualWeight: data.weights?.actualWeight ?? previous.actualWeight,
+
+            volumetricWeight:
+              data.weights?.volumetricWeight ?? previous.volumetricWeight,
+
+            chargeableWeight:
+              data.weights?.chargeableWeight ?? previous.chargeableWeight,
+
+            freight: 0,
+            gst: 0,
+            total: 0,
+
+            tariffError: "",
+          }));
+
+          return;
+        }
+
+        setClientPricing(data);
+
+        /*
+         * Keep shipment state compatible with
+         * existing AWB/payment rendering.
+         *
+         * These values remain display-only for
+         * CLIENT because final booking pricing
+         * is recalculated on the server.
+         */
+        setShipment((previous) => ({
+          ...previous,
+
+          /*
+           * serviceType belongs to the negotiated
+           * client-rate workflow.
+           *
+           * STANDARD_RATE is a pricing source, not a
+           * contracted service selection. Keep the form
+           * serviceType empty for standard airline pricing.
+           */
+          serviceType:
+            data.pricing.pricingSource === "CLIENT_RATE_CARD"
+              ? data.pricing.serviceType
+              : "",
+
+          actualWeight: data.weights.actualWeight,
+
+          volumetricWeight: data.weights.volumetricWeight,
+
+          chargeableWeight: data.weights.chargeableWeight,
+
+          freight: data.pricing.freightAmount,
+
+          gst: data.pricing.gstAmount,
+
+          total: data.pricing.totalAmount,
+
+          tariffError: "",
+        }));
+      } catch (error: any) {
+        if (error?.name === "AbortError") {
+          return;
+        }
+
+        console.error("Unable to preview client pricing:", error);
+
+        setClientPricing(null);
+
+        setClientPricingError(
+          error?.message || "Unable to calculate client pricing.",
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setClientPricingLoading(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [
+    isEdit,
+    isClient,
+    shipment.origin,
+    shipment.destination,
+    shipment.serviceType,
+    shipment.airlineId,
+    shipment.packages,
+  ]);
+
+  useEffect(() => {
     if (!trackingNumber) return;
     loadShipment();
   }, [trackingNumber]);
@@ -114,6 +300,7 @@ export default function CreateDocketPage({ trackingNumber }: Props) {
       customerId: data.customerId ?? "",
       origin: data.origin,
       destination: data.destination,
+      serviceType: data.serviceType ?? "",
 
       airlineId: data.airlineId ?? "",
       flightNumber: data.flightNumber ?? "",
@@ -255,6 +442,26 @@ export default function CreateDocketPage({ trackingNumber }: Props) {
         }
       }
 
+      if (!isEdit && isClient) {
+        if (!clientPricing) {
+          alert(
+            clientPricingError ||
+              "Client pricing is not available for this booking.",
+          );
+          return;
+        }
+
+        if (
+          clientPricing.client.billingType === "PREPAID_WALLET" &&
+          !clientPricing.wallet.sufficientBalance
+        ) {
+          alert(
+            "Insufficient prepaid wallet balance. Please top up your wallet before creating this docket.",
+          );
+          return;
+        }
+      }
+
       const response = isEdit
         ? await updateShipment(trackingNumber!, shipment)
         : await createShipment(shipment);
@@ -291,15 +498,28 @@ export default function CreateDocketPage({ trackingNumber }: Props) {
         shipment={shipment}
         setShipment={setShipment}
         originLocked={originLocked}
+        clientPricing={isClient && !isEdit}
       />
 
       <SenderInformation shipment={shipment} setShipment={setShipment} />
 
       <ReceiverInformation shipment={shipment} setShipment={setShipment} />
 
-      <ShipmentDetails shipment={shipment} setShipment={setShipment} />
+      <ShipmentDetails
+        shipment={shipment}
+        setShipment={setShipment}
+        clientPricing={isClient && !isEdit}
+      />
 
-      <PaymentInformation shipment={shipment} setShipment={setShipment} />
+      {isClient && !isEdit ? (
+        <ClientCommercialSummary
+          preview={clientPricing}
+          loading={clientPricingLoading}
+          error={clientPricingError}
+        />
+      ) : (
+        <PaymentInformation shipment={shipment} setShipment={setShipment} />
+      )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-end gap-4 border-t pt-6">
         <button className="rounded-lg border px-6 py-3">Save Draft</button>

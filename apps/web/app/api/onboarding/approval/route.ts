@@ -1,32 +1,19 @@
-import {
-  randomBytes,
-} from "crypto";
+import { randomBytes } from "crypto";
 
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
 import { sendAccountEmail } from "@/lib/mailer";
 import { generateLogicartsId } from "@/lib/id-generator";
 
-async function uniqueUsername(
-  email: string,
-  type: "CLIENT" | "AGENT"
-) {
-  const base =
-    (
-      email.split("@")[0] ||
-      type.toLowerCase()
-    )
-      .replace(/[^a-zA-Z0-9]/g, "")
-      .toLowerCase()
-      .slice(0, 35);
+async function uniqueUsername(email: string, type: "CLIENT" | "AGENT") {
+  const base = (email.split("@")[0] || type.toLowerCase())
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .toLowerCase()
+    .slice(0, 35);
 
-  let username =
-    `${base}_${type.toLowerCase()}`;
+  let username = `${base}_${type.toLowerCase()}`;
 
   let number = 1;
 
@@ -35,25 +22,263 @@ async function uniqueUsername(
       where: { username },
     })
   ) {
-    username =
-      `${base}_${type.toLowerCase()}_${number++}`.slice(
-        0,
-        50
-      );
+    username = `${base}_${type.toLowerCase()}_${number++}`.slice(0, 50);
   }
 
   return username;
 }
 
-async function activate(
-  requestId: string
-) {
-  const record =
-    await prisma.onboardingRequest.findUnique({
-      where: {
-        id: requestId,
-      },
-    });
+function numberValue(value: unknown, fallback = 0) {
+  const parsed = Number(value);
+
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function requiredText(value: unknown, label: string) {
+  const text = String(value ?? "").trim();
+
+  if (!text) {
+    throw new Error(`${label} is required.`);
+  }
+
+  return text;
+}
+
+function commercialDate(value: unknown, endOfDay = false) {
+  const text = String(value ?? "").trim();
+
+  if (!text) {
+    return null;
+  }
+
+  const date = new Date(
+    `${text}T${endOfDay ? "23:59:59.999" : "00:00:00"}+05:30`,
+  );
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("Invalid commercial effective date.");
+  }
+
+  return date;
+}
+
+function validateClientCommercial(details: Record<string, any>) {
+  const billingType = String(details.billingType || "PREPAID_WALLET");
+
+  if (
+    !["PREPAID_WALLET", "CREDIT_ACCOUNT", "PAY_PER_BOOKING"].includes(
+      billingType,
+    )
+  ) {
+    throw new Error("Invalid client billing model.");
+  }
+
+  const effectiveFrom = commercialDate(details.rateEffectiveFrom);
+
+  if (!effectiveFrom) {
+    throw new Error("Rate effective from date is required.");
+  }
+
+  const effectiveUntil = commercialDate(details.rateEffectiveUntil, true);
+
+  if (effectiveUntil && effectiveUntil < effectiveFrom) {
+    throw new Error("Rate effective until cannot be before effective from.");
+  }
+
+  if (!Array.isArray(details.rateRoutes) || details.rateRoutes.length === 0) {
+    throw new Error("At least one client rate route is required.");
+  }
+
+  const nonNegative = (value: unknown, label: string) => {
+    const amount = numberValue(value);
+
+    if (amount < 0) {
+      throw new Error(`${label} cannot be negative.`);
+    }
+
+    return amount;
+  };
+
+  const seenRoutes = new Set<string>();
+
+  const routes = details.rateRoutes.map((route: any, routeIndex: number) => {
+    const routeNumber = routeIndex + 1;
+
+    const origin = requiredText(
+      route.origin,
+      `Rate origin for route ${routeNumber}`,
+    ).toUpperCase();
+
+    const destination = requiredText(
+      route.destination,
+      `Rate destination for route ${routeNumber}`,
+    ).toUpperCase();
+
+    const serviceType = requiredText(
+      route.serviceType,
+      `Rate service type for route ${routeNumber}`,
+    );
+
+    if (origin === destination) {
+      throw new Error(
+        `Origin and destination cannot be the same for route ${routeNumber}.`,
+      );
+    }
+
+    const routeKey = [
+      origin,
+      destination,
+      serviceType.trim().toUpperCase(),
+    ].join("|");
+
+    if (seenRoutes.has(routeKey)) {
+      throw new Error(
+        `Duplicate client rate route: ${origin} → ${destination} (${serviceType}).`,
+      );
+    }
+
+    seenRoutes.add(routeKey);
+
+    if (!Array.isArray(route.slabs) || route.slabs.length === 0) {
+      throw new Error(
+        `At least one weight slab is required for route ${routeNumber}.`,
+      );
+    }
+
+    const slabs = route.slabs
+      .map((slab: any, slabIndex: number) => {
+        const minWeight = Number(slab.minWeight);
+
+        const maxText = String(slab.maxWeight ?? "").trim();
+
+        const maxWeight = maxText === "" ? null : Number(maxText);
+
+        const ratePerKg = Number(slab.ratePerKg);
+
+        if (!Number.isFinite(minWeight) || minWeight < 0) {
+          throw new Error(
+            `Invalid minimum weight in route ${routeNumber}, slab ${
+              slabIndex + 1
+            }.`,
+          );
+        }
+
+        if (
+          maxWeight !== null &&
+          (!Number.isFinite(maxWeight) || maxWeight < minWeight)
+        ) {
+          throw new Error(
+            `Invalid maximum weight in route ${routeNumber}, slab ${
+              slabIndex + 1
+            }.`,
+          );
+        }
+
+        if (!Number.isFinite(ratePerKg) || ratePerKg <= 0) {
+          throw new Error(
+            `Invalid rate per kg in route ${routeNumber}, slab ${
+              slabIndex + 1
+            }.`,
+          );
+        }
+
+        return {
+          minWeight,
+          maxWeight,
+          ratePerKg,
+        };
+      })
+      .sort((a: any, b: any) => a.minWeight - b.minWeight);
+
+    for (let slabIndex = 0; slabIndex < slabs.length; slabIndex += 1) {
+      const current = slabs[slabIndex];
+      const next = slabs[slabIndex + 1];
+
+      if (current.maxWeight === null && next) {
+        throw new Error(
+          `An open-ended rate slab must be the final slab for route ${routeNumber}.`,
+        );
+      }
+
+      if (
+        next &&
+        current.maxWeight !== null &&
+        next.minWeight <= current.maxWeight
+      ) {
+        throw new Error(
+          `Weight slabs cannot overlap for route ${routeNumber}.`,
+        );
+      }
+    }
+
+    return {
+      origin,
+      destination,
+      serviceType,
+
+      minimumFreight: nonNegative(
+        route.minimumFreight,
+        `Minimum freight for route ${routeNumber}`,
+      ),
+
+      awbCharge: nonNegative(
+        route.awbCharge,
+        `AWB charge for route ${routeNumber}`,
+      ),
+
+      handlingCharge: nonNegative(
+        route.handlingCharge,
+        `Handling charge for route ${routeNumber}`,
+      ),
+
+      pickupCharge: nonNegative(
+        route.pickupCharge,
+        `Pickup charge for route ${routeNumber}`,
+      ),
+
+      deliveryCharge: nonNegative(
+        route.deliveryCharge,
+        `Delivery charge for route ${routeNumber}`,
+      ),
+
+      fuelSurchargePct: nonNegative(
+        route.fuelSurchargePct,
+        `Fuel surcharge for route ${routeNumber}`,
+      ),
+
+      gstPct: nonNegative(route.gstPct ?? 18, `GST for route ${routeNumber}`),
+
+      slabs,
+    };
+  });
+
+  const openingBalance = numberValue(details.openingBalance);
+
+  if (openingBalance < 0) {
+    throw new Error("Opening wallet balance cannot be negative.");
+  }
+
+  return {
+    billingType,
+    effectiveFrom,
+    effectiveUntil,
+    routes,
+    openingBalance,
+
+    paymentMode: String(details.paymentMode || "").trim(),
+
+    paymentReference: String(details.paymentReference || "").trim(),
+
+    paymentDate: String(details.paymentDate || "").trim(),
+  };
+}
+
+async function activate(requestId: string) {
+  const record = await prisma.onboardingRequest.findUnique({
+    where: {
+      id: requestId,
+    },
+  });
 
   if (!record) {
     return null;
@@ -61,373 +286,387 @@ async function activate(
 
   if (
     record.status !== "PENDING" ||
-    record.financeStatus !==
-      "APPROVED" ||
+    record.financeStatus !== "APPROVED" ||
     record.mdStatus !== "APPROVED"
   ) {
     return null;
   }
 
-  const details =
-    record.details as Record<
-      string,
-      any
-    >;
+  const details = record.details as Record<string, any>;
 
-  const type =
-    record.type as
-      | "CLIENT"
-      | "AGENT";
+  const type = record.type as "CLIENT" | "AGENT";
 
-  const email = String(
-    details.email || ""
-  )
+  const email = String(details.email || "")
     .trim()
     .toLowerCase();
 
   if (!email) {
-    throw new Error(
-      "Email is required for activation."
-    );
+    throw new Error("Email is required for activation.");
   }
 
-  const existing =
-    await prisma.user.findUnique({
-      where: { email },
-    });
+  const existing = await prisma.user.findUnique({
+    where: { email },
+  });
 
   if (existing) {
-    throw new Error(
-      "A user already exists with this email."
-    );
+    throw new Error("A user already exists with this email.");
   }
 
-  const username =
-    await uniqueUsername(
-      email,
-      type
-    );
+  const username = await uniqueUsername(email, type);
 
-  const temporaryPassword =
-    randomBytes(9).toString(
-      "base64url"
-    );
+  const temporaryPassword = randomBytes(9).toString("base64url");
 
-  const passwordHash =
-    await hashPassword(
-      temporaryPassword
-    );
+  const passwordHash = await hashPassword(temporaryPassword);
 
-  let clientId: string | null =
-    null;
+  /*
+   * Generate external codes before
+   * entering the transaction because
+   * the existing ID helper uses the
+   * global Prisma client.
+   */
+  const entityCode = await generateLogicartsId(
+    type === "CLIENT" ? "LGCL" : "LGAG",
+  );
 
-  let agentId: string | null =
-    null;
+  const commercial =
+    type === "CLIENT" ? validateClientCommercial(details) : null;
 
-  if (type === "CLIENT") {
-    const client =
-      await prisma.client.create({
+  const result = await prisma.$transaction(async (tx) => {
+    /*
+     * Claim this pending request.
+     * If two approval calls race,
+     * only one transaction may
+     * activate the account.
+     */
+    const claimed = await tx.onboardingRequest.updateMany({
+      where: {
+        id: requestId,
+        status: "PENDING",
+        financeStatus: "APPROVED",
+        mdStatus: "APPROVED",
+      },
+
+      data: {
+        status: "APPROVED",
+        approvedAt: new Date(),
+      },
+    });
+
+    if (claimed.count !== 1) {
+      return null;
+    }
+
+    let clientId: string | null = null;
+
+    let agentId: string | null = null;
+
+    if (type === "CLIENT") {
+      if (!commercial) {
+        throw new Error("Client commercial setup is required.");
+      }
+
+      const client = await tx.client.create({
         data: {
-          code:
-            await generateLogicartsId("LGCL"),
+          code: entityCode,
 
-          companyName:
-            String(
-              details.companyName
-            ),
+          companyName: String(details.companyName),
 
-          gstNumber:
-            details.gstin || null,
+          billingType: commercial.billingType as any,
 
-          contactPerson:
-            details.contactPerson ||
-            null,
+          gstNumber: details.gstin || null,
 
-          designation:
-            details.designation ||
-            null,
+          contactPerson: details.contactPerson || null,
 
-          phone:
-            details.phone || null,
+          designation: details.designation || null,
+
+          phone: details.phone || null,
 
           email,
 
-          address:
-            details.address || null,
+          address: details.address || null,
 
-          city:
-            details.city || null,
+          city: details.city || null,
 
-          state:
-            details.state || null,
+          state: details.state || null,
 
-          origin:
-            details.origin || null,
+          origin: details.origin || null,
 
-          destination:
-            details.destination ||
-            null,
+          destination: details.destination || null,
 
-          serviceType:
-            details.serviceType ||
-            null,
+          serviceType: details.serviceType || null,
 
-          shipmentFrequency:
-            details.shipmentFrequency ||
-            null,
+          shipmentFrequency: details.shipmentFrequency || null,
         },
       });
 
-    clientId = client.id;
-  } else {
-    const agent =
-      await prisma.agent.create({
+      clientId = client.id;
+
+      const rateContract = await tx.clientRateContract.create({
         data: {
-          code:
-            await generateLogicartsId("LGAG"),
+          clientId: client.id,
 
-          companyName:
-            String(
-              details.companyName
-            ),
+          version: 1,
 
-          agentType:
-            details.agentType ||
-            "LOGISTICS_COMPANY",
+          name: "Initial Contract",
 
-          gstNumber:
-            details.gstin || null,
+          effectiveFrom: commercial.effectiveFrom,
 
-          contactPerson:
-            details.contactPerson ||
-            null,
+          effectiveUntil: commercial.effectiveUntil,
 
-          designation:
-            details.designation ||
-            null,
+          status: "ACTIVE",
+        },
+      });
 
-          phone:
-            details.phone || null,
+      for (const route of commercial.routes) {
+        const rateRoute = await tx.clientRateRoute.create({
+          data: {
+            rateContractId: rateContract.id,
+
+            origin: route.origin,
+            destination: route.destination,
+            serviceType: route.serviceType,
+
+            minimumFreight: route.minimumFreight,
+            awbCharge: route.awbCharge,
+            handlingCharge: route.handlingCharge,
+            pickupCharge: route.pickupCharge,
+            deliveryCharge: route.deliveryCharge,
+            fuelSurchargePct: route.fuelSurchargePct,
+            gstPct: route.gstPct,
+          },
+        });
+
+        await tx.clientRateSlab.createMany({
+          data: route.slabs.map((slab: any) => ({
+            rateRouteId: rateRoute.id,
+            minWeight: slab.minWeight,
+            maxWeight: slab.maxWeight,
+            ratePerKg: slab.ratePerKg,
+          })),
+        });
+      }
+
+      const wallet = await tx.clientWallet.create({
+        data: {
+          clientId: client.id,
+
+          balance: commercial.openingBalance,
+        },
+      });
+
+      if (commercial.openingBalance > 0) {
+        const remarks = [
+          "Opening wallet balance",
+          commercial.paymentMode ? `Mode: ${commercial.paymentMode}` : null,
+          commercial.paymentDate
+            ? `Payment date: ${commercial.paymentDate}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" | ");
+
+        await tx.clientWalletTransaction.create({
+          data: {
+            walletId: wallet.id,
+
+            clientId: client.id,
+
+            type: "CREDIT",
+
+            amount: commercial.openingBalance,
+
+            balanceBefore: 0,
+
+            balanceAfter: commercial.openingBalance,
+
+            reference: commercial.paymentReference || null,
+
+            remarks,
+
+            createdByUserId: record.createdByUserId || null,
+          },
+        });
+      }
+    } else {
+      const agent = await tx.agent.create({
+        data: {
+          code: entityCode,
+
+          companyName: String(details.companyName),
+
+          agentType: details.agentType || "LOGISTICS_COMPANY",
+
+          gstNumber: details.gstin || null,
+
+          contactPerson: details.contactPerson || null,
+
+          designation: details.designation || null,
+
+          phone: details.phone || null,
 
           email,
 
-          address:
-            details.address || null,
+          address: details.address || null,
 
-          city:
-            details.city || null,
+          city: details.city || null,
 
-          airport:
-            details.airport ||
-            details.origin ||
-            null,
+          airport: details.airport || details.origin || null,
 
-          destination:
-            details.destination ||
-            null,
+          destination: details.destination || null,
 
-          serviceType:
-            details.serviceType ||
-            null,
+          serviceType: details.serviceType || null,
 
-          shipmentFrequency:
-            details.shipmentFrequency ||
-            null,
+          shipmentFrequency: details.shipmentFrequency || null,
         },
       });
 
-    agentId = agent.id;
-  }
+      agentId = agent.id;
+    }
 
-  await prisma.user.create({
-    data: {
+    await tx.user.create({
+      data: {
+        username,
+        passwordHash,
+
+        fullName: details.contactPerson || details.companyName,
+
+        email,
+
+        phone: details.phone || null,
+
+        role: type,
+
+        clientId,
+        agentId,
+      },
+    });
+
+    return {
       username,
-      passwordHash,
+    };
+  });
 
-      fullName:
-        details.contactPerson ||
-        details.companyName,
+  if (!result) {
+    return null;
+  }
 
+  /*
+   * Email is deliberately outside the
+   * DB transaction. A mail failure must
+   * not roll back financial/account data.
+   */
+  try {
+    await sendAccountEmail({
       email,
 
-      phone:
-        details.phone || null,
+      name: details.contactPerson || details.companyName,
 
-      role: type,
+      username,
+      temporaryPassword,
+      type,
+    });
+  } catch (error) {
+    console.error("Account created but onboarding email failed:", error);
+  }
 
-      clientId,
-      agentId,
-    },
-  });
-
-  await prisma.onboardingRequest.update({
-    where: {
-      id: requestId,
-    },
-
-    data: {
-      status: "APPROVED",
-      approvedAt: new Date(),
-    },
-  });
-
-  await sendAccountEmail({
-    email,
-
-    name:
-      details.contactPerson ||
-      details.companyName,
-
-    username,
-    temporaryPassword,
-    type,
-  });
-
-  return {
-    username,
-  };
+  return result;
 }
 
-export async function GET(
-  request: NextRequest
-) {
-  const token =
-    request.nextUrl.searchParams.get(
-      "token"
-    );
+export async function GET(request: NextRequest) {
+  const token = request.nextUrl.searchParams.get("token");
 
   if (!token) {
     return NextResponse.json(
       {
-        error:
-          "Approval token required.",
+        error: "Approval token required.",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  const record =
-    await prisma.onboardingRequest.findFirst({
-      where: {
-        OR: [
-          { financeToken: token },
-          { mdToken: token },
-        ],
-      },
-    });
+  const record = await prisma.onboardingRequest.findFirst({
+    where: {
+      OR: [{ financeToken: token }, { mdToken: token }],
+    },
+  });
 
   if (!record) {
     return NextResponse.json(
       {
-        error:
-          "Invalid approval token.",
+        error: "Invalid approval token.",
       },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
   return NextResponse.json({
-    requestNumber:
-      record.requestNumber,
+    requestNumber: record.requestNumber,
 
-    type:
-      record.type,
+    type: record.type,
 
-    status:
-      record.status,
+    status: record.status,
 
-    financeStatus:
-      record.financeStatus,
+    financeStatus: record.financeStatus,
 
-    mdStatus:
-      record.mdStatus,
+    mdStatus: record.mdStatus,
 
-    details:
-      record.details,
+    details: record.details,
   });
 }
 
-export async function POST(
-  request: NextRequest
-) {
+export async function POST(request: NextRequest) {
   try {
-    const body =
-      await request.json();
+    const body = await request.json();
 
-    const token =
-      String(body.token || "");
+    const token = String(body.token || "");
 
-    const decision =
-      String(
-        body.decision || ""
-      ).toUpperCase();
+    const decision = String(body.decision || "").toUpperCase();
 
-    const reason =
-      body.reason
-        ? String(body.reason)
-        : null;
+    const reason = body.reason ? String(body.reason) : null;
 
-    if (
-      !token ||
-      ![
-        "APPROVE",
-        "REJECT",
-      ].includes(decision)
-    ) {
+    if (!token || !["APPROVE", "REJECT"].includes(decision)) {
       return NextResponse.json(
         {
-          error:
-            "Token and decision are required.",
+          error: "Token and decision are required.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const record =
-      await prisma.onboardingRequest.findFirst({
-        where: {
-          OR: [
-            {
-              financeToken:
-                token,
-            },
-            {
-              mdToken:
-                token,
-            },
-          ],
-        },
-      });
+    const record = await prisma.onboardingRequest.findFirst({
+      where: {
+        OR: [
+          {
+            financeToken: token,
+          },
+          {
+            mdToken: token,
+          },
+        ],
+      },
+    });
 
     if (!record) {
       return NextResponse.json(
         {
-          error:
-            "Invalid approval token.",
+          error: "Invalid approval token.",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    if (
-      record.status !== "PENDING"
-    ) {
+    if (record.status !== "PENDING") {
       return NextResponse.json(
         {
-          error:
-            `Request is already ${record.status.toLowerCase()}.`,
+          error: `Request is already ${record.status.toLowerCase()}.`,
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
-    const finance =
-      record.financeToken ===
-      token;
+    const finance = record.financeToken === token;
 
-    if (
-      decision === "REJECT"
-    ) {
+    if (decision === "REJECT") {
       await prisma.onboardingRequest.update({
         where: {
           id: record.id,
@@ -436,21 +675,13 @@ export async function POST(
         data: {
           status: "REJECTED",
 
-          financeStatus:
-            finance
-              ? "REJECTED"
-              : record.financeStatus,
+          financeStatus: finance ? "REJECTED" : record.financeStatus,
 
-          mdStatus:
-            !finance
-              ? "REJECTED"
-              : record.mdStatus,
+          mdStatus: !finance ? "REJECTED" : record.mdStatus,
 
-          rejectionReason:
-            reason,
+          rejectionReason: reason,
 
-          rejectedAt:
-            new Date(),
+          rejectedAt: new Date(),
         },
       });
 
@@ -467,55 +698,42 @@ export async function POST(
 
       data: finance
         ? {
-            financeStatus:
-              "APPROVED",
+            financeStatus: "APPROVED",
           }
         : {
-            mdStatus:
-              "APPROVED",
+            mdStatus: "APPROVED",
           },
     });
 
-    const result =
-      await activate(
-        record.id
-      );
+    const result = await activate(record.id);
 
-    const latest =
-      await prisma.onboardingRequest.findUnique({
-        where: {
-          id: record.id,
-        },
-      });
+    const latest = await prisma.onboardingRequest.findUnique({
+      where: {
+        id: record.id,
+      },
+    });
 
     return NextResponse.json({
       success: true,
 
-      status:
-        latest?.status,
+      status: latest?.status,
 
-      financeStatus:
-        latest?.financeStatus,
+      financeStatus: latest?.financeStatus,
 
-      mdStatus:
-        latest?.mdStatus,
+      mdStatus: latest?.mdStatus,
 
-      accountCreated:
-        Boolean(result),
+      accountCreated: Boolean(result),
 
-      username:
-        result?.username,
+      username: result?.username,
     });
   } catch (error: any) {
     console.error(error);
 
     return NextResponse.json(
       {
-        error:
-          error?.message ||
-          "Unable to process approval.",
+        error: error?.message || "Unable to process approval.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

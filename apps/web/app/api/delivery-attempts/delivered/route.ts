@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { airportByCode } from "@/lib/master/airports";
+import { recordShipmentTrackingEvent } from "@/lib/tracking/recordShipmentTrackingEvent";
 
 import { getUserBranchCode, requireUser } from "@/lib/auth/authorization";
 
@@ -155,6 +157,21 @@ export async function POST(request: NextRequest) {
        * Final delivery completes
        * the Airport Delivery Challan.
        */
+      const locationCode = shipment.destination.trim().toUpperCase();
+
+      const airport = airportByCode[locationCode];
+
+      await recordShipmentTrackingEvent({
+        db: tx,
+        shipmentId: shipment.id,
+        status: "DELIVERED",
+        locationCode,
+        locationName: airport?.city ?? locationCode,
+        createdByUserId: user.id ?? null,
+        remarks: remarks || "Shipment delivered successfully",
+        eventAt: attempt.attemptedAt,
+      });
+
       await tx.deliveryChallan.updateMany({
         where: {
           shipments: {

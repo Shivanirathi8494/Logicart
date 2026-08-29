@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { airportByCode } from "@/lib/master/airports";
 import { getUserBranchCode, requireUser } from "@/lib/auth/authorization";
 
 type PackageInput = {
@@ -284,6 +285,25 @@ export async function POST(
         data: {
           status: "RECEIVED",
         },
+      });
+
+      const locationCode = manifest.destination.trim().toUpperCase();
+
+      const airport = airportByCode[locationCode];
+
+      const eventAt = new Date();
+
+      await prisma.shipmentTrackingEvent.createMany({
+        data: fullyReceivedShipmentIds.map((shipmentId) => ({
+          shipmentId,
+          status: "RECEIVED",
+          eventType: "STATUS_CHANGE",
+          locationCode,
+          locationName: airport?.city ?? locationCode,
+          createdByUserId: user.id ?? null,
+          remarks: "Shipment received at destination airport",
+          eventAt,
+        })),
       });
     }
 

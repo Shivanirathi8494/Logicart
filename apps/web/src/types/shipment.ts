@@ -10,9 +10,11 @@ export interface CreateShipmentRequest {
 
   bookingDate: string;
 
+  clientId?: string;
   customerId: string;
   origin: string;
   destination: string;
+  serviceType: string;
   airlineId: string;
   flightNumber: string;
 

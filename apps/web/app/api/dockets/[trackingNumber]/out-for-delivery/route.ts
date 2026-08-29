@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { airportByCode } from "@/lib/master/airports";
+import { recordShipmentTrackingEvent } from "@/lib/tracking/recordShipmentTrackingEvent";
 
 import { getUserBranchCode, requireUser } from "@/lib/auth/authorization";
 
@@ -135,6 +137,21 @@ export async function POST(
 
           createdByUserId: user.id ?? null,
         },
+      });
+
+      const locationCode = shipment.destination.trim().toUpperCase();
+
+      const airport = airportByCode[locationCode];
+
+      await recordShipmentTrackingEvent({
+        db: tx,
+        shipmentId: shipment.id,
+        status: "OUT_FOR_DELIVERY",
+        locationCode,
+        locationName: airport?.city ?? locationCode,
+        createdByUserId: user.id ?? null,
+        remarks: "Shipment out for delivery",
+        eventAt: record.dispatchedAt,
       });
 
       return {

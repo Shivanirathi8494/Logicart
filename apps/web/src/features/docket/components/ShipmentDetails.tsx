@@ -6,9 +6,20 @@ import { CreateShipmentRequest } from "@/types/shipment";
 type Props = {
   shipment: CreateShipmentRequest;
   setShipment: React.Dispatch<React.SetStateAction<CreateShipmentRequest>>;
+
+  /*
+   * CLIENT bookings use the negotiated client
+   * rate-card preview instead of the standard
+   * airline tariff calculator.
+   */
+  clientPricing?: boolean;
 };
 
-export default function ShipmentDetails({ shipment, setShipment }: Props) {
+export default function ShipmentDetails({
+  shipment,
+  setShipment,
+  clientPricing = false,
+}: Props) {
   useEffect(() => {
     const volumetric = shipment.packages.reduce((sum, pkg) => {
       if (pkg.length <= 0 || pkg.width <= 0 || pkg.height <= 0) {
@@ -49,6 +60,17 @@ export default function ShipmentDetails({ shipment, setShipment }: Props) {
 
   useEffect(() => {
     async function calculateFreight() {
+      /*
+       * CLIENT bookings must NEVER use the
+       * standard airline tariff.
+       *
+       * ClientCommercialSummary / preview API
+       * supplies the negotiated selling price.
+       */
+      if (clientPricing) {
+        return;
+      }
+
       if (
         !shipment.airlineId ||
         !shipment.origin ||
@@ -114,6 +136,7 @@ export default function ShipmentDetails({ shipment, setShipment }: Props) {
     shipment.destination,
     shipment.chargeableWeight,
     setShipment,
+    clientPricing,
   ]);
 
   function updatePackage(

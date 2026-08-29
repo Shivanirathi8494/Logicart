@@ -7,16 +7,10 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user =
-    await getCurrentUser();
+  const user = await getCurrentUser();
 
-  if (
-    !user ||
-    user.role !== "ADMIN"
-  ) {
-    redirect(
-      "/portal/dashboard"
-    );
+  if (!user || (user.role !== "ADMIN" && user.role !== "EMPLOYEE")) {
+    redirect("/portal/dashboard");
   }
 
   return children;

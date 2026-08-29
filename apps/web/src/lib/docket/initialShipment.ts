@@ -5,9 +5,11 @@ export const initialShipment: CreateShipmentRequest = {
 
   bookingDate: new Date().toISOString().split("T")[0],
 
+  clientId: "",
   customerId: "",
   origin: "",
   destination: "",
+  serviceType: "",
 
   airlineId: "",
   flightNumber: "",

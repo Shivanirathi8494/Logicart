@@ -2,14 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
-  const airlineId =
-    request.nextUrl.searchParams.get("airlineId");
+  const airlineId = request.nextUrl.searchParams.get("airlineId");
 
-  const origin =
-    request.nextUrl.searchParams.get("origin");
+  const origin = request.nextUrl.searchParams.get("origin");
 
-  const destination =
-    request.nextUrl.searchParams.get("destination");
+  const destination = request.nextUrl.searchParams.get("destination");
 
   const chargeableWeight = Number(
     request.nextUrl.searchParams.get("chargeableWeight"),
@@ -45,7 +42,7 @@ export async function GET(request: NextRequest) {
   if (!tariff || !tariff.active) {
     return NextResponse.json(
       {
-        error: `Alliance Air tariff is not configured for ${origin.toUpperCase()} → ${destination.toUpperCase()}.`,
+        error: `Standard airline tariff is not configured for ${origin.toUpperCase()} → ${destination.toUpperCase()}.`,
       },
       { status: 404 },
     );
@@ -63,10 +60,7 @@ export async function GET(request: NextRequest) {
 
   const calculated = chargeableWeight * rate;
 
-  const freight = Math.max(
-    tariff.minimumCharge,
-    calculated,
-  );
+  const freight = Math.max(tariff.minimumCharge, calculated);
 
   return NextResponse.json({
     airlineId,

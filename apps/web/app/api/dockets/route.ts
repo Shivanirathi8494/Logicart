@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { ShipmentService } from "@/lib/services/shipment.service";
-import {
-  getShipmentWorkflow,
-} from "@/lib/workflow/shipmentWorkflow";
+import { getShipmentWorkflow } from "@/lib/workflow/shipmentWorkflow";
 import {
   getUserBranchCode,
   requireRole,
@@ -42,18 +40,13 @@ export async function GET(request: NextRequest) {
      * current visibility rules.
      */
     const branchCode =
-      user.role === "EMPLOYEE"
-        ? user.branch?.code?.trim().toUpperCase()
-        : null;
+      user.role === "EMPLOYEE" ? user.branch?.code?.trim().toUpperCase() : null;
 
     const branchScope =
       user.role === "EMPLOYEE"
         ? branchCode
           ? {
-              OR: [
-                { origin: branchCode },
-                { destination: branchCode },
-              ],
+              OR: [{ origin: branchCode }, { destination: branchCode }],
             }
           : {
               // Employee without an assigned branch
@@ -66,9 +59,7 @@ export async function GET(request: NextRequest) {
       where: {
         ...ownerScope,
 
-        AND: [
-          branchScope,
-        ],
+        AND: [branchScope],
 
         ...(tracking
           ? {
@@ -116,52 +107,36 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const responseShipments =
-      shipments.map((shipment) => {
+    const responseShipments = shipments.map((shipment) => {
+      const workflow =
+        user.role === "EMPLOYEE" && branchCode
+          ? getShipmentWorkflow(branchCode, shipment)
+          : {};
 
-        const workflow =
-          user.role === "EMPLOYEE" &&
-          branchCode
-            ? getShipmentWorkflow(
-                branchCode,
-                shipment,
-              )
-            : {};
+      const activeDeliveryChallan = shipment.deliveryChallans.find(
+        (entry) => entry.challan.status === "OPEN",
+      );
 
-        const activeDeliveryChallan =
-          shipment.deliveryChallans.find(
-            (entry) =>
-              entry.challan.status === "OPEN"
-          );
+      return {
+        ...shipment,
+        ...workflow,
 
-        return {
-          ...shipment,
-          ...workflow,
+        hasDeliveryChallan: !!activeDeliveryChallan,
 
-          hasDeliveryChallan:
-            !!activeDeliveryChallan,
+        deliveryChallanNumber:
+          activeDeliveryChallan?.challan.challanNumber ?? null,
+      };
+    });
 
-          deliveryChallanNumber:
-            activeDeliveryChallan
-              ?.challan
-              .challanNumber ?? null,
-        };
-      });
-
-    return NextResponse.json(
-      responseShipments
-    );
+    return NextResponse.json(responseShipments);
   } catch (error: any) {
     if (error?.message === "UNAUTHORIZED") {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     return NextResponse.json(
       { error: "Unable to fetch dockets." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -189,10 +164,9 @@ export async function POST(request: Request) {
       if (!branchCode) {
         return NextResponse.json(
           {
-            error:
-              "Your user account is not assigned to a branch.",
+            error: "Your user account is not assigned to a branch.",
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -208,63 +182,50 @@ export async function POST(request: Request) {
       );
     }
 
-    const customer =
-      await prisma.customer.findFirst({
-        where: {
-          id: body.customerId,
-          status: "ACTIVE",
-        },
-      });
+    const customer = await prisma.customer.findFirst({
+      where: {
+        id: body.customerId,
+        status: "ACTIVE",
+      },
+    });
 
     if (!customer) {
       return NextResponse.json(
         {
-          error:
-            "A valid active Customer ID is required.",
+          error: "A valid active Customer ID is required.",
         },
         { status: 400 },
       );
     }
 
-    const shipment = await ShipmentService.create(
-      body,
-      {
-        clientId:
-          user.role === "CLIENT"
-            ? user.clientId
-            : null,
+    const shipment = await ShipmentService.create(body, {
+      clientId: user.role === "CLIENT" ? user.clientId : null,
 
-        agentId:
-          user.role === "AGENT"
-            ? user.agentId
-            : null,
+      agentId: user.role === "AGENT" ? user.agentId : null,
 
-        createdByUserId: user.id,
-      }
-    );
+      createdByUserId: user.id,
+      userRole: user.role,
+    });
 
-    return NextResponse.json(
-      shipment,
-      { status: 201 }
-    );
+    return NextResponse.json(shipment, { status: 201 });
   } catch (error: any) {
-    if (
-      error?.message === "UNAUTHORIZED" ||
-      error?.message === "FORBIDDEN"
-    ) {
-      return NextResponse.json(
-        { error: "Access denied." },
-        { status: 403 }
-      );
+    console.error("Docket creation failed:", {
+      name: error?.name,
+      message: error?.message,
+      code: error?.code,
+      meta: error?.meta,
+      stack: error?.stack,
+    });
+
+    if (error?.message === "UNAUTHORIZED" || error?.message === "FORBIDDEN") {
+      return NextResponse.json({ error: "Access denied." }, { status: 403 });
     }
 
     return NextResponse.json(
       {
-        error:
-          error?.message ||
-          "Unable to create docket.",
+        error: error?.message || "Unable to create docket.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

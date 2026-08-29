@@ -163,6 +163,9 @@ model Shipment {
   outForDeliveryRecords    OutForDeliveryRecord[]
   loadingTallies           LoadingTallyShipment[]
   manifestEntries          ManifestShipment[]
+  trackingEvents           ShipmentTrackingEvent[]
+  pricingSnapshot          ShipmentPricingSnapshot?
+  walletTransactions       ClientWalletTransaction[]
   agent                    Agent?                    @relation(fields: [agentId], references: [id])
   airline                  Airline?                  @relation(fields: [airlineId], references: [id])
   client                   Client?                   @relation(fields: [clientId], references: [id])
@@ -383,28 +386,30 @@ model Branch {
 }
 
 model User {
-  id                    String                 @id @default(cuid())
-  username              String                 @unique
-  passwordHash          String
-  fullName              String
-  email                 String?                @unique
-  phone                 String?
-  role                  UserRole               @default(BOOKING)
-  status                MasterStatus           @default(ACTIVE)
-  branchId              String?
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  agentId               String?
-  clientId              String?
-  employeeProfile       EmployeeProfile?
-  onboardingRequests    OnboardingRequest[]    @relation("OnboardingCreatedBy")
-  sessions              Session[]
-  createdShipments      Shipment[]             @relation("ShipmentCreatedBy")
-  deliveryAttempts      DeliveryAttempt[]      @relation("DeliveryAttemptCreatedBy")
-  outForDeliveryCreated OutForDeliveryRecord[] @relation("OutForDeliveryCreatedBy")
-  agent                 Agent?                 @relation(fields: [agentId], references: [id])
-  branch                Branch?                @relation(fields: [branchId], references: [id])
-  client                Client?                @relation(fields: [clientId], references: [id])
+  id                              String                    @id @default(cuid())
+  username                        String                    @unique
+  passwordHash                    String
+  fullName                        String
+  email                           String?                   @unique
+  phone                           String?
+  role                            UserRole                  @default(BOOKING)
+  status                          MasterStatus              @default(ACTIVE)
+  branchId                        String?
+  createdAt                       DateTime                  @default(now())
+  updatedAt                       DateTime                  @updatedAt
+  agentId                         String?
+  clientId                        String?
+  employeeProfile                 EmployeeProfile?
+  onboardingRequests              OnboardingRequest[]       @relation("OnboardingCreatedBy")
+  sessions                        Session[]
+  createdShipments                Shipment[]                @relation("ShipmentCreatedBy")
+  deliveryAttempts                DeliveryAttempt[]         @relation("DeliveryAttemptCreatedBy")
+  outForDeliveryCreated           OutForDeliveryRecord[]    @relation("OutForDeliveryCreatedBy")
+  shipmentTrackingEvents          ShipmentTrackingEvent[]   @relation("ShipmentTrackingEventCreatedBy")
+  clientWalletTransactionsCreated ClientWalletTransaction[] @relation("ClientWalletTransactionCreatedBy")
+  agent                           Agent?                    @relation(fields: [agentId], references: [id])
+  branch                          Branch?                   @relation(fields: [branchId], references: [id])
+  client                          Client?                   @relation(fields: [clientId], references: [id])
 
   @@index([clientId])
   @@index([agentId])
@@ -480,6 +485,191 @@ model Client {
   updatedAt         DateTime     @updatedAt
   shipments         Shipment[]
   users             User[]
+
+  // Commercial configuration
+  billingType        ClientBillingType         @default(PREPAID_WALLET)
+  rateContracts      ClientRateContract[]
+  wallet             ClientWallet?
+  walletTransactions ClientWalletTransaction[]
+  walletRecharges    ClientWalletRecharge[]
+}
+
+// =========================================================
+// CLIENT COMMERCIAL / CONTRACT PRICING
+// =========================================================
+
+model ClientRateContract {
+  id             String       @id @default(cuid())
+  clientId       String
+  version        Int
+  name           String?
+  effectiveFrom  DateTime
+  effectiveUntil DateTime?
+  status         MasterStatus @default(ACTIVE)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  client           Client                    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  routes           ClientRateRoute[]
+  pricingSnapshots ShipmentPricingSnapshot[]
+
+  @@unique([clientId, version])
+  @@index([clientId, effectiveFrom])
+  @@index([clientId, status])
+}
+
+model ClientRateRoute {
+  id             String @id @default(cuid())
+  rateContractId String
+  origin         String
+  destination    String
+  serviceType    String
+
+  minimumFreight   Decimal @default(0) @db.Decimal(12, 2)
+  awbCharge        Decimal @default(0) @db.Decimal(12, 2)
+  handlingCharge   Decimal @default(0) @db.Decimal(12, 2)
+  pickupCharge     Decimal @default(0) @db.Decimal(12, 2)
+  deliveryCharge   Decimal @default(0) @db.Decimal(12, 2)
+  fuelSurchargePct Decimal @default(0) @db.Decimal(7, 3)
+  gstPct           Decimal @default(18) @db.Decimal(7, 3)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rateContract ClientRateContract @relation(fields: [rateContractId], references: [id], onDelete: Cascade)
+  slabs        ClientRateSlab[]
+
+  @@index([rateContractId])
+  @@index([origin, destination, serviceType])
+}
+
+model ClientRateSlab {
+  id          String   @id @default(cuid())
+  rateRouteId String
+  minWeight   Float
+  maxWeight   Float?
+  ratePerKg   Decimal  @db.Decimal(12, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  rateRoute ClientRateRoute @relation(fields: [rateRouteId], references: [id], onDelete: Cascade)
+
+  @@index([rateRouteId, minWeight])
+}
+
+model ClientWallet {
+  id        String   @id @default(cuid())
+  clientId  String   @unique
+  balance   Decimal  @default(0) @db.Decimal(14, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  client       Client                    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  transactions ClientWalletTransaction[]
+  recharges    ClientWalletRecharge[]
+}
+
+model ClientWalletTransaction {
+  id              String                      @id @default(cuid())
+  walletId        String
+  clientId        String
+  shipmentId      String?
+  type            ClientWalletTransactionType
+  amount          Decimal                     @db.Decimal(14, 2)
+  balanceBefore   Decimal                     @db.Decimal(14, 2)
+  balanceAfter    Decimal                     @db.Decimal(14, 2)
+  reference       String?
+  remarks         String?
+  createdByUserId String?
+  createdAt       DateTime                    @default(now())
+
+  client   Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  shipment Shipment? @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+
+  clientWallet ClientWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  createdBy    User?        @relation("ClientWalletTransactionCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  recharge ClientWalletRecharge?
+
+  @@index([walletId, createdAt])
+  @@index([clientId, createdAt])
+  @@index([shipmentId])
+}
+
+model ClientWalletRecharge {
+  id String @id @default(cuid())
+
+  clientId String
+  walletId String
+
+  amount Decimal @db.Decimal(14, 2)
+
+  paymentMethod ClientWalletRechargeMethod
+  status        ClientWalletRechargeStatus @default(PENDING)
+
+  referenceNumber String? @unique
+
+  provider          String?
+  providerOrderId   String? @unique
+  providerPaymentId String? @unique
+
+  bankReference           String?
+  bankReferenceNormalized String? @unique
+  walletTransactionId     String? @unique
+  remarks                 String?
+
+  createdByUserId String
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  paidAt      DateTime?
+  failedAt    DateTime?
+  cancelledAt DateTime?
+
+  client            Client                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  wallet            ClientWallet             @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  walletTransaction ClientWalletTransaction? @relation(fields: [walletTransactionId], references: [id], onDelete: SetNull)
+
+  @@index([clientId, createdAt])
+  @@index([walletId, createdAt])
+  @@index([status])
+  @@index([paymentMethod])
+}
+
+model ShipmentPricingSnapshot {
+  id              String  @id @default(cuid())
+  shipmentId      String  @unique
+  rateContractId  String?
+  contractVersion Int?
+
+  pricingSource ShipmentPricingSource
+
+  serviceType      String?
+  actualWeight     Float
+  volumetricWeight Float
+  chargeableWeight Float
+
+  ratePerKg     Decimal @db.Decimal(12, 2)
+  freightAmount Decimal @db.Decimal(14, 2)
+
+  minimumFreight Decimal @default(0) @db.Decimal(14, 2)
+  awbCharge      Decimal @default(0) @db.Decimal(14, 2)
+  handlingCharge Decimal @default(0) @db.Decimal(14, 2)
+  pickupCharge   Decimal @default(0) @db.Decimal(14, 2)
+  deliveryCharge Decimal @default(0) @db.Decimal(14, 2)
+  fuelSurcharge  Decimal @default(0) @db.Decimal(14, 2)
+
+  subtotal    Decimal @db.Decimal(14, 2)
+  gstAmount   Decimal @db.Decimal(14, 2)
+  totalAmount Decimal @db.Decimal(14, 2)
+
+  createdAt DateTime @default(now())
+
+  shipment     Shipment            @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  rateContract ClientRateContract? @relation(fields: [rateContractId], references: [id], onDelete: SetNull)
+
+  @@index([rateContractId])
+  @@index([pricingSource])
 }
 
 model Agent {
@@ -581,9 +771,67 @@ model LoadingTallyPackage {
   @@index([packageId])
 }
 
+model ShipmentTrackingEvent {
+  id              String                    @id @default(cuid())
+  shipmentId      String
+  status          ShipmentStatus
+  eventType       ShipmentTrackingEventType @default(STATUS_CHANGE)
+  locationCode    String
+  locationName    String?
+  eventAt         DateTime                  @default(now())
+  createdByUserId String?
+  remarks         String?
+  createdAt       DateTime                  @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  createdBy User? @relation("ShipmentTrackingEventCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([shipmentId, eventAt])
+  @@index([status])
+  @@index([locationCode])
+  @@index([createdByUserId])
+}
+
+enum ClientBillingType {
+  PREPAID_WALLET
+  CREDIT_ACCOUNT
+  PAY_PER_BOOKING
+}
+
+enum ClientWalletRechargeMethod {
+  BANK_TRANSFER
+  ONLINE_PAYMENT
+}
+
+enum ClientWalletRechargeStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum ClientWalletTransactionType {
+  CREDIT
+  BOOKING_DEBIT
+  BOOKING_REFUND
+  ADMIN_ADJUSTMENT
+}
+
+enum ShipmentPricingSource {
+  STANDARD_RATE
+  CLIENT_RATE_CARD
+}
+
 enum LoadingTallyStatus {
   OPEN
   COMPLETED
+}
+
+enum ShipmentTrackingEventType {
+  STATUS_CHANGE
+  DELIVERY_ATTEMPT
 }
 
 enum ShipmentStatus {

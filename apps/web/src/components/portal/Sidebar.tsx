@@ -15,6 +15,9 @@ import {
   PlaneLanding,
   Truck,
   LogOut,
+  WalletCards,
+  UserRound,
+  PackageSearch,
 } from "lucide-react";
 
 type CurrentUser = {
@@ -171,6 +174,7 @@ export default function Sidebar({
   const role = currentUser?.role ?? null;
 
   const isEmployee = role === "EMPLOYEE";
+  const isClient = role === "CLIENT";
 
   function activeClass(href: string) {
     const active = pathname === href || pathname.startsWith(href + "/");
@@ -219,7 +223,65 @@ export default function Sidebar({
         </div>
       )}
 
-      {isEmployee ? (
+      {isClient ? (
+        /*
+         * CLIENT NAVIGATION
+         *
+         * Clients only see their own commercial
+         * and shipment workflow.
+         */
+        <nav className="flex-1">
+          <div className="space-y-2">
+            <SidebarLink
+              href="/portal/dashboard"
+              label="Dashboard"
+              icon={<LayoutDashboard size={18} />}
+              className={activeClass("/portal/dashboard")}
+              onNavigate={onNavigate}
+            />
+
+            <SidebarLink
+              href="/portal/operations/create-docket"
+              label="New Booking"
+              icon={<PlusCircle size={18} />}
+              className={activeClass("/portal/operations/create-docket")}
+              onNavigate={onNavigate}
+            />
+
+            <SidebarLink
+              href="/portal/my-bookings"
+              label="My Bookings"
+              icon={<ListChecks size={18} />}
+              className={activeClass("/portal/my-bookings")}
+              onNavigate={onNavigate}
+            />
+
+            <SidebarLink
+              href="/tracking"
+              label="Track Shipment"
+              icon={<PackageSearch size={18} />}
+              className={activeClass("/tracking")}
+              onNavigate={onNavigate}
+            />
+
+            <SidebarLink
+              href="/portal/wallet"
+              label="Wallet"
+              icon={<WalletCards size={18} />}
+              className={activeClass("/portal/wallet")}
+              onNavigate={onNavigate}
+            />
+
+            <SidebarLink
+              href="/portal/profile"
+              label="Profile"
+              icon={<UserRound size={18} />}
+              className={activeClass("/portal/profile")}
+              onNavigate={onNavigate}
+            />
+          </div>
+        </nav>
+      ) : isEmployee ? (
         /*
          * EMPLOYEE NAVIGATION
          *
@@ -294,14 +356,124 @@ export default function Sidebar({
               />
             </div>
           </div>
+
+          {/* DAY END - always the final employee navigation entry */}
+          <div className="mt-7">
+            <SidebarLink
+              href="/portal/day-end"
+              label="Day End Closing"
+              icon={<ListChecks size={18} />}
+              className={activeClass("/portal/day-end")}
+              onNavigate={onNavigate}
+            />
+          </div>
+        </nav>
+      ) : role === "ADMIN" ? (
+        /*
+         * ADMIN NAVIGATION
+         *
+         * Admin follows the same operational
+         * workflow as branch employees, with
+         * additional management modules.
+         */
+        <nav className="flex-1">
+          <div className="space-y-2">
+            <SidebarLink
+              href="/portal/dashboard"
+              label="Dashboard"
+              icon={<LayoutDashboard size={18} />}
+              className={activeClass("/portal/dashboard")}
+              onNavigate={onNavigate}
+            />
+
+            <SidebarLink
+              href="/portal/operations/create-docket"
+              label="New Booking"
+              icon={<PlusCircle size={18} />}
+              className={activeClass("/portal/operations/create-docket")}
+              onNavigate={onNavigate}
+            />
+
+            <SidebarLink
+              href="/portal/operations/search-docket"
+              label="Work Queue"
+              icon={<ListChecks size={18} />}
+              className={activeClass("/portal/operations/search-docket")}
+              onNavigate={onNavigate}
+            />
+          </div>
+
+          <div className="mt-7">
+            <div className="mb-2 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+              Origin Operations
+            </div>
+
+            <SidebarLink
+              href="/portal/warehouse/manifest"
+              label="Dispatch / Manifest"
+              icon={<PlaneTakeoff size={18} />}
+              className={activeClass("/portal/warehouse/manifest")}
+              onNavigate={onNavigate}
+            />
+          </div>
+
+          <div className="mt-7">
+            <div className="mb-2 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+              Destination Operations
+            </div>
+
+            <div className="space-y-2">
+              <SidebarLink
+                href="/portal/warehouse/inscan"
+                label="Incoming / Unload"
+                icon={<PlaneLanding size={18} />}
+                className={activeClass("/portal/warehouse/inscan")}
+                onNavigate={onNavigate}
+              />
+
+              <SidebarLink
+                href="/portal/warehouse/outscan"
+                label="Delivery Processing"
+                icon={<Truck size={18} />}
+                className={activeClass("/portal/warehouse/outscan")}
+                onNavigate={onNavigate}
+              />
+            </div>
+          </div>
+
+          <div className="mt-7">
+            <div className="mb-2 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+              Management
+            </div>
+
+            <div className="space-y-2">
+              <SidebarLink
+                href="/portal/reports"
+                label="Reports"
+                icon={<ListChecks size={18} />}
+                className={activeClass("/portal/reports")}
+                onNavigate={onNavigate}
+              />
+
+              <SidebarLink
+                href="/portal/masters"
+                label="Masters"
+                icon={<ListChecks size={18} />}
+                className={activeClass("/portal/masters")}
+                onNavigate={onNavigate}
+              />
+
+              <SidebarLink
+                href="/portal/admin/wallet-recharges"
+                label="Wallet Recharges"
+                icon={<WalletCards size={18} />}
+                className={activeClass("/portal/admin/wallet-recharges")}
+                onNavigate={onNavigate}
+              />
+            </div>
+          </div>
         </nav>
       ) : (
-        /*
-         * ADMIN / EXISTING ROLES
-         *
-         * Preserve current direct
-         * module navigation.
-         */
         <nav className="flex-1 space-y-2">
           {visibleMenu.map((item) => (
             <Link
