@@ -43,6 +43,24 @@ export default function CreateDocketPage({ trackingNumber }: Props) {
 
   const isClient = currentRole === "CLIENT";
 
+  function expandPackages(
+    packages: typeof shipment.packages,
+  ) {
+    return packages.flatMap((pkg) => {
+      const quantity = Math.max(
+        1,
+        Math.floor(Number(pkg.quantity) || 1),
+      );
+
+      return Array.from({ length: quantity }, () => ({
+        length: Number(pkg.length),
+        width: Number(pkg.width),
+        height: Number(pkg.height),
+        weight: Number(pkg.weight),
+      }));
+    });
+  }
+
   useEffect(() => {
     console.log("[CreateDocket] shipment changed:", {
       origin: shipment.origin,
@@ -163,7 +181,7 @@ export default function CreateDocketPage({ trackingNumber }: Props) {
             serviceType: shipment.serviceType,
             airlineId: shipment.airlineId,
 
-            packages: shipment.packages,
+            packages: expandPackages(shipment.packages),
           }),
 
           signal: controller.signal,
@@ -302,6 +320,11 @@ export default function CreateDocketPage({ trackingNumber }: Props) {
       destination: data.destination,
       serviceType: data.serviceType ?? "",
 
+      deliveryType:
+        data.deliveryType === "AIRPORT_DELIVERY"
+          ? "AIRPORT_DELIVERY"
+          : "DOOR_TO_DOOR",
+
       airlineId: data.airlineId ?? "",
       flightNumber: data.flightNumber ?? "",
 
@@ -348,6 +371,7 @@ export default function CreateDocketPage({ trackingNumber }: Props) {
       remarks: data.remarks ?? "",
 
       packages: data.packages.map((pkg: any) => ({
+        quantity: 1,
         length: pkg.length,
         width: pkg.width,
         height: pkg.height,
@@ -462,9 +486,17 @@ export default function CreateDocketPage({ trackingNumber }: Props) {
         }
       }
 
+      const expandedPackages = expandPackages(shipment.packages);
+
+      const shipmentPayload = {
+        ...shipment,
+        packageCount: expandedPackages.length,
+        packages: expandedPackages,
+      };
+
       const response = isEdit
-        ? await updateShipment(trackingNumber!, shipment)
-        : await createShipment(shipment);
+        ? await updateShipment(trackingNumber!, shipmentPayload)
+        : await createShipment(shipmentPayload);
 
       setCreatedTrackingNumber(response.trackingNumber);
 
@@ -473,7 +505,15 @@ export default function CreateDocketPage({ trackingNumber }: Props) {
       setShipment({
         ...initialShipment,
         bookingDate: new Date().toISOString().split("T")[0],
-        packages: [{ length: 0, width: 0, height: 0, weight: 0 }],
+        packages: [
+          {
+            quantity: 1,
+            length: 0,
+            width: 0,
+            height: 0,
+            weight: 0,
+          },
+        ],
       });
     } catch (error) {
       console.error(error);

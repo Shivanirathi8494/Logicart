@@ -14,7 +14,7 @@ export default function Footer() {
             <Link href="/" className="inline-block">
               <div className="rounded-xl bg-white px-5 py-3">
                 <img
-                  src="/logo/logicarts-logo.png"
+                  src="/logo/logicarts-logo-v2.png"
                   alt="Logicarts"
                   className="h-auto w-[165px]"
                 />

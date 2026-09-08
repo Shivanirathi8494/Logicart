@@ -16,6 +16,14 @@ export default function ChallanSummary({ shipments }: Props) {
   const [remarks, setRemarks] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const deliveryType =
+    shipments[0]?.deliveryType === "AIRPORT_DELIVERY"
+      ? "AIRPORT_DELIVERY"
+      : "DOOR_TO_DOOR";
+
+  const isAirportDelivery =
+    deliveryType === "AIRPORT_DELIVERY";
+
   const totalPieces = shipments.reduce(
     (sum: number, shipment: any) => sum + Number(shipment.packageCount || 0),
     0,
@@ -34,17 +42,29 @@ export default function ChallanSummary({ shipments }: Props) {
     }
 
     if (!vendorName.trim()) {
-      alert("Vendor Name is required.");
+      alert(
+        isAirportDelivery
+          ? "Vendor / Warehouse Name is required."
+          : "Receiver Name is required."
+      );
       return;
     }
 
     if (!vendorAddress.trim()) {
-      alert("Vendor Address is required.");
+      alert(
+        isAirportDelivery
+          ? "Vendor / Warehouse Address is required."
+          : "Receiver Address is required."
+      );
       return;
     }
 
     if (!vendorPhone.trim()) {
-      alert("Vendor Phone is required.");
+      alert(
+        isAirportDelivery
+          ? "Vendor Phone is required."
+          : "Receiver Phone is required."
+      );
       return;
     }
 
@@ -63,9 +83,9 @@ export default function ChallanSummary({ shipments }: Props) {
           // the destination branch.
           origin: shipments[0].destination,
 
-          // Delivery Challan screen is now
-          // exclusively for airport/vendor handover.
-          deliveryType: "AIRPORT_DELIVERY",
+          // Backend validates and derives this again
+          // from the selected shipment records.
+          deliveryType,
 
           customerName: vendorName.trim(),
           customerAddress: vendorAddress.trim(),
@@ -102,23 +122,31 @@ export default function ChallanSummary({ shipments }: Props) {
     <section className="rounded-xl border bg-white p-6 shadow-sm">
       <div className="mb-6">
         <div className="text-lg font-semibold text-slate-900">
-          Airport Delivery
+          {isAirportDelivery
+            ? "Airport / Warehouse Delivery"
+            : "Door to Door Delivery"}
         </div>
 
         <div className="mt-1 text-sm text-slate-500">
-          Record shipment handover to the airport/vendor.
+          {isAirportDelivery
+            ? "Record shipment handover to the airport / warehouse."
+            : "Prepare shipments for final door delivery."}
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label className="mb-2 block text-sm font-medium">
-            Vendor Name *
+            {isAirportDelivery ? "Vendor / Warehouse Name *" : "Receiver Name *"}
           </label>
 
           <input
             className="w-full rounded-lg border p-3"
-            placeholder="Vendor Name"
+            placeholder={
+              isAirportDelivery
+                ? "Vendor / Warehouse Name"
+                : "Receiver Name"
+            }
             value={vendorName}
             onChange={(e) => setVendorName(e.target.value)}
           />
@@ -126,12 +154,16 @@ export default function ChallanSummary({ shipments }: Props) {
 
         <div>
           <label className="mb-2 block text-sm font-medium">
-            Vendor Phone *
+            {isAirportDelivery ? "Vendor Phone *" : "Receiver Phone *"}
           </label>
 
           <input
             className="w-full rounded-lg border p-3"
-            placeholder="Vendor Phone Number"
+            placeholder={
+              isAirportDelivery
+                ? "Vendor Phone Number"
+                : "Receiver Phone Number"
+            }
             value={vendorPhone}
             onChange={(e) => setVendorPhone(e.target.value)}
           />
@@ -139,12 +171,16 @@ export default function ChallanSummary({ shipments }: Props) {
 
         <div className="md:col-span-2">
           <label className="mb-2 block text-sm font-medium">
-            Vendor Address *
+            {isAirportDelivery ? "Vendor / Warehouse Address *" : "Receiver Address *"}
           </label>
 
           <input
             className="w-full rounded-lg border p-3"
-            placeholder="Vendor / Airport Address"
+            placeholder={
+              isAirportDelivery
+                ? "Vendor / Airport / Warehouse Address"
+                : "Receiver Address"
+            }
             value={vendorAddress}
             onChange={(e) => setVendorAddress(e.target.value)}
           />

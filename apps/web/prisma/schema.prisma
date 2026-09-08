@@ -106,6 +106,7 @@ model Shipment {
   bookingDate        DateTime
   origin             String
   destination        String
+  deliveryType       DeliveryType   @default(DOOR_TO_DOOR)
   status             ShipmentStatus @default(BOOKED)
   senderName         String
   senderPhone        String

@@ -4,6 +4,8 @@ import {
 } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { airportByCode } from "@/lib/master/airports";
+import { recordShipmentTrackingEvent } from "@/lib/tracking/recordShipmentTrackingEvent";
 import {
   getUserBranchCode,
   requireUser,
@@ -209,18 +211,34 @@ export async function PATCH(
           entry.shipmentId
       );
 
+    /*
+     * Delivery completion depends on delivery mode:
+     *
+     * DOOR_TO_DOOR:
+     *   OUT_FOR_DELIVERY -> DELIVERED
+     *
+     * AIRPORT_DELIVERY:
+     *   OUTSCAN -> DELIVERED
+     */
+    const requiredShipmentStatus =
+      challan.deliveryType === "AIRPORT_DELIVERY"
+        ? "OUTSCAN"
+        : "OUT_FOR_DELIVERY";
+
     const invalidStatus =
       challan.shipments.find(
         (entry) =>
           entry.shipment.status !==
-          "OUT_FOR_DELIVERY"
+          requiredShipmentStatus
       );
 
     if (invalidStatus) {
       return NextResponse.json(
         {
           error:
-            `${invalidStatus.shipment.trackingNumber} must be OUT_FOR_DELIVERY before it can be marked delivered.`,
+            challan.deliveryType === "AIRPORT_DELIVERY"
+              ? `${invalidStatus.shipment.trackingNumber} must be OUTSCAN before airport / warehouse handover can be completed.`
+              : `${invalidStatus.shipment.trackingNumber} must be OUT_FOR_DELIVERY before it can be marked delivered.`,
         },
         {
           status: 409,
@@ -239,7 +257,7 @@ export async function PATCH(
                 },
 
                 status:
-                  "OUT_FOR_DELIVERY",
+                  requiredShipmentStatus,
               },
 
               data: {
@@ -255,6 +273,41 @@ export async function PATCH(
             throw new Error(
               "One or more shipments were already updated by another operator."
             );
+          }
+
+          /*
+           * Record DELIVERED tracking event
+           * for every shipment completed through
+           * this Delivery Challan.
+           */
+          const deliveredAt = new Date();
+
+          for (const entry of challan.shipments) {
+            const shipment = entry.shipment;
+
+            const locationCode =
+              shipment.destination
+                .trim()
+                .toUpperCase();
+
+            const airport =
+              airportByCode[locationCode];
+
+            await recordShipmentTrackingEvent({
+              db: tx,
+              shipmentId: shipment.id,
+              status: "DELIVERED",
+              locationCode,
+              locationName:
+                airport?.city ?? locationCode,
+              createdByUserId:
+                user.id ?? null,
+              remarks:
+                challan.deliveryType === "AIRPORT_DELIVERY"
+                  ? "Shipment handed over at airport / warehouse"
+                  : "Shipment delivered successfully",
+              eventAt: deliveredAt,
+            });
           }
 
           const updatedChallan =

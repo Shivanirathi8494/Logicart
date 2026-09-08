@@ -54,7 +54,9 @@ export default function DeliveryChallanPreviewPage({
   async function markDelivered(){
 
     const confirmed=window.confirm(
-      "Mark this Delivery Challan and all linked shipments as delivered?"
+      challan.deliveryType === "AIRPORT_DELIVERY"
+        ? "Complete airport / warehouse handover and mark all linked shipments as delivered?"
+        : "Mark this Delivery Challan and all linked shipments as delivered?"
     );
 
     if(!confirmed){
@@ -139,7 +141,11 @@ onClick={markDelivered}
 disabled={updating}
 className="min-h-11 w-full rounded-lg bg-[#1877F2] px-6 py-3 font-semibold text-white disabled:opacity-50 sm:w-auto"
 >
-{updating ? "Updating..." : "Mark Delivered"}
+{updating
+  ? "Updating..."
+  : challan.deliveryType === "AIRPORT_DELIVERY"
+    ? "Complete Airport / Warehouse Handover"
+    : "Mark Delivered"}
 </button>
 )}
 

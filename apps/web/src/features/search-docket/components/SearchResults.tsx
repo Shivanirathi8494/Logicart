@@ -73,17 +73,12 @@ function openNextAction(
       return;
 
     /*
-     * There is currently no dedicated
-     * unloading-tally portal route.
-     *
-     * Do NOT route this to Outscan because
-     * unloading and outscan are separate
-     * destination operations.
+     * MANIFESTED shipments are unloaded through
+     * the destination Incoming / Unload workflow.
      */
     case "UNLOAD":
-      alert(
-        "This shipment is ready for Unloading Tally. The dedicated unloading workflow will be connected next."
-      );
+      window.location.href =
+        "/portal/warehouse/inscan";
       return;
 
     case "OUTSCAN":

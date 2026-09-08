@@ -166,7 +166,7 @@ export default function PrintableAirWaybill({
 
                 <div>
                   <Image
-                    src="/logo/logicarts-logo.png"
+                    src="/logo/logicarts-logo-v2.png"
                     alt="Logicarts"
                     width={130}
                     height={45}

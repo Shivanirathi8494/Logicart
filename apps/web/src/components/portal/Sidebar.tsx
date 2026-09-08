@@ -195,7 +195,7 @@ export default function Sidebar({
       {/* LOGO */}
       <Link href="/portal/dashboard" className="mb-5 flex justify-center">
         <Image
-          src="/logo/logicarts-logo.png"
+          src="/logo/logicarts-logo-v2.png"
           alt="Logicarts"
           width={180}
           height={55}

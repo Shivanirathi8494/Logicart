@@ -309,6 +309,11 @@ export class ShipmentService {
             origin: data.origin,
             destination: data.destination,
 
+            deliveryType:
+              data.deliveryType === "AIRPORT_DELIVERY"
+                ? "AIRPORT_DELIVERY"
+                : "DOOR_TO_DOOR",
+
             status: "BOOKED",
 
             // Sender

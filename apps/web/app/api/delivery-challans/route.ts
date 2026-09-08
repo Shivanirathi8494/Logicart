@@ -179,6 +179,38 @@ export async function POST(
         .toUpperCase();
 
     /*
+     * Delivery mode must come from the
+     * shipment records, never from the browser.
+     *
+     * A single Delivery Challan cannot mix
+     * Door-to-Door and Airport/Warehouse shipments.
+     */
+    const deliveryTypes =
+      new Set(
+        shipments.map(
+          (shipment) =>
+            shipment.deliveryType
+        )
+      );
+
+    if (
+      deliveryTypes.size !== 1
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "All shipments in a Delivery Challan must have the same delivery mode.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    body.deliveryType =
+      shipments[0].deliveryType;
+
+    /*
      * Branch employee:
      * destination must equal their
      * assigned branch.

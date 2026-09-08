@@ -100,8 +100,17 @@ export default function OutscanPage() {
           ),
         );
 
+        /*
+         * Only Door-to-Door shipments with a generated
+         * challan proceed into the last-mile delivery queue.
+         *
+         * Airport / Warehouse shipments are completed
+         * directly through their Delivery Challan.
+         */
         const challanGenerated = rows.filter(
-          (shipment: any) => shipment.hasDeliveryChallan,
+          (shipment: any) =>
+            shipment.hasDeliveryChallan &&
+            shipment.deliveryType === "DOOR_TO_DOOR",
         );
 
         setOutForDelivery((current) => [
@@ -118,7 +127,9 @@ export default function OutscanPage() {
         setOutForDelivery((current) => {
           const waitingForDispatch = current.filter(
             (shipment: any) =>
-              shipment.status === "OUTSCAN" && shipment.hasDeliveryChallan,
+              shipment.status === "OUTSCAN" &&
+              shipment.hasDeliveryChallan &&
+              shipment.deliveryType === "DOOR_TO_DOOR",
           );
 
           return [...waitingForDispatch, ...rows];

@@ -10,6 +10,7 @@ export const initialShipment: CreateShipmentRequest = {
   origin: "",
   destination: "",
   serviceType: "",
+  deliveryType: "DOOR_TO_DOOR",
 
   airlineId: "",
   flightNumber: "",

@@ -18,6 +18,27 @@ export default function DeliveryChallanPage() {
       return;
     }
 
+    /*
+     * A Delivery Challan cannot mix
+     * Door-to-Door and Airport/Warehouse shipments.
+     */
+    if (
+      shipments.length > 0 &&
+      shipments[0].deliveryType !== shipment.deliveryType
+    ) {
+      const currentMode =
+        shipments[0].deliveryType === "AIRPORT_DELIVERY"
+          ? "Airport / Warehouse Delivery"
+          : "Door to Door";
+
+      alert(
+        `This challan already contains ${currentMode} shipments. ` +
+        "Please create a separate Delivery Challan for the other delivery mode."
+      );
+
+      return;
+    }
+
     setShipments([
       ...shipments,
       shipment,

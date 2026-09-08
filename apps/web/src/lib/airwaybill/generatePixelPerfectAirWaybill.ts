@@ -445,7 +445,7 @@ export async function generatePixelPerfectAirWaybill(
       process.cwd(),
       "public",
       "logo",
-      "logicarts-logo.png",
+      "logicarts-logo-v2.png",
     );
 
   const templateBytes =

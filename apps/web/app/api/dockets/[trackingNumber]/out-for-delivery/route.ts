@@ -69,6 +69,25 @@ export async function POST(
     }
 
     /*
+     * Only Door-to-Door shipments enter
+     * the last-mile Out for Delivery flow.
+     *
+     * Airport/Warehouse shipments remain
+     * at the destination branch for handover.
+     */
+    if (shipment.deliveryType !== "DOOR_TO_DOOR") {
+      return NextResponse.json(
+        {
+          error:
+            "Airport / Warehouse Delivery shipments cannot be marked Out for Delivery.",
+        },
+        {
+          status: 409,
+        },
+      );
+    }
+
+    /*
      * Delivery employee may dispatch only
      * shipments belonging to their branch.
      */

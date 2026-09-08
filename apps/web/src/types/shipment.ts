@@ -3,6 +3,11 @@ export interface PackageDetail {
   width: number;
   height: number;
   weight: number;
+
+  // UI-only grouping field.
+  // Before saving/pricing, grouped packages are expanded
+  // into individual physical package records.
+  quantity?: number;
 }
 
 export interface CreateShipmentRequest {
@@ -15,6 +20,9 @@ export interface CreateShipmentRequest {
   origin: string;
   destination: string;
   serviceType: string;
+
+  deliveryType: "DOOR_TO_DOOR" | "AIRPORT_DELIVERY";
+
   airlineId: string;
   flightNumber: string;
 

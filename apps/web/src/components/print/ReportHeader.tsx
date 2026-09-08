@@ -19,7 +19,7 @@ export default function ReportHeader({
         <div>
 
           <Image
-            src="/logo/logicarts-logo.png"
+            src="/logo/logicarts-logo-v2.png"
             alt="Logicarts"
             width={190}
             height={60}

@@ -274,6 +274,11 @@ export async function PUT(
           destination:
             body.destination,
 
+          deliveryType:
+            body.deliveryType === "AIRPORT_DELIVERY"
+              ? "AIRPORT_DELIVERY"
+              : "DOOR_TO_DOOR",
+
           airlineId:
             body.airlineId ||
             null,
@@ -418,6 +423,8 @@ export async function PUT(
                     pkg.width,
                   height:
                     pkg.height,
+                  weight:
+                    Number(pkg.weight || 0),
                 }),
               ),
           },

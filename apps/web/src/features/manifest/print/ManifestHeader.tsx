@@ -35,7 +35,7 @@ export default function ManifestHeader({
       {/* LOGOS */}
       <div className="flex w-full items-center justify-between px-3 py-2">
         <img
-          src="/logo/logicarts-logo.png"
+          src="/logo/logicarts-logo-v2.png"
           alt="Logicarts"
           className="h-[42px] w-auto object-contain"
         />
