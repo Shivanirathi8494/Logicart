@@ -198,9 +198,9 @@ export default function Sidebar({
           src="/logo/logicarts-logo-v2.png"
           alt="Logicarts"
           width={180}
-          height={55}
+          height={47}
           priority
-          className="h-auto w-auto"
+          className="h-[47px] w-[180px] object-contain"
         />
       </Link>
 
