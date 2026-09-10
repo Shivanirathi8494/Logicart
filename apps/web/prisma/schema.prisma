@@ -212,6 +212,12 @@ model Shipment {
   @@index([clientId])
   @@index([agentId])
   @@index([createdByUserId])
+  // Performance indexes
+  @@index([status, createdAt])
+  @@index([origin, status, createdAt])
+  @@index([destination, status, createdAt])
+  @@index([clientId, createdAt])
+  @@index([agentId, createdAt])
 }
 
 model ShipmentPackage {
@@ -226,6 +232,8 @@ model ShipmentPackage {
 
   loadingTallyPackages   LoadingTallyPackage[]
   manifestUnloadPackages ManifestUnloadPackage[]
+
+  @@index([shipmentId])
 }
 
 model Manifest {
@@ -273,6 +281,7 @@ model ManifestShipment {
   shipment   Shipment @relation(fields: [shipmentId], references: [id])
 
   @@unique([manifestId, shipmentId])
+  @@index([shipmentId])
 }
 
 model DeliveryChallan {
@@ -905,4 +914,61 @@ enum UserRole {
   CLIENT
   AGENT
   EMPLOYEE
+}
+
+// ============================================================
+// DELIVERED SHIPMENT ARCHIVE
+// ============================================================
+// Metadata for immutable weekly archives of delivered shipments.
+// The actual archive file is stored in private object storage.
+// Shipment data must never be deleted merely because this row exists;
+// deletion/purge requires a VERIFIED archive and separate retention logic.
+
+enum ArchiveStatus {
+  CREATING
+  VERIFIED
+  FAILED
+}
+
+model DeliveredArchive {
+  id            String   @id @default(cuid())
+  periodStart   DateTime
+  periodEnd     DateTime
+  shipmentCount Int      @default(0)
+
+  archiveKey String? @unique
+  fileName   String?
+  fileSize   BigInt?
+  checksum   String?
+
+  status        ArchiveStatus @default(CREATING)
+  failureReason String?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  verifiedAt DateTime?
+
+  shipments DeliveredArchiveShipment[]
+
+  @@index([status])
+  @@index([periodStart, periodEnd])
+  @@unique([periodStart, periodEnd], name: "delivered_archive_period")
+  @@map("delivered_archives")
+}
+
+// Exact membership of shipments inside a verified archive.
+// shipmentId intentionally has no foreign-key relation to Shipment,
+// allowing archive evidence to remain after future retention/purge.
+model DeliveredArchiveShipment {
+  id             String   @id @default(cuid())
+  archiveId      String
+  shipmentId     String   @unique
+  trackingNumber String
+  archivedAt     DateTime @default(now())
+
+  archive DeliveredArchive @relation(fields: [archiveId], references: [id], onDelete: Cascade)
+
+  @@index([archiveId])
+  @@index([trackingNumber])
+  @@map("delivered_archive_shipments")
 }

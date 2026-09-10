@@ -49,6 +49,12 @@ export default function ReportsHomePage() {
           description="Verify the daily summary and close today's business."
           href="/portal/day-end"
         />
+
+        <ReportCard
+          title="Delivered Archives"
+          description="View and download verified 7-day shipment backups."
+          href="/portal/reports/delivered-archives"
+        />
       </div>
     </div>
   );
