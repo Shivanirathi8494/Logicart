@@ -17,7 +17,7 @@ import {
   saveFlightSchedules,
 } from "@/lib/flights/sync";
 
-const CACHE_DAYS = 7;
+const CACHE_HOURS = 6;
 
 function indiaDate(date: string) {
   return new Date(
@@ -323,8 +323,7 @@ export async function GET(
         : Number.POSITIVE_INFINITY;
 
     const maxAge =
-      CACHE_DAYS *
-      24 *
+      CACHE_HOURS *
       60 *
       60 *
       1000;
@@ -332,18 +331,7 @@ export async function GET(
     const fresh =
       cacheAge < maxAge;
 
-    if (fresh) {
-      if (
-        existingFlights.length === 0
-      ) {
-        existingFlights =
-          await getFlights(
-            origin,
-            destination,
-            date,
-          );
-      }
-
+    if (fresh && existingFlights.length > 0) {
       return NextResponse.json({
         configured: true,
         provider:
@@ -362,47 +350,43 @@ export async function GET(
       `Refreshing flight cache: ${origin} -> ${destination} ${date}`,
     );
 
-    const externalFlights =
-      await fetchRouteFlights({
-        origin,
-        destination,
-        date,
-      });
+    let externalFlights;
 
-    /*
-     * Remove stale rows for this
-     * route/date before writing
-     * the refreshed schedule.
-     */
-    const {
-      start,
-      end,
-    } = range(date);
+    try {
+      externalFlights =
+        await fetchRouteFlights({
+          origin,
+          destination,
+          date,
+        });
+    } catch (providerError) {
+      console.error(
+        "Flight provider refresh failed:",
+        providerError,
+      );
 
-    await prisma.flightSchedule.deleteMany({
-      where: {
-        origin,
-        destination,
+      if (existingFlights.length > 0) {
+        return NextResponse.json({
+          configured: true,
+          provider: "FLIGHT_MASTER_CACHE",
+          cached: true,
+          stale: true,
+          warning:
+            "Live flight refresh failed. Showing saved schedules.",
+          schedules: serialize(existingFlights),
+        });
+      }
 
-        /*
-         * Never delete official Alliance Air
-         * schedule rows during AeroDataBox refresh.
-         */
-        source: "AERODATABOX",
-
-        scheduledDeparture: {
-          gte: start,
-          lte: end,
-        },
-      },
-    });
+      throw providerError;
+    }
 
     const saveResult =
       await saveFlightSchedules(
         externalFlights,
       );
 
-    await prisma.flightScheduleSync.upsert({
+    if (flightScheduleSync) {
+      await flightScheduleSync.upsert({
       where: {
         origin_destination_flightDate: {
           origin,
@@ -438,6 +422,8 @@ export async function GET(
       },
     });
 
+    }
+
     const flights =
       await getFlights(
         origin,
@@ -459,7 +445,11 @@ export async function GET(
 
       message:
         flights.length === 0
-          ? `No scheduled flights were found for ${origin} → ${destination} on ${date}.`
+          ? (
+              externalFlights.length > 0
+                ? "The provider returned flights, but none matched the selected airline or available airline master records."
+                : `No scheduled flights were found for ${origin} → ${destination} on ${date}.`
+            )
           : undefined,
     });
   } catch (error: any) {
